@@ -159,11 +159,7 @@ async function init(){
   render();
 
   // Wire up controls
-  els.search.addEventListener('input', e => { state.search = e.target.value.trim(); render(); });
-  els.presets.addEventListener('change', e => { if(e.target.value) applyPreset(e.target.value); });
-  els.clear.addEventListener('click', () => {
-    state.avoid.clear();
-    document.querySelectorAll('.chip').forEach(ch => { ch.dataset.active='false'; ch.setAttribute('aria-checked','false'); });
+          document.querySelectorAll('.chip').forEach(ch => { ch.dataset.active='false'; ch.setAttribute('aria-checked','false'); });
     els.presets.value = '';
     els.search.value = '';
     state.search = '';
