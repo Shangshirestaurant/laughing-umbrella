@@ -33,18 +33,15 @@ const PRESETS = {
 };
 
 const state = {
-  mode: 'SAFE',
-  avoid: new Set(),
-  search: ''
+  safeOnly: true,
+  avoid: new Set()
 };
 
 const els = {
   chips: document.getElementById('allergenChips'),
   grid: document.getElementById('dishGrid'),
   cardTmpl: document.getElementById('dishCardTmpl'),
-  search: document.getElementById('search'),
-  presets: document.getElementById('presets'),
-  clear: document.getElementById('clearFilters')
+  presets: document.getElementById('presets')
 };
 
 async function loadMenu(){
@@ -88,21 +85,13 @@ function applyPreset(key){
   render();
 }
 
-function matchesSearch(dish){
-  if(!state.search) return true;
-  const q = state.search.toLowerCase();
-  return (dish.name.toLowerCase().includes(q) ||
-          (dish.description||'').toLowerCase().includes(q));
-}
 
 // Mode-aware filter
 function isAllowed(dish){
   if(state.avoid.size === 0) return true;
-  if(state.mode === 'SAFE'){
-    return !dish.allergens.some(code => state.avoid.has(code));
-  } else {
-    return dish.allergens.some(code => state.avoid.has(code));
-  }
+  // allergy-free mode: excludes dishes containing any selected allergens
+  return !dish.allergens.some(code => state.avoid.has(code));
+}
 }
 
 function renderDish(dish){
@@ -125,7 +114,7 @@ let MENU = [];
 
 function render(){
   els.grid.innerHTML = '';
-  const filtered = MENU.filter(d => isAllowed(d) && matchesSearch(d));
+  const filtered = MENU.filter(d => state.safeOnly ? isAllowed(d) : true);
   if(filtered.length === 0){
     const empty = document.createElement('p');
     empty.style.color = 'var(--muted)';
@@ -159,18 +148,6 @@ async function init(){
   render();
 
   // Wire up controls
-  els.search.addEventListener('input', e => { state.search = e.target.value.trim(); render(); });
-  els.presets.addEventListener('change', e => { if(e.target.value) applyPreset(e.target.value); });
-  els.clear.addEventListener('click', () => {
-    state.avoid.clear();
-    document.querySelectorAll('.chip').forEach(ch => { ch.dataset.active='false'; ch.setAttribute('aria-checked','false'); });
-    els.presets.value = '';
-    els.search.value = '';
-    state.search = '';
-    render();
-  });
-
-  // Mode tabs
   const safe = document.getElementById('modeSafe');
   const contains = document.getElementById('modeContains');
   if(safe && contains){

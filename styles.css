@@ -289,3 +289,6 @@ body.intro.fade-out { opacity:0; }
 
 /* Compact controls */
 .controls{ gap:8px; }
+
+/* single-toggle styles */
+.tab[role="switch"][aria-checked="true"]{ background:rgba(197,165,114,.16); border-color:rgba(197,165,114,.75); color:var(--text); }
