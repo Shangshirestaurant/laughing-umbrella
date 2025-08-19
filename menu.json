@@ -1,0 +1,64 @@
+[
+  {
+    "name": "Prawn Har Gow",
+    "price": 9.5,
+    "allergens": [
+      "CR",
+      "GL",
+      "SO"
+    ],
+    "description": "Transparent prawn dumplings with bamboo shoots."
+  },
+  {
+    "name": "Char Siu Pork",
+    "price": 18.0,
+    "allergens": [
+      "GL",
+      "SO"
+    ],
+    "description": "Honey-glazed roasted pork with five-spice."
+  },
+  {
+    "name": "Steamed Grouper",
+    "price": 26.0,
+    "allergens": [
+      "Fl",
+      "SO"
+    ],
+    "description": "Ginger-scallion sauce, light soy."
+  },
+  {
+    "name": "Mapo Tofu",
+    "price": 16.0,
+    "allergens": [
+      "SO"
+    ],
+    "description": "Silken tofu, Szechuan pepper, chili oil."
+  },
+  {
+    "name": "Seasonal Greens",
+    "price": 8.5,
+    "allergens": [],
+    "description": "Stir-fried with garlic."
+  },
+  {
+    "name": "Egg Tart",
+    "price": 7.0,
+    "allergens": [
+      "EG",
+      "Mi",
+      "GL"
+    ],
+    "description": "Buttery crust, silky custard."
+  },
+  {
+    "name": "Shiitake & Truffle Dumpling",
+    "price": 11.0,
+    "allergens": [
+      "MR",
+      "GL",
+      "SO"
+    ],
+    "description": "Forest mushroom medley."
+  }
+]
