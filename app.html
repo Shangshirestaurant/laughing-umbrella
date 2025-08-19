@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shang Shi — Allergen Selector</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <meta name="theme-color" content="#0C2E2A">
+</head>
+<body>
+  <header class="glass-header" role="banner">
+    <div class="header-inner">
+      <a class="brand" href="index.html" aria-label="Back to intro">
+        <img src="assets/img/logo.svg" alt="" class="brand-logo" width="36" height="36">
+        <span class="brand-name">Shang Shi</span>
+      </a>
+      <nav aria-label="Allergen controls" class="controls">
+        <button id="clearFilters" class="btn subtle" title="Clear all selected allergens">Clear</button>
+        <div class="preset-wrap">
+          <label for="presets" class="sr-only">Presets</label>
+          <select id="presets" class="preset-select">
+            <option value="">Presets…</option>
+            <option value="GLUTEN_FREE">Gluten Allergy</option>
+            <option value="NUT_FREE">Nut Allergy</option>
+            <option value="SHELLFISH_FREE">Shellfish Allergy</option>
+            <option value="MUSHROOM_FREE">Mushroom Allergy</option>
+            <option value="DAIRY_FREE">Milk Allergy</option>
+            <option value="EGG_FREE">Egg Allergy</option>
+            <option value="SOY_FREE">Soy Allergy</option>
+            <option value="SESAME_FREE">Sesame Allergy</option>
+          </select>
+        </div>
+        <input id="search" type="search" placeholder="Search dishes…" aria-label="Search dishes">
+      </nav>
+    </div>
+  </header>
+
+  <section class="bar" aria-label="Allergen selector">
+    <div id="allergenChips" class="chips"></div>
+  </section>
+
+  <main class="container" id="app" role="main">
+    <div id="dishGrid" class="grid"></div>
+    <template id="dishCardTmpl">
+      <article class="card" data-dish>
+        <div class="card-top">
+          <h3 class="card-title"></h3>
+          <div class="badges"></div>
+        </div>
+        <p class="card-desc"></p>
+        <div class="meta">
+          <span class="price"></span>
+        </div>
+      </article>
+    </template>
+  </main>
+
+  <footer class="site-footer">
+    <small>Allergen information may contain traces; please inform your server about severe allergies.</small>
+  </footer>
+
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
