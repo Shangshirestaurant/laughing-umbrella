@@ -44,10 +44,26 @@ const els = {
   presets: document.getElementById('presets')
 };
 
+
 async function loadMenu(){
-  const res = await fetch('menu.json', { cache: 'no-store' });
-  if(!res.ok) throw new Error('Failed to load menu.json');
-  return res.json();
+  const candidates = [
+    'menu.json',
+    './menu.json',
+    (location.pathname.replace(/[^\/]+$/, '') + 'menu.json'),
+    (location.origin + location.pathname.replace(/[^\/]+$/, '') + 'menu.json')
+  ];
+  for (const url of candidates){
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if(res.ok){
+        return await res.json();
+      }
+    } catch(e) {
+      console.warn('Fetch failed for', url, e);
+    }
+  }
+  console.warn('Falling back: no menu.json found.');
+  return [];
 }
 
 function makeChip({code, name}){
@@ -125,46 +141,41 @@ function render(){
 }
 
 async function init(){
-  // Build chips
-  ALLERGENS.forEach(a => els.chips.appendChild(makeChip(a)));
-
-  // Load menu
-  try {
+  try{
+    // Build chips first
+    ALLERGENS.forEach(a => els.chips.appendChild(makeChip(a)));
+    // Load menu
     MENU = await loadMenu();
-  } catch(e){
-    console.warn(e);
-    MENU = [
-      { name:'Prawn Har Gow', price:9.50, allergens:['CR','GL','SO'], description:'Transparent prawn dumplings with bamboo shoots.'},
-      { name:'Char Siu Pork', price:18.00, allergens:['GL','SO'], description:'Honey-glazed roasted pork with five-spice.'},
-      { name:'Steamed Grouper', price:26.00, allergens:['Fl','SO'], description:'Ginger-scallion sauce, light soy.'},
-      { name:'Mapo Tofu', price:16.00, allergens:['SO'], description:'Silken tofu, Szechuan pepper, chili oil.'},
-      { name:'Seasonal Greens', price:8.50, allergens:[], description:'Stir-fried with garlic.'},
-      { name:'Egg Tart', price:7.00, allergens:['EG','Mi','GL'], description:'Buttery crust, silky custard.'},
-      { name:'Shiitake & Truffle Dumpling', price:11.00, allergens:['MR','GL','SO'], description:'Forest mushroom medley.'}
-    ];
-  }
+    render();
 
-  render();
+    // Wire up presets
+    if(els.presets){ els.presets.addEventListener('change', e => { if(e.target.value) applyPreset(e.target.value); }); }
 
-  // Wire up controls
-  const safe = document.getElementById('modeSafe');
-  const contains = document.getElementById('modeContains');
-  if(safe && contains){
-    [safe, contains].forEach(btn => btn.addEventListener('click', () => {
-      state.mode = btn.dataset.mode;
-      safe.classList.toggle('active', state.mode==='SAFE');
-      contains.classList.toggle('active', state.mode==='CONTAINS');
-      render();
-    }));
-  }
+    // Single toggle for allergy-free mode
+    const safeBtn = document.getElementById('safeOnly');
+    if(safeBtn){
+      safeBtn.addEventListener('click', ()=>{
+        state.safeOnly = !state.safeOnly;
+        safeBtn.classList.toggle('active', state.safeOnly);
+        safeBtn.setAttribute('aria-checked', state.safeOnly ? 'true':'false');
+        render();
+      });
+    }
 
-  // Back to top
-  const toTop = document.getElementById('toTop');
-  if(toTop){
-    toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+    // Back to top
+    const toTop = document.getElementById('toTop');
+    if(toTop){ toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'})); }
+  } catch(err){
+    console.error('Init error:', err);
+    const grid = document.getElementById('dishGrid');
+    if(grid){
+      const p = document.createElement('p');
+      p.style.color = 'var(--muted)';
+      p.textContent = 'There was a problem loading the menu. Please refresh.';
+      grid.appendChild(p);
+    }
   }
 }
-
 document.addEventListener('DOMContentLoaded', init);
 
 
