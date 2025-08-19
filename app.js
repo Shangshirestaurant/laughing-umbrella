@@ -89,7 +89,6 @@ function applyPreset(key){
 // Mode-aware filter
 function isAllowed(dish){
   if(state.avoid.size === 0) return true;
-  // allergy-free mode: excludes dishes containing any selected allergens
   return !dish.allergens.some(code => state.avoid.has(code));
 }
 }
@@ -98,7 +97,7 @@ function renderDish(dish){
   const node = els.cardTmpl.content.firstElementChild.cloneNode(true);
   node.querySelector('.card-title').textContent = dish.name;
   node.querySelector('.card-desc').textContent = dish.description || '';
-  node.querySelector('.price').textContent = dish.price ? `€${dish.price.toFixed(2)}` : '';
+  node.querySelector('.price').textContent = '';
   const badges = node.querySelector('.badges');
   dish.allergens.forEach(code=>{
     const a = ALLERGENS.find(a=>a.code===code);
@@ -195,3 +194,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+
+// Chips scroll edge indicators
+(function(){
+  const chips = document.getElementById('allergenChips');
+  const bar = document.getElementById('selector');
+  if(!chips || !bar) return;
+  function update(){
+    const atStart = chips.scrollLeft <= 1;
+    const atEnd = Math.ceil(chips.scrollLeft + chips.clientWidth) >= chips.scrollWidth - 1;
+    bar.classList.toggle('at-start', atStart);
+    bar.classList.toggle('at-end', atEnd);
+  }
+  chips.addEventListener('scroll', update, {passive:true});
+  window.addEventListener('resize', update);
+  setTimeout(update, 0);
+})();
