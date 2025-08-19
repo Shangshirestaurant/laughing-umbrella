@@ -47,11 +47,72 @@ const els = {
   clear: document.getElementById('clearFilters')
 };
 
-async function loadMenu(){
-  const res = await fetch('menu.json', { cache: 'no-store' });
-  if(!res.ok) throw new Error('Failed to load menu.json');
-  return res.json();
-}
+const MENU = [
+  {
+    "name": "Prawn Har Gow",
+    "price": 9.5,
+    "allergens": [
+      "CR",
+      "GL",
+      "SO"
+    ],
+    "description": "Transparent prawn dumplings with bamboo shoots."
+  },
+  {
+    "name": "Char Siu Pork",
+    "price": 18.0,
+    "allergens": [
+      "GL",
+      "SO"
+    ],
+    "description": "Honey-glazed roasted pork with five-spice."
+  },
+  {
+    "name": "Steamed Grouper",
+    "price": 26.0,
+    "allergens": [
+      "Fl",
+      "SO"
+    ],
+    "description": "Ginger-scallion sauce, light soy."
+  },
+  {
+    "name": "Mapo Tofu",
+    "price": 16.0,
+    "allergens": [
+      "SO"
+    ],
+    "description": "Silken tofu, Szechuan pepper, chili oil."
+  },
+  {
+    "name": "Seasonal Greens",
+    "price": 8.5,
+    "allergens": [],
+    "description": "Stir-fried with garlic."
+  },
+  {
+    "name": "Egg Tart",
+    "price": 7.0,
+    "allergens": [
+      "EG",
+      "Mi",
+      "GL"
+    ],
+    "description": "Buttery crust, silky custard."
+  },
+  {
+    "name": "Shiitake & Truffle Dumpling",
+    "price": 11.0,
+    "allergens": [
+      "MR",
+      "GL",
+      "SO"
+    ],
+    "description": "Forest mushroom medley."
+  }
+];
+
+
 
 function makeChip({code, name}){
   const el = document.createElement('button');
@@ -136,23 +197,6 @@ function render(){
   filtered.forEach(d => els.grid.appendChild(renderDish(d)));
 }
 
-async function init(){
-  // Build chips
-  ALLERGENS.forEach(a => els.chips.appendChild(makeChip(a)));
-
-  // Load menu
-  try {
-    MENU = await loadMenu();
-  } catch(e){
-    console.warn(e);
-    MENU = [
-      { name:'Prawn Har Gow', price:9.50, allergens:['CR','GL','SO'], description:'Transparent prawn dumplings with bamboo shoots.'},
-      { name:'Char Siu Pork', price:18.00, allergens:['GL','SO'], description:'Honey-glazed roasted pork with five-spice.'},
-      { name:'Steamed Grouper', price:26.00, allergens:['Fl','SO'], description:'Ginger-scallion sauce, light soy.'},
-      { name:'Mapo Tofu', price:16.00, allergens:['SO'], description:'Silken tofu, Szechuan pepper, chili oil.'},
-      { name:'Seasonal Greens', price:8.50, allergens:[], description:'Stir-fried with garlic.'},
-      { name:'Egg Tart', price:7.00, allergens:['EG','Mi','GL'], description:'Buttery crust, silky custard.'},
-      { name:'Shiitake & Truffle Dumpling', price:11.00, allergens:['MR','GL','SO'], description:'Forest mushroom medley.'}
     ];
   }
 
@@ -160,9 +204,7 @@ async function init(){
 
   // Wire up controls
           document.querySelectorAll('.chip').forEach(ch => { ch.dataset.active='false'; ch.setAttribute('aria-checked','false'); });
-    els.presets.value = '';
-    els.search.value = '';
-    state.search = '';
+            state.search = '';
     render();
   });
 
@@ -244,3 +286,43 @@ document.addEventListener('DOMContentLoaded', () => {
   // Delay once to allow layout settle
   setTimeout(updateArrows, 0);
 })();
+
+
+function init(){
+  try{
+    // Build chips row first
+    if (els && els.chips && Array.isArray(ALLERGENS)) {
+      els.chips.innerHTML = '';
+      ALLERGENS.forEach(a => els.chips.appendChild(makeChip(a)));
+    }
+    // Initial render with inlined MENU
+    if (typeof render === 'function') render();
+    // Arrow logic
+    (function(){
+      const bar = document.getElementById('selector');
+      const row = document.getElementById('allergenChips');
+      if(!bar || !row) return;
+      const prev = document.getElementById('chipsPrev');
+      const next = document.getElementById('chipsNext');
+      function updateArrows(){
+        const canScroll = row.scrollWidth > row.clientWidth + 2;
+        if(!canScroll){ if(prev) prev.hidden = true; if(next) next.hidden = true; return; }
+        if(prev) prev.hidden = row.scrollLeft <= 2;
+        const atEnd = Math.ceil(row.scrollLeft + row.clientWidth) >= row.scrollWidth - 2;
+        if(next) next.hidden = atEnd;
+      }
+      function scrollByAmount(dir){
+        const amount = Math.round(row.clientWidth * 0.7);
+        row.scrollBy({ left: dir * amount, behavior: 'smooth' });
+      }
+      if(prev) prev.addEventListener('click', ()=> scrollByAmount(-1));
+      if(next) next.addEventListener('click', ()=> scrollByAmount(+1));
+      row.addEventListener('scroll', updateArrows, {passive:true});
+      window.addEventListener('resize', updateArrows);
+      setTimeout(updateArrows, 0);
+    })();
+  }catch(e){
+    console.error('Init failed', e);
+  }
+}
+document.addEventListener('DOMContentLoaded', init);

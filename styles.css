@@ -367,41 +367,34 @@ body.intro.fade-out { opacity:0; }
   background: linear-gradient(270deg, rgba(12,46,42,0.95), rgba(12,46,42,0));
 }
 
-/* === Centered header brand (logo + two tabs) === */
+/* Centered header (logo + two tabs) */
 .header-inner{
-  display:grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items:center;
-  gap:16px;
-  padding:10px 16px;
-  max-width:1200px;
-  margin:0 auto;
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+  gap:16px; padding:10px 16px; max-width:1200px; margin:0 auto;
 }
 .brand{ grid-column:2; justify-self:center; display:flex; align-items:center; }
-.controls{ grid-column:3; justify-self:end; display:flex; align-items:center; gap:10px; }
+.controls{ grid-column:3; justify-self:end; display:flex; gap:10px; align-items:center; }
 
+/* Selector visibility + iPhone safe-area */
+#selector{ position:sticky; top:calc(58px + env(safe-area-inset-top)); z-index:60; overflow:visible; }
+#allergenChips{ overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling:touch; scroll-behavior:smooth; }
 
-/* === Preset scroller: arrows + fading edges === */
-#selector{ position:sticky; top:calc(58px + env(safe-area-inset-top)); z-index:40; overflow:visible; }
-#allergenChips{ -webkit-overflow-scrolling:touch; scroll-behavior:smooth; }
-
-/* Fade masks */
+/* Fading edges */
 #selector::before, #selector::after{
   content:''; position:absolute; top:0; bottom:0; width:48px; pointer-events:none; z-index:1;
 }
 #selector::before{ left:0; background:linear-gradient(90deg, rgba(12,46,42,0.95), rgba(12,46,42,0)); }
 #selector::after{ right:0; background:linear-gradient(270deg, rgba(12,46,42,0.95), rgba(12,46,42,0)); }
 
-/* Arrows (stack above fades) */
+/* Arrows */
 .chips-arrow{
-  position:absolute; top:50%; transform:translateY(-50%);
-  width:32px; height:32px; border-radius:999px; z-index:2;
+  position:absolute; top:50%; transform:translateY(-50%); z-index:2;
+  width:32px; height:32px; border-radius:999px;
   border:1px solid rgba(197,165,114,.45);
   background: rgba(12,46,42,.60);
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  color: var(--gold); font-size:18px; line-height:1; display:grid; place-items:center;
+  color: var(--gold); display:grid; place-items:center; cursor:pointer; user-select:none;
   box-shadow: 0 4px 12px rgba(0,0,0,.35);
-  cursor:pointer; user-select:none;
 }
 .chips-arrow.left{ left:8px; }
 .chips-arrow.right{ right:8px; }
