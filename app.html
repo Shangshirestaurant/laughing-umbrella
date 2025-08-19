@@ -10,37 +10,20 @@
   <meta name="theme-color" content="#0C2E2A">
 </head>
 <body>
-  <a href="#selector" class="cta-open">Open selector</a>
-  <header class="glass-header" role="banner">
-    <div class="header-inner">
-      <a class="brand" href="index.html" aria-label="Back to intro">
-        <img src="logo.svg" alt="" class="brand-logo" width="36" height="36">
-        <span class="brand-name">Shang Shi</span>
-      </a>
-      <nav aria-label="Allergen controls" class="controls">
-        <div class="mode-tabs" role="tablist" aria-label="Filter mode">
-          <button id="modeSafe" class="tab active" role="tab" aria-selected="true" data-mode="SAFE">SAFE (exclude)</button>
-          <button id="modeContains" class="tab" role="tab" aria-selected="false" data-mode="CONTAINS">CONTAINS</button>
-        </div>
-        <button id="clearFilters" class="btn subtle" title="Clear all selected allergens">Clear</button>
-        <div class="preset-wrap">
-          <label for="presets" class="sr-only">Presets</label>
-          <select id="presets" class="preset-select">
-            <option value="">Presets…</option>
-            <option value="GLUTEN_FREE">Gluten-free</option>
-            <option value="DAIRY_FREE">Dairy-free</option>
-            <option value="NUT_FREE">Nut-free</option>
-            <option value="SHELLFISH_FREE">Shellfish-free</option>
-            <option value="MUSHROOM_FREE">Mushroom-free</option>
-            <option value="EGG_FREE">Egg-free</option>
-            <option value="SOY_FREE">Soy-free</option>
-            <option value="SESAME_FREE">Sesame-free</option>
-          </select>
-        </div>
-        <input id="search" type="search" placeholder="Search dishes…" aria-label="Search dishes">
-      </nav>
+  <header class="header">
+  <div class="header-inner">
+    <div class="spacer"></div>
+    <div class="brand">
+      <img src="shangshi_logo_main.png" alt="Shang Shi" class="header-logo">
     </div>
-  </header>
+    <div class="controls">
+      <div class="mode-tabs" role="tablist" aria-label="Filter mode">
+        <button id="modeSafe" class="tab active" role="tab" aria-selected="true" data-mode="SAFE">SAFE (exclude)</button>
+        <button id="modeContains" class="tab" role="tab" aria-selected="false" data-mode="CONTAINS">CONTAINS</button>
+      </div>
+    </div>
+  </div>
+</header>
 
   <section id="selector" class="bar" aria-label="Allergen selector">
     <button class="chips-arrow left" id="chipsPrev" aria-label="Scroll left" hidden>‹</button>
