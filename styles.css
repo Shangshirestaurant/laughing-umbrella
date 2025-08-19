@@ -183,3 +183,71 @@ body.intro.fade-out { opacity:0; }
     background: rgba(12,46,42,0.45);
   }
 }
+
+
+/* ===== iPhone visual fixes (v2) ===== */
+
+/* Stronger glass header with visible tint + overlay for better blur */
+.glass-header{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(12,46,42,0.55);
+  border-bottom: 1px solid rgba(197,165,114,0.28);
+}
+.glass-header::before{
+  content:'';
+  position:absolute; inset:0;
+  background:
+    radial-gradient(80% 120% at 20% 0%, rgba(197,165,114,0.10), transparent 60%),
+    linear-gradient(180deg, rgba(12,46,42,0.70), rgba(12,46,42,0.40));
+  pointer-events:none;
+}
+.header-inner{ position:relative; /* keep content above overlay */ }
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass-header{
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+    backdrop-filter: saturate(160%) blur(18px);
+    background: rgba(12,46,42,0.35);
+  }
+}
+
+/* Chips bar should sit below header + notch comfortably */
+.bar{ top: calc(58px + env(safe-area-inset-top)); }
+
+/* Higher contrast badges (allergen tags) */
+.badge{
+  background: rgba(0,0,0,0.40);
+  border: 1px solid rgba(197,165,114,0.40);
+  color: var(--gold);
+}
+
+/* Improve chip/tab contrast and hover/focus states */
+.chip, .tab{
+  border-color: rgba(197,165,114,0.45);
+  background: rgba(255,255,255,0.06);
+}
+.chip[data-active="true"], .tab.active{
+  background: rgba(197,165,114,0.16);
+  border-color: rgba(197,165,114,0.75);
+  color: var(--text);
+}
+.chip:focus-visible, .tab:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(197,165,114,0.45);
+}
+
+/* Inputs: darker background, clearer borders, visible focus */
+#search, .preset-select{
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(197,165,114,0.28);
+}
+#search:focus, .preset-select:focus{
+  outline: none;
+  border-color: rgba(197,165,114,0.65);
+  box-shadow: 0 0 0 2px rgba(197,165,114,0.35);
+}
+
+/* Card contrast slightly up on iPhone */
+.card{ border-color: rgba(197,165,114,0.22); background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); }
