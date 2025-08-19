@@ -33,6 +33,7 @@ const PRESETS = {
 };
 
 const state = {
+  mode: 'SAFE',
   avoid: new Set(),
   search: ''
 };
@@ -47,7 +48,7 @@ const els = {
 };
 
 async function loadMenu(){
-  const res = await fetch('data/menu.json', { cache: 'no-store' });
+  const res = await fetch('menu.json', { cache: 'no-store' });
   if(!res.ok) throw new Error('Failed to load menu.json');
   return res.json();
 }
@@ -78,7 +79,6 @@ function toggleAvoid(code, el){
 
 function applyPreset(key){
   state.avoid = new Set(PRESETS[key] || []);
-  // sync chip UI
   document.querySelectorAll('.chip').forEach(ch => {
     const code = ch.dataset.code;
     const on = state.avoid.has(code);
@@ -95,10 +95,14 @@ function matchesSearch(dish){
           (dish.description||'').toLowerCase().includes(q));
 }
 
+// Mode-aware filter
 function isAllowed(dish){
   if(state.avoid.size === 0) return true;
-  // Hide if dish contains ANY avoided allergen
-  return !dish.allergens.some(code => state.avoid.has(code));
+  if(state.mode === 'SAFE'){
+    return !dish.allergens.some(code => state.avoid.has(code));
+  } else {
+    return dish.allergens.some(code => state.avoid.has(code));
+  }
 }
 
 function renderDish(dish){
@@ -140,7 +144,6 @@ async function init(){
   try {
     MENU = await loadMenu();
   } catch(e){
-    // fallback sample if missing
     console.warn(e);
     MENU = [
       { name:'Prawn Har Gow', price:9.50, allergens:['CR','GL','SO'], description:'Transparent prawn dumplings with bamboo shoots.'},
@@ -166,6 +169,24 @@ async function init(){
     state.search = '';
     render();
   });
+
+  // Mode tabs
+  const safe = document.getElementById('modeSafe');
+  const contains = document.getElementById('modeContains');
+  if(safe && contains){
+    [safe, contains].forEach(btn => btn.addEventListener('click', () => {
+      state.mode = btn.dataset.mode;
+      safe.classList.toggle('active', state.mode==='SAFE');
+      contains.classList.toggle('active', state.mode==='CONTAINS');
+      render();
+    }));
+  }
+
+  // Back to top
+  const toTop = document.getElementById('toTop');
+  if(toTop){
+    toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);

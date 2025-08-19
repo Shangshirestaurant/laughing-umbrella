@@ -1,6 +1,6 @@
 /* Core theme */
 :root{
-  --bg:#0A1F1C;           /* deep green-black */
+  --bg:#0A1F1C;
   --surface:#0E2A26;
   --glass:rgba(14,42,38,0.55);
   --text:#E8EFEA;
@@ -30,14 +30,11 @@ body{
 
 /* Intro */
 body.intro { display:grid; place-items:center; min-height:100vh; }
-.intro-container{
-  display:grid; gap:32px; place-items:center;
-}
+.intro-container{ display:grid; gap:32px; place-items:center; }
 .logo-button{
   appearance:none;border:0;background:transparent;cursor:pointer;
   display:grid; gap:16px; place-items:center; padding:12px; border-radius:24px;
-  transition:transform .15s ease, filter .2s ease;
-  outline-offset:8px;
+  transition:transform .15s ease, filter .2s ease; outline-offset:8px;
 }
 .logo-button img{
   width:min(42vh, 320px); height:auto; filter: drop-shadow(0 40px 80px rgba(0,0,0,.35));
@@ -45,6 +42,13 @@ body.intro { display:grid; place-items:center; min-height:100vh; }
 .logo-button:hover{ transform: translateY(-2px) scale(1.02); }
 .enter-hint{ letter-spacing:.08em; text-transform:uppercase; font-weight:600; color:var(--gold); }
 .intro-footer{ position:fixed; bottom:16px; left:0; right:0; text-align:center; color:var(--muted); }
+
+.top-utility{ position:fixed; top:14px; right:14px; display:flex; gap:8px; z-index:60; }
+.pill{
+  display:inline-flex; align-items:center; gap:6px; padding:6px 10px;
+  border:1px solid rgba(197,165,114,.35); color:var(--gold); border-radius:999px;
+  text-decoration:none; font-weight:600; background:rgba(255,255,255,.04);
+}
 
 /* Header (glassmorphism) */
 .glass-header{
@@ -76,6 +80,24 @@ body.intro { display:grid; place-items:center; min-height:100vh; }
 }
 .btn.subtle:hover{ border-color:var(--gold); }
 
+/* CTA open button */
+.cta-open{
+  position:fixed; left:16px; bottom:16px; z-index:60;
+  text-decoration:none; font-weight:700; letter-spacing:.02em;
+  border:1px solid rgba(197,165,114,.5); color:var(--gold);
+  padding:10px 14px; border-radius:999px; background:rgba(255,255,255,.04);
+  box-shadow: var(--shadow);
+}
+
+/* Mode tabs */
+.mode-tabs{ display:flex; gap:6px; margin-right:6px; }
+.tab{
+  padding:8px 12px; border-radius:999px; border:1px solid rgba(197,165,114,.35);
+  background:rgba(255,255,255,.04); color:var(--gold); font-weight:700; cursor:pointer;
+}
+.tab.active{ background:rgba(197,165,114,.14); border-color:rgba(197,165,114,.7); color:var(--text); }
+.tab:not(.active):hover{ border-color:rgba(197,165,114,.6); }
+
 /* Allergen chips bar */
 .bar{ position:sticky; top:58px; z-index:40; background:linear-gradient(180deg, rgba(12,46,42,.95), rgba(12,46,42,.75)); border-bottom:1px solid rgba(255,255,255,.08); }
 .chips{
@@ -84,11 +106,11 @@ body.intro { display:grid; place-items:center; min-height:100vh; }
 }
 .chip{
   white-space:nowrap; user-select:none;
-  background:var(--chip); border:1px solid rgba(255,255,255,.06); color:var(--text);
-  padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:600; font-size:14px;
+  background:rgba(255,255,255,.04); border:1px solid rgba(197,165,114,.25); color:var(--text);
+  padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:700; font-size:14px;
   transition:background .15s ease, transform .1s ease, border-color .15s ease;
 }
-.chip[data-active="true"]{ background:var(--chip-on); border-color:rgba(197,165,114,.5); box-shadow:inset 0 0 0 1px rgba(197,165,114,.25); }
+.chip[data-active="true"]{ background:rgba(197,165,114,.14); border-color:rgba(197,165,114,.7); color:var(--text); }
 .chip:hover{ transform:translateY(-1px); }
 
 /* Layout */
@@ -121,9 +143,17 @@ body.intro { display:grid; place-items:center; min-height:100vh; }
 /* A11y */
 .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
 
+/* Back to top */
+.to-top{
+  position:fixed; right:16px; bottom:16px; z-index:60;
+  width:44px; height:44px; border-radius:50%; border:1px solid rgba(197,165,114,.5);
+  background:rgba(255,255,255,.04); color:var(--gold); font-size:18px; font-weight:800; cursor:pointer;
+  box-shadow: var(--shadow);
+}
+
 /* Small screens */
 @media (max-width:720px){
   .header-inner{ gap:10px; }
-  .brand-name{ display:none; } /* keep it clean on phones */
+  .brand-name{ display:none; }
   #search{ min-width:140px; }
 }
