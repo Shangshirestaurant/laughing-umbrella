@@ -251,3 +251,41 @@ body.intro.fade-out { opacity:0; }
 
 /* Card contrast slightly up on iPhone */
 .card{ border-color: rgba(197,165,114,0.22); background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); }
+
+
+/* === Header preset D: transparent at top → glass on scroll === */
+.glass-header{
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background .25s ease, border-color .25s ease, transform .25s ease;
+}
+.glass-header.scrolled{
+  background: rgba(12,46,42,0.45);
+  border-bottom-color: rgba(197,165,114,0.22);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  backdrop-filter: saturate(160%) blur(18px);
+  transform: translateY(-2px) scale(0.995);
+}
+
+/* Preset icon button */
+.icon-btn{
+  appearance:none; border:1px solid rgba(197,165,114,.45); background:rgba(255,255,255,.06);
+  color:var(--gold); border-radius:12px; padding:8px 12px; font-weight:800; cursor:pointer;
+}
+.icon-btn:hover{ border-color: rgba(197,165,114,.75); }
+.preset-wrap{ position:relative; }
+.preset-popover{
+  position:absolute; right:0; top:calc(100% + 6px); z-index:70;
+  background: rgba(12,46,42,0.9);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border:1px solid rgba(197,165,114,.35); border-radius:12px; padding:8px;
+  box-shadow: var(--shadow);
+}
+.preset-popover .preset-select{ min-width: 180px; }
+
+/* Search expands on tap */
+#search{ width: 160px; transition: width .2s ease; }
+#search:focus{ width: min(52vw, 340px); }
+
+/* Compact controls */
+.controls{ gap:8px; }

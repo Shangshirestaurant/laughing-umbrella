@@ -190,3 +190,31 @@ async function init(){
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+
+// Header behavior: transparent at top -> glass on scroll
+document.addEventListener('scroll', () => {
+  const header = document.querySelector('.glass-header');
+  if(!header) return;
+  if(window.scrollY > 40){ header.classList.add('scrolled'); }
+  else { header.classList.remove('scrolled'); }
+}, { passive: true });
+
+// Preset icon toggles select popover
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.getElementById('presetToggle');
+  const pop = document.getElementById('presetPopover');
+  if(toggle && pop){
+    toggle.addEventListener('click', (e)=>{
+      const open = pop.hasAttribute('hidden') ? false : true;
+      if(open){ pop.setAttribute('hidden',''); toggle.setAttribute('aria-expanded','false'); }
+      else { pop.removeAttribute('hidden'); toggle.setAttribute('aria-expanded','true'); document.getElementById('presets').focus(); }
+    });
+    document.addEventListener('click',(e)=>{
+      if(pop && !pop.hasAttribute('hidden')){
+        const within = pop.contains(e.target) || toggle.contains(e.target);
+        if(!within){ pop.setAttribute('hidden',''); toggle.setAttribute('aria-expanded','false'); }
+      }
+    });
+  }
+});
