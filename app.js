@@ -190,3 +190,61 @@ async function init(){
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+
+// Header behavior: transparent at top -> glass on scroll
+document.addEventListener('scroll', () => {
+  const header = document.querySelector('.glass-header');
+  if(!header) return;
+  if(window.scrollY > 40){ header.classList.add('scrolled'); }
+  else { header.classList.remove('scrolled'); }
+}, { passive: true });
+
+// Preset icon toggles select popover
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.getElementById('presetToggle');
+  const pop = document.getElementById('presetPopover');
+  if(toggle && pop){
+    toggle.addEventListener('click', (e)=>{
+      const open = pop.hasAttribute('hidden') ? false : true;
+      if(open){ pop.setAttribute('hidden',''); toggle.setAttribute('aria-expanded','false'); }
+      else { pop.removeAttribute('hidden'); toggle.setAttribute('aria-expanded','true'); document.getElementById('presets').focus(); }
+    });
+    document.addEventListener('click',(e)=>{
+      if(pop && !pop.hasAttribute('hidden')){
+        const within = pop.contains(e.target) || toggle.contains(e.target);
+        if(!within){ pop.setAttribute('hidden',''); toggle.setAttribute('aria-expanded','false'); }
+      }
+    });
+  }
+});
+
+
+// === Chips overflow arrows ===
+(function(){
+  const bar = document.getElementById('selector');
+  const row = document.getElementById('allergenChips');
+  if(!bar || !row) return;
+  const prev = document.getElementById('chipsPrev');
+  const next = document.getElementById('chipsNext');
+
+  function updateArrows(){
+    const canScroll = row.scrollWidth > row.clientWidth + 2;
+    if(!canScroll){ prev && (prev.hidden = true); next && (next.hidden = true); return; }
+    prev && (prev.hidden = row.scrollLeft <= 2);
+    const atEnd = Math.ceil(row.scrollLeft + row.clientWidth) >= row.scrollWidth - 2;
+    next && (next.hidden = atEnd);
+  }
+
+  function scrollByAmount(dir){
+    const amount = Math.round(row.clientWidth * 0.7);
+    row.scrollBy({ left: dir * amount, behavior: 'smooth' });
+  }
+
+  prev && prev.addEventListener('click', ()=> scrollByAmount(-1));
+  next && next.addEventListener('click', ()=> scrollByAmount(+1));
+  row.addEventListener('scroll', updateArrows, {passive:true});
+  window.addEventListener('resize', updateArrows);
+  // Delay once to allow layout settle
+  setTimeout(updateArrows, 0);
+})();
