@@ -157,3 +157,29 @@ body.intro { display:grid; place-items:center; min-height:100vh; }
   .brand-name{ display:none; }
   #search{ min-width:140px; }
 }
+
+
+/* iPhone/Safari tweaks */
+html{ -webkit-text-size-adjust:100%; }
+body{ padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+.glass-header{ 
+  background: rgba(12,46,42,0.65);
+  border-bottom:1px solid rgba(197,165,114,0.25);
+}
+.header-inner{ padding-top: calc(10px + env(safe-area-inset-top)); }
+
+/* Ensure tappable targets meet 44px min */
+button, .btn, .chip, .tab, #search, .preset-select { min-height: 44px; }
+
+/* Smooth fade transition on intro */
+body.intro { opacity:1; transition: opacity .4s ease; }
+body.intro.fade-out { opacity:0; }
+
+/* Stronger glass backdrop on supported browsers */
+@supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+  .glass-header{
+    -webkit-backdrop-filter: saturate(160%) blur(14px);
+    backdrop-filter: saturate(160%) blur(14px);
+    background: rgba(12,46,42,0.45);
+  }
+}

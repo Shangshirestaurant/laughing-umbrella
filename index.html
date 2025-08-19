@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Shang Shi — Allergen Menu</title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <meta name="theme-color" content="#0C2E2A">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body class="intro">
   <div class="top-utility">
@@ -15,7 +16,7 @@
     <span class="pill" aria-hidden="true" title="Theme">☀️</span>
   </div>
   <main class="intro-container" role="main">
-    <button class="logo-button" aria-label="Enter allergen selector" onclick="window.location.href='app.html#selector'">
+    <button class="logo-button" aria-label="Enter allergen selector" id="enterBtn">
       <img src="shangshi_logo_main.png" alt="Shang Shi logo">
       <span class="enter-hint">Enter</span>
     </button>
@@ -25,6 +26,23 @@
   </main>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('enterBtn');
+      if(btn){
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          const body = document.body;
+          body.classList.add('fade-out');
+          setTimeout(()=>{ window.location.href='app.html#selector'; }, 400);
+        });
+      }
+      // current year
+      const y = document.getElementById('year');
+      if(y) y.textContent = new Date().getFullYear();
+    })();
   </script>
 </body>
 </html>
