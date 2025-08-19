@@ -47,11 +47,72 @@ const els = {
   clear: document.getElementById('clearFilters')
 };
 
-async function loadMenu(){
-  const res = await fetch('menu.json', { cache: 'no-store' });
-  if(!res.ok) throw new Error('Failed to load menu.json');
-  return res.json();
-}
+const MENU = [
+  {
+    "name": "Prawn Har Gow",
+    "price": 9.5,
+    "allergens": [
+      "CR",
+      "GL",
+      "SO"
+    ],
+    "description": "Transparent prawn dumplings with bamboo shoots."
+  },
+  {
+    "name": "Char Siu Pork",
+    "price": 18.0,
+    "allergens": [
+      "GL",
+      "SO"
+    ],
+    "description": "Honey-glazed roasted pork with five-spice."
+  },
+  {
+    "name": "Steamed Grouper",
+    "price": 26.0,
+    "allergens": [
+      "Fl",
+      "SO"
+    ],
+    "description": "Ginger-scallion sauce, light soy."
+  },
+  {
+    "name": "Mapo Tofu",
+    "price": 16.0,
+    "allergens": [
+      "SO"
+    ],
+    "description": "Silken tofu, Szechuan pepper, chili oil."
+  },
+  {
+    "name": "Seasonal Greens",
+    "price": 8.5,
+    "allergens": [],
+    "description": "Stir-fried with garlic."
+  },
+  {
+    "name": "Egg Tart",
+    "price": 7.0,
+    "allergens": [
+      "EG",
+      "Mi",
+      "GL"
+    ],
+    "description": "Buttery crust, silky custard."
+  },
+  {
+    "name": "Shiitake & Truffle Dumpling",
+    "price": 11.0,
+    "allergens": [
+      "MR",
+      "GL",
+      "SO"
+    ],
+    "description": "Forest mushroom medley."
+  }
+];
+
+
 
 function makeChip({code, name}){
   const el = document.createElement('button');
@@ -142,8 +203,7 @@ async function init(){
 
   // Load menu
   try {
-    MENU = await loadMenu();
-  } catch(e){
+    } catch(e){
     console.warn(e);
     MENU = [
       { name:'Prawn Har Gow', price:9.50, allergens:['CR','GL','SO'], description:'Transparent prawn dumplings with bamboo shoots.'},
@@ -159,7 +219,11 @@ async function init(){
   render();
 
   // Wire up controls
-          document.querySelectorAll('.chip').forEach(ch => { ch.dataset.active='false'; ch.setAttribute('aria-checked','false'); });
+  els.search.addEventListener('input', e => { state.search = e.target.value.trim(); render(); });
+  els.presets.addEventListener('change', e => { if(e.target.value) applyPreset(e.target.value); });
+  els.clear.addEventListener('click', () => {
+    state.avoid.clear();
+    document.querySelectorAll('.chip').forEach(ch => { ch.dataset.active='false'; ch.setAttribute('aria-checked','false'); });
     els.presets.value = '';
     els.search.value = '';
     state.search = '';
@@ -216,31 +280,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// === Chips overflow arrows ===
-(function(){
-  const bar = document.getElementById('selector');
-  const row = document.getElementById('allergenChips');
-  if(!bar || !row) return;
-  const prev = document.getElementById('chipsPrev');
-  const next = document.getElementById('chipsNext');
-
-  function updateArrows(){
-    const canScroll = row.scrollWidth > row.clientWidth + 2;
-    if(!canScroll){ prev && (prev.hidden = true); next && (next.hidden = true); return; }
-    prev && (prev.hidden = row.scrollLeft <= 2);
-    const atEnd = Math.ceil(row.scrollLeft + row.clientWidth) >= row.scrollWidth - 2;
-    next && (next.hidden = atEnd);
+async function init(){
+  try {
+    // Build chips first
+    if(els && els.chips && Array.isArray(ALLERGENS)){
+      ALLERGENS.forEach(a => els.chips.appendChild(makeChip(a)));
+    }
+    // Render immediately with inline MENU
+    if(typeof render === 'function'){ render(); }
+  } catch(err){
+    console.error('Init error', err);
   }
-
-  function scrollByAmount(dir){
-    const amount = Math.round(row.clientWidth * 0.7);
-    row.scrollBy({ left: dir * amount, behavior: 'smooth' });
-  }
-
-  prev && prev.addEventListener('click', ()=> scrollByAmount(-1));
-  next && next.addEventListener('click', ()=> scrollByAmount(+1));
-  row.addEventListener('scroll', updateArrows, {passive:true});
-  window.addEventListener('resize', updateArrows);
-  // Delay once to allow layout settle
-  setTimeout(updateArrows, 0);
-})();
+}
+document.addEventListener('DOMContentLoaded', init);
