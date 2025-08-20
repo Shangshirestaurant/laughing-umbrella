@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shang Shi — Allergen Selector</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0C2E2A">
+</head>
+<body>
+  <header class="glass-header" role="banner">
+    <div class="header-inner">
+      <a class="brand" href="index.html" aria-label="Back to intro">
+        <img src="shangshi_logo_main.png" alt="" class="brand-logo" width="36" height="36">
+        
+      </a>
+      <nav aria-label="Allergen controls" class="controls">  <button id="allergyBtn" class="pill-btn" aria-haspopup="dialog" aria-expanded="false">Allergy filter</button></nav>
+    </div>
+  </header>
+
+<div id="allergyModal" class="allergy-modal" role="dialog" aria-modal="true" aria-labelledby="allergyTitle" hidden>
+  <div class="allergy-dialog">
+    <div class="allergy-head">
+      <h3 id="allergyTitle">Select allergens to avoid</h3>
+      <button id="allergyClose" class="icon-x" aria-label="Close">✕</button>
+    </div>
+    <form id="allergyForm" class="allergy-grid">
+    </form>
+    <div class="allergy-actions">
+      <button id="allergyClear" type="button" class="ghost">Clear</button>
+      <button id="allergyApply" type="button" class="primary">Show safe dishes</button>
+    </div>
+  </div>
+</div>
+
+
+  <main class="container" id="app" role="main">
+    <div id="dishGrid" class="grid"></div>
+    <template id="dishCardTmpl">
+      <article class="card" data-dish>
+        <div class="card-top">
+          <h3 class="card-title"></h3>
+          <div class="badges"></div>
+        </div>
+        <p class="card-desc"></p>
+        <div class="meta">
+          <span class="price"></span>
+        </div>
+      </article>
+    </template>
+  </main>
+
+  <footer class="site-footer">
+    <small>⚠️ Always inform your server about severe allergies. Data may contain traces.</small>
+  </footer>
+
+  <button id="toTop" class="to-top" aria-label="Back to top">↑</button>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

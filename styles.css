@@ -1,0 +1,406 @@
+/* Core theme */
+:root{
+  --bg:#0A1F1C;
+  --surface:#0E2A26;
+  --glass:rgba(14,42,38,0.55);
+  --text:#E8EFEA;
+  --muted:#B7C7BF;
+  --gold:#C5A572;
+  --gold-ink:#8E6F3E;
+  --chip:#103834;
+  --chip-on:#1B4C47;
+  --danger:#D66A6A;
+  --shadow: 0 10px 30px rgba(0,0,0,.25);
+  --radius:16px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 800px at 80% -10%, rgba(197,165,114,0.12), transparent 60%),
+    radial-gradient(900px 700px at -10% 110%, rgba(15,63,56,0.6), transparent 60%),
+    var(--bg);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* Intro */
+body.intro { display:grid; place-items:center; min-height:100vh; }
+.intro-container{ display:grid; gap:32px; place-items:center; }
+.logo-button{
+  appearance:none;border:0;background:transparent;cursor:pointer;
+  display:grid; gap:16px; place-items:center; padding:12px; border-radius:24px;
+  transition:transform .15s ease, filter .2s ease; outline-offset:8px;
+}
+.logo-button img{
+  width:min(42vh, 320px); height:auto; filter: drop-shadow(0 40px 80px rgba(0,0,0,.35));
+}
+.logo-button:hover{ transform: translateY(-2px) scale(1.02); }
+.enter-hint{ letter-spacing:.08em; text-transform:uppercase; font-weight:600; color:var(--gold); }
+.intro-footer{ position:fixed; bottom:16px; left:0; right:0; text-align:center; color:var(--muted); }
+
+.top-utility{ position:fixed; top:14px; right:14px; display:flex; gap:8px; z-index:60; }
+.pill{
+  display:inline-flex; align-items:center; gap:6px; padding:6px 10px;
+  border:1px solid rgba(197,165,114,.35); color:var(--gold); border-radius:999px;
+  text-decoration:none; font-weight:600; background:rgba(255,255,255,.04);
+}
+
+/* Header (glassmorphism) */
+.glass-header{
+  position:sticky; top:0; z-index:50;
+  backdrop-filter:saturate(160%) blur(14px);
+  -webkit-backdrop-filter:saturate(160%) blur(14px);
+  background: linear-gradient(180deg, rgba(12,46,42,0.85), rgba(12,46,42,0.45));
+  border-bottom:1px solid rgba(197,165,114,0.25);
+}
+
+.brand{ display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); font-weight:600; }
+.brand-logo{ border-radius:8px; box-shadow: var(--shadow); }
+.brand-name{ font-family: 'Playfair Display', serif; letter-spacing:.02em; }
+
+.controls{ display:flex; align-items:center; gap:10px; margin-left:auto; }
+#search{
+  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+  color:var(--text); padding:10px 12px; border-radius:12px; min-width:200px;
+}
+#search::placeholder{ color:#d6dfda99; }
+.preset-select{
+  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+  color:var(--text); padding:10px 12px; border-radius:12px;
+}
+
+.btn.subtle{
+  background:transparent; border:1px solid rgba(197,165,114,0.35);
+  color:var(--gold); padding:8px 12px; border-radius:12px; cursor:pointer;
+}
+.btn.subtle:hover{ border-color:var(--gold); }
+
+/* CTA open button */
+.cta-open{
+  position:fixed; left:16px; bottom:16px; z-index:60;
+  text-decoration:none; font-weight:700; letter-spacing:.02em;
+  border:1px solid rgba(197,165,114,.5); color:var(--gold);
+  padding:10px 14px; border-radius:999px; background:rgba(255,255,255,.04);
+  box-shadow: var(--shadow);
+}
+
+/* Mode tabs */
+.mode-tabs{ display:flex; gap:6px; margin-right:6px; }
+.tab{
+  padding:8px 12px; border-radius:999px; border:1px solid rgba(197,165,114,.35);
+  background:rgba(255,255,255,.04); color:var(--gold); font-weight:700; cursor:pointer;
+}
+.tab.active{ background:rgba(197,165,114,.14); border-color:rgba(197,165,114,.7); color:var(--text); }
+.tab:not(.active):hover{ border-color:rgba(197,165,114,.6); }
+
+/* Allergen chips bar */
+.bar{ position:sticky; top:58px; z-index:40; background:linear-gradient(180deg, rgba(12,46,42,.95), rgba(12,46,42,.75)); border-bottom:1px solid rgba(255,255,255,.08); }
+.chips{
+  display:flex; gap:8px; overflow:auto; padding:10px 16px; max-width:1200px; margin:0 auto;
+  scrollbar-width:thin;
+}
+.chip{
+  white-space:nowrap; user-select:none;
+  background:rgba(255,255,255,.04); border:1px solid rgba(197,165,114,.25); color:var(--text);
+  padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:700; font-size:14px;
+  transition:background .15s ease, transform .1s ease, border-color .15s ease;
+}
+.chip[data-active="true"]{ background:rgba(197,165,114,.14); border-color:rgba(197,165,114,.7); color:var(--text); }
+.chip:hover{ transform:translateY(-1px); }
+
+/* Layout */
+.container{ max-width:1200px; margin:20px auto 80px; padding:0 16px; }
+.grid{
+  display:grid; gap:14px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  border:1px solid rgba(197,165,114,0.15);
+  border-radius: var(--radius);
+  padding:18px; box-shadow: var(--shadow);
+  transition: transform .12s ease, border-color .2s ease;
+}
+.card:hover{ transform: translateY(-2px); border-color: rgba(197,165,114,0.35); }
+.card-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+.card-title{ margin:0; font-family:'Playfair Display', serif; font-weight:600; letter-spacing:.01em; }
+.badges{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
+.badge{
+  font-size:12px; padding:4px 8px; border-radius:8px; border:1px solid rgba(255,255,255,.08);
+  background:rgba(197,165,114,0.12); color:var(--gold);
+}
+.card-desc{ color:var(--muted); margin:10px 0 12px; min-height:2.2em; }
+.meta{ display:flex; align-items:center; justify-content:space-between; color:var(--muted); }
+.price{ color:var(--gold); font-weight:600; }
+
+.site-footer{ max-width:1200px; margin:0 auto 40px; padding:0 16px; color:var(--muted); }
+
+/* A11y */
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+
+/* Back to top */
+.to-top{
+  position:fixed; right:16px; bottom:16px; z-index:60;
+  width:44px; height:44px; border-radius:50%; border:1px solid rgba(197,165,114,.5);
+  background:rgba(255,255,255,.04); color:var(--gold); font-size:18px; font-weight:800; cursor:pointer;
+  box-shadow: var(--shadow);
+}
+
+/* Small screens */
+@media (max-width:720px){
+  
+  .brand-name{ display:none; }
+  #search{ min-width:140px; }
+}
+
+
+/* iPhone/Safari tweaks */
+html{ -webkit-text-size-adjust:100%; }
+body{ padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+.glass-header{ 
+  background: rgba(12,46,42,0.65);
+  border-bottom:1px solid rgba(197,165,114,0.25);
+}
+.header-inner{ padding-top: calc(10px + env(safe-area-inset-top)); }
+
+/* Ensure tappable targets meet 44px min */
+button, .btn, .chip, .tab, #search, .preset-select { min-height: 44px; }
+
+/* Smooth fade transition on intro */
+body.intro { opacity:1; transition: opacity .4s ease; }
+body.intro.fade-out { opacity:0; }
+
+/* Stronger glass backdrop on supported browsers */
+@supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+  .glass-header{
+    -webkit-backdrop-filter: saturate(160%) blur(14px);
+    backdrop-filter: saturate(160%) blur(14px);
+    background: rgba(12,46,42,0.45);
+  }
+}
+
+
+/* ===== iPhone visual fixes (v2) ===== */
+
+/* Stronger glass header with visible tint + overlay for better blur */
+.glass-header{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(12,46,42,0.55);
+  border-bottom: 1px solid rgba(197,165,114,0.28);
+}
+.glass-header::before{
+  content:'';
+  position:absolute; inset:0;
+  background:
+    radial-gradient(80% 120% at 20% 0%, rgba(197,165,114,0.10), transparent 60%),
+    linear-gradient(180deg, rgba(12,46,42,0.70), rgba(12,46,42,0.40));
+  pointer-events:none;
+}
+.header-inner{ position:relative; /* keep content above overlay */ }
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass-header{
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+    backdrop-filter: saturate(160%) blur(18px);
+    background: rgba(12,46,42,0.35);
+  }
+}
+
+/* Chips bar should sit below header + notch comfortably */
+.bar{ top: calc(58px + env(safe-area-inset-top)); }
+
+/* Higher contrast badges (allergen tags) */
+.badge{
+  background: rgba(0,0,0,0.40);
+  border: 1px solid rgba(197,165,114,0.40);
+  color: var(--gold);
+}
+
+/* Improve chip/tab contrast and hover/focus states */
+.chip, .tab{
+  border-color: rgba(197,165,114,0.45);
+  background: rgba(255,255,255,0.06);
+}
+.chip[data-active="true"], .tab.active{
+  background: rgba(197,165,114,0.16);
+  border-color: rgba(197,165,114,0.75);
+  color: var(--text);
+}
+.chip:focus-visible, .tab:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(197,165,114,0.45);
+}
+
+/* Inputs: darker background, clearer borders, visible focus */
+#search, .preset-select{
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(197,165,114,0.28);
+}
+#search:focus, .preset-select:focus{
+  outline: none;
+  border-color: rgba(197,165,114,0.65);
+  box-shadow: 0 0 0 2px rgba(197,165,114,0.35);
+}
+
+/* Card contrast slightly up on iPhone */
+.card{ border-color: rgba(197,165,114,0.22); background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); }
+
+
+/* === Header preset D: transparent at top → glass on scroll === */
+.glass-header{
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background .25s ease, border-color .25s ease, transform .25s ease;
+}
+.glass-header.scrolled{
+  background: rgba(12,46,42,0.45);
+  border-bottom-color: rgba(197,165,114,0.22);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  backdrop-filter: saturate(160%) blur(18px);
+  transform: translateY(-2px) scale(0.995);
+}
+
+/* Preset icon button */
+.icon-btn{
+  appearance:none; border:1px solid rgba(197,165,114,.45); background:rgba(255,255,255,.06);
+  color:var(--gold); border-radius:12px; padding:8px 12px; font-weight:800; cursor:pointer;
+}
+.icon-btn:hover{ border-color: rgba(197,165,114,.75); }
+.preset-wrap{ position:relative; }
+.preset-popover{
+  position:absolute; right:0; top:calc(100% + 6px); z-index:70;
+  background: rgba(12,46,42,0.9);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border:1px solid rgba(197,165,114,.35); border-radius:12px; padding:8px;
+  box-shadow: var(--shadow);
+}
+.preset-popover .preset-select{ min-width: 180px; }
+
+/* Search expands on tap */
+#search{ width: 160px; transition: width .2s ease; }
+#search:focus{ width: min(52vw, 340px); }
+
+/* Compact controls */
+.controls{ gap:8px; }
+
+
+/* --- Centered header brand using grid --- */
+.header-inner{
+  display:grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items:center;
+  gap:16px;
+  padding:10px 16px;
+  max-width:1200px;
+  margin:0 auto;
+}
+.brand{ grid-column: 2; justify-self:center; }
+.controls{ grid-column: 3; justify-self:end; display:flex; align-items:center; gap:10px; }
+
+
+/* --- Chips scroll arrows (appear only when overflow) --- */
+#selector{ position:sticky; top:calc(58px + env(safe-area-inset-top)); z-index:40; }
+#selector{ overflow:visible; }
+#selector .chips-arrow{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:32px; height:32px; border-radius:999px;
+  border:1px solid rgba(197,165,114,.45);
+  background: rgba(12,46,42,.60);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  color: var(--gold); font-size:18px; line-height:1; display:grid; place-items:center;
+  box-shadow: 0 4px 12px rgba(0,0,0,.35);
+  cursor:pointer; user-select:none;
+}
+#selector .chips-arrow.left{ left:8px; }
+#selector .chips-arrow.right{ right:8px; }
+#selector .chips-arrow[hidden]{ display:none; }
+/* Make sure chip row is scrollable on touch */
+#allergenChips{ -webkit-overflow-scrolling: touch; scroll-behavior:smooth; }
+
+/* === Centered header brand (logo only) === */
+.header-inner{
+  display:grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items:center;
+  gap:16px;
+  padding:10px 16px;
+  max-width:1200px;
+  margin:0 auto;
+}
+.brand{ grid-column:2; justify-self:center; display:flex; align-items:center; }
+.controls{ grid-column:3; justify-self:end; display:flex; align-items:center; gap:10px; }
+
+/* === Chips arrows + fading edges === */
+#selector{ position:sticky; top:calc(58px + env(safe-area-inset-top)); z-index:40; overflow:visible; }
+#selector .chips-arrow{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:32px; height:32px; border-radius:999px;
+  border:1px solid rgba(197,165,114,.45);
+  background: rgba(12,46,42,.58);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  color: var(--gold); font-size:18px; display:grid; place-items:center;
+  box-shadow: 0 4px 12px rgba(0,0,0,.35);
+  cursor:pointer; user-select:none;
+}
+#selector .chips-arrow.left{ left:8px; }
+#selector .chips-arrow.right{ right:8px; }
+#selector .chips-arrow[hidden]{ display:none; }
+#allergenChips{ -webkit-overflow-scrolling: touch; scroll-behavior:smooth; }
+
+/* Fading edges */
+#selector::before, #selector::after{
+  content:''; position:absolute; top:0; bottom:0; width:48px; pointer-events:none; z-index:1;
+}
+#selector::before{
+  left:0;
+  background: linear-gradient(90deg, rgba(12,46,42,0.95), rgba(12,46,42,0));
+}
+#selector::after{
+  right:0;
+  background: linear-gradient(270deg, rgba(12,46,42,0.95), rgba(12,46,42,0));
+}
+
+
+/* === Allergy filter modal & badges ================================== */
+.pill-btn{
+  border:1px solid rgba(197,165,114,.45);
+  background: rgba(18,56,52,.55);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  color:#c5a572; padding:10px 14px; border-radius:999px;
+}
+.pill-btn:active{ transform: translateY(1px); }
+
+.allergy-modal{ position: fixed; inset: 0; display:grid; place-items:center; background: rgba(0,0,0,.45); z-index: 200; }
+.allergy-dialog{
+  width: min(680px, calc(100vw - 32px));
+  background: rgba(8,28,25,.92);
+  border:1px solid rgba(197,165,114,.35);
+  border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(0,0,0,.45);
+  padding: 14px;
+}
+.allergy-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px; }
+.icon-x{ border:1px solid rgba(197,165,114,.35); background: transparent; color:#c5a572; border-radius:8px; padding:4px 8px; }
+.allergy-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 8px 12px; padding: 8px 2px; }
+.allergy-grid label{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.06); background: rgba(12,46,42,.45); }
+.allergy-grid input{ width:18px; height:18px; }
+.allergy-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top: 8px; }
+.allergy-actions .ghost{ border:1px solid rgba(197,165,114,.35); background: transparent; color:#c5a572; padding:8px 12px; border-radius:10px; }
+.allergy-actions .primary{ border:1px solid rgba(197,165,114,.6); background: rgba(197,165,114,.16); color:#e8e3d9; padding:8px 12px; border-radius:10px; }
+
+/* Badges + safe mark */
+.badges{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.badge{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; padding:2px 6px; font-size:11px; letter-spacing:.2px;
+  border-radius:8px; background:rgba(197,165,114,.14); border:1px solid rgba(197,165,114,.35); color:#e8e3d9; }
+.badge[title]{ cursor:help; }
+.card{ position:relative; }
+.safe-mark{ position:absolute; top:10px; right:12px; width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
+  border:1px solid rgba(88, 185, 120, .6); background: rgba(35, 92, 60, .55); color:#bff3ce; font-size:14px; line-height:1;
+  box-shadow: 0 0 0 2px rgba(35,92,60,.2), 0 6px 16px rgba(0,0,0,.25); }
