@@ -4,7 +4,7 @@
     "allergens": [
       "SE"
     ],
-    "description": ""
+    "description": "with spicy sauce"
   },
   {
     "name": "Aromatic Crispy Duck Salad",
@@ -21,12 +21,12 @@
     "description": ""
   },
   {
-    "name": "Black Truffle Vegetable Spring Roll (v)",
+    "name": "Black Truffle Vegetable Spring Roll",
     "allergens": [
       "GL",
       "MR"
     ],
-    "description": ""
+    "description": "v"
   },
   {
     "name": "Braised Fish Maw with Japanese Shitake Mushroom in Superior Oyster Sauce",
@@ -57,21 +57,21 @@
     "description": ""
   },
   {
-    "name": "Chopped pepper lamb dumpling (pink)",
+    "name": "Chopped pepper lamb dumpling",
     "allergens": [
       "CR"
     ],
-    "description": ""
+    "description": "pink"
   },
   {
-    "name": "Claypot Silken Egg Tofu with Vegetables (V)",
+    "name": "Claypot Silken Egg Tofu with Vegetables",
     "allergens": [
       "EG",
       "MR",
       "ON",
       "SO"
     ],
-    "description": ""
+    "description": "V"
   },
   {
     "name": "Crispy Aromatic Duck Salad",
@@ -94,7 +94,7 @@
     "allergens": [
       "MU"
     ],
-    "description": ""
+    "description": "On the side"
   },
   {
     "name": "Deep Fried Dim Sum Assortment",
@@ -160,15 +160,15 @@
     "allergens": [
       "MI"
     ],
-    "description": ""
+    "description": "Canapé"
   },
   {
-    "name": "Home-made Salt and Pepper Crispy Tofu (v)",
+    "name": "Home-made Salt and Pepper Crispy Tofu",
     "allergens": [
       "GA",
       "GL"
     ],
-    "description": ""
+    "description": "v"
   },
   {
     "name": "Hot and Sour Soup with Seafood",
@@ -213,39 +213,39 @@
     "description": ""
   },
   {
-    "name": "Mapo Tofu (with Minced Beef)",
+    "name": "Mapo Tofu",
     "allergens": [
       "MR",
       "MU",
       "ON"
     ],
-    "description": ""
+    "description": "with Minced Beef"
   },
   {
     "name": "Matcha Financier",
     "allergens": [
       "NU"
     ],
-    "description": ""
+    "description": "Almond"
   },
   {
-    "name": "Norwegian King Crab (Pan-fried with Chilli and Garlic)",
+    "name": "Norwegian King Crab",
     "allergens": [
       "CR",
       "GA",
       "GL"
     ],
-    "description": ""
+    "description": "Pan-fried with Chilli and Garlic"
   },
   {
-    "name": "Norwegian King Crab (Steamed with Chinese Rice Wine and Egg White)",
+    "name": "Norwegian King Crab",
     "allergens": [
       "CR",
       "EG",
       "GL",
       "ON"
     ],
-    "description": ""
+    "description": "Steamed with Chinese Rice Wine and Egg White"
   },
   {
     "name": "Peach Melba",
@@ -258,10 +258,16 @@
   {
     "name": "Pumpkin ball",
     "allergens": [
-      "MR",
-      "NU"
+      "MR"
     ],
     "description": ""
+  },
+  {
+    "name": "Pumpkin ball",
+    "allergens": [
+      "NU"
+    ],
+    "description": "Deep Fried Dim Sum Platter"
   },
   {
     "name": "Rack of Lamb with Chef's Special Sauce",
@@ -330,11 +336,11 @@
     "description": ""
   },
   {
-    "name": "Spinach dumpling (green)",
+    "name": "Spinach dumpling",
     "allergens": [
       "CR"
     ],
-    "description": ""
+    "description": "green"
   },
   {
     "name": "Steamed Dim Sum Platter",
@@ -346,12 +352,24 @@
   {
     "name": "Steamed Vegetarian Dim Sum Platter",
     "allergens": [
-      "CE",
       "GL",
-      "MI",
       "MR"
     ],
     "description": ""
+  },
+  {
+    "name": "Steamed Vegetarian Dim Sum Platter",
+    "allergens": [
+      "MI"
+    ],
+    "description": "Green: black truffle edamame dumplings"
+  },
+  {
+    "name": "Steamed Vegetarian Dim Sum Platter",
+    "allergens": [
+      "CE"
+    ],
+    "description": "Orange: spicy vegetable dumplings"
   },
   {
     "name": "Stir Fried Squid with Pepper, Chilli, and Garlic",
@@ -385,11 +403,11 @@
     "description": ""
   },
   {
-    "name": "Stir-Fry Asparagus with Lily Bulbs, Water Chestnut, and Yellow Fungus (V)",
+    "name": "Stir-Fry Asparagus with Lily Bulbs, Water Chestnut, and Yellow Fungus",
     "allergens": [
       "MR"
     ],
-    "description": ""
+    "description": "V"
   },
   {
     "name": "Sweet and Sour Iberico Pork with Pineapple",
@@ -407,11 +425,11 @@
     "description": ""
   },
   {
-    "name": "Tobiko scallop siew mai (yellow)",
+    "name": "Tobiko scallop siew mai",
     "allergens": [
       "CR"
     ],
-    "description": ""
+    "description": "yellow"
   },
   {
     "name": "Vegetable spring roll",
@@ -425,23 +443,35 @@
     "allergens": [
       "MI"
     ],
+    "description": "Deep fried Dim Sum"
+  },
+  {
+    "name": "Wasabi Blanch",
+    "allergens": [
+      "MI"
+    ],
     "description": ""
   },
   {
     "name": "Wasabi Blanch",
     "allergens": [
-      "EG",
-      "MI",
       "NU"
     ],
-    "description": ""
+    "description": "Almond"
   },
   {
-    "name": "XO Sauce king crab dumpling (red)",
+    "name": "Wasabi Blanch",
+    "allergens": [
+      "EG"
+    ],
+    "description": "Egg yolk on the ice cream"
+  },
+  {
+    "name": "XO Sauce king crab dumpling",
     "allergens": [
       "GA",
       "SE"
     ],
-    "description": ""
+    "description": "red"
   }
 ]
