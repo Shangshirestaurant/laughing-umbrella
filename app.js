@@ -1,228 +1,158 @@
-/* Allergen selector app (vanilla JS) */
 
+/* Failsafe app.js: inline MENU + robust init + status banner */
 const ALLERGENS = [
-  { code: 'GL', name: 'Gluten' },
-  { code: 'NU', name: 'Nuts' },
-  { code: 'PE', name: 'Peanuts' },
-  { code: 'SE', name: 'Sesame' },
-  { code: 'SO', name: 'Soy' },
-  { code: 'EG', name: 'Eggs' },
-  { code: 'Mi', name: 'Milk' },
-  { code: 'Fl', name: 'Fish' },
-  { code: 'CR', name: 'Crustaceans' },
-  { code: 'MO', name: 'Molluscs' },
-  { code: 'LU', name: 'Lupin' },
-  { code: 'SU', name: 'Sulfites' },
-  { code: 'CE', name: 'Celery' },
-  { code: 'MU', name: 'Mustard' },
-  { code: 'GA', name: 'Garlic' },
-  { code: 'ON', name: 'Onion' },
-  { code: 'MR', name: 'Mushrooms' },
-  { code: 'Cl', name: 'Awaiting' }
+  {code:"GL",name:"Gluten"},
+  {code:"NU",name:"Nuts"},
+  {code:"PE",name:"Peanuts"},
+  {code:"SE",name:"Sesame"},
+  {code:"SO",name:"Soy"},
+  {code:"EG",name:"Eggs"},
+  {code:"MI",name:"Milk"},
+  {code:"FI",name:"Fish"},
+  {code:"CR",name:"Crustaceans"},
+  {code:"MO",name:"Molluscs"},
+  {code:"MR",name:"Mushrooms"},
+  {code:"ON",name:"Onion"},
+  {code:"GA",name:"Garlic"},
+  {code:"CE",name:"Celery"},
+  {code:"MU",name:"Mustard"}
+];
+const ALLERGENS_MAP = Object.fromEntries(ALLERGENS.map(a => [a.code, a.name]));
+const MENU = [{"name": "Amuse Bouche", "allergens": [], "description": ""}, {"name": "Aromatic Crispy Duck Salad", "allergens": [], "description": ""}, {"name": "Baked venison puff", "allergens": [], "description": ""}, {"name": "Black Truffle Vegetable Spring Roll (v)", "allergens": [], "description": ""}, {"name": "Braised Fish Maw with Japanese Shitake Mushroom in Superior Oyster Sauce", "allergens": [], "description": ""}, {"name": "Braised Pork Belly", "allergens": [], "description": ""}, {"name": "Braised South African Kippin Abalone in Superior Oyster Sauce", "allergens": [], "description": ""}, {"name": "Chopped pepper lamb dumpling (pink)", "allergens": [], "description": ""}, {"name": "Claypot Silken Egg Tofu with Vegetables (V)", "allergens": [], "description": ""}, {"name": "Crispy Aromatic Duck Salad", "allergens": [], "description": ""}, {"name": "Crispy Duck Salad", "allergens": [], "description": ""}, {"name": "Crispy Pork Belly", "allergens": [], "description": ""}, {"name": "Deep Fried Dim Sum Assortment", "allergens": [], "description": ""}, {"name": "Deep Fried King Scallop with Minced Prawns in Teriyaki Sauce", "allergens": [], "description": ""}, {"name": "Duck Soup", "allergens": [], "description": ""}, {"name": "Five Spice Crispy Corn Fed Chicken Parcel with Thai Basil", "allergens": [], "description": ""}, {"name": "Golden Egg Fried Rice", "allergens": [], "description": ""}, {"name": "Golden Fried Soft Shell Crab with Chilli", "allergens": [], "description": ""}, {"name": "Grilled Chilean Sea Bass in Honey", "allergens": [], "description": ""}, {"name": "Ham&Cheese Sandwich", "allergens": [], "description": ""}, {"name": "Home-made Salt and Pepper Crispy Tofu (v)", "allergens": [], "description": ""}, {"name": "Hot and Sour Soup with Seafood", "allergens": [], "description": ""}, {"name": "Kung Pao Prawn with Cashew", "allergens": [], "description": ""}, {"name": "Legendary Peking Duck", "allergens": [], "description": ""}, {"name": "Legendary Peking Duck 3rd Course", "allergens": [], "description": ""}, {"name": "Lobster with Ginger and Spring Onion", "allergens": [], "description": ""}, {"name": "Mapo Tofu (with Minced Beef)", "allergens": [], "description": ""}, {"name": "Matcha Financier", "allergens": [], "description": ""}, {"name": "Norwegian King Crab (Pan-fried with Chilli and Garlic)", "allergens": [], "description": ""}, {"name": "Norwegian King Crab (Steamed with Chinese Rice Wine and Egg White)", "allergens": [], "description": ""}, {"name": "Peach Melba", "allergens": [], "description": ""}, {"name": "Pumpkin ball", "allergens": [], "description": ""}, {"name": "Rack of Lamb with Chef's Special Sauce", "allergens": [], "description": ""}, {"name": "Salt and Pepper Estonian Quail", "allergens": [], "description": ""}, {"name": "Sizzling Taiwanese Three Cups Chicken", "allergens": [], "description": ""}, {"name": "Slow Cooked Japanese Wagyu with Black Truffle Sauce", "allergens": [], "description": ""}, {"name": "Special Pork Fried Rice with XO Sauce", "allergens": [], "description": ""}, {"name": "Special Pork Rice", "allergens": [], "description": ""}, {"name": "Spicy Singapore Noodles with Seafood", "allergens": [], "description": ""}, {"name": "Spinach dumpling (green)", "allergens": [], "description": ""}, {"name": "Steamed Dim Sum Platter", "allergens": [], "description": ""}, {"name": "Steamed Vegetarian Dim Sum Platter", "allergens": [], "description": ""}, {"name": "Stir Fried Squid with Pepper, Chilli, and Garlic", "allergens": [], "description": ""}, {"name": "Stir Fry Lamian with Angus Beef", "allergens": [], "description": ""}, {"name": "Stir-fry Angus Tenderloin Beef with Black Pepper Sauce", "allergens": [], "description": ""}, {"name": "Stir-Fry Asparagus with Lily Bulbs, Water Chestnut, and Yellow Fungus (V)", "allergens": [], "description": ""}, {"name": "Sweet and Sour Iberico Pork with Pineapple", "allergens": [], "description": ""}, {"name": "Sweet Corn Soup with Chicken", "allergens": [], "description": ""}, {"name": "Tobiko scallop siew mai (yellow)", "allergens": [], "description": ""}, {"name": "Vegetable spring roll", "allergens": [], "description": ""}, {"name": "Venison Puff", "allergens": [], "description": ""}, {"name": "Wasabi Blanch", "allergens": [], "description": ""}, {"name": "XO Sauce king crab dumpling (red)", "allergens": [], "description": ""}];
+
+const PRESETS = [
+  {id:"gf",   name:"Gluten‑free",     codes:["GL"]},
+  {id:"nf",   name:"Nut‑free",        codes:["NU","PE"]},
+  {id:"df",   name:"Dairy‑free",      codes:["MI"]},
+  {id:"sf",   name:"Shellfish‑free",  codes:["CR","MO"]},
+  {id:"ef",   name:"Egg‑free",        codes:["EG"]},
+  {id:"soyf", name:"Soy‑free",        codes:["SO"]},
+  {id:"onf",  name:"Onion‑free",      codes:["ON"]},
+  {id:"garf", name:"Garlic‑free",     codes:["GA"]},
+  {id:"sef",  name:"Sesame‑free",     codes:["SE"]},
+  {id:"fif",  name:"Fish‑free",       codes:["FI"]},
+  {id:"mrf",  name:"Mushroom‑free",   codes:["MR"]},
+  {id:"cef",  name:"Celery‑free",     codes:["CE"]},
+  {id:"muf",  name:"Mustard‑free",    codes:["MU"]}
 ];
 
-const PRESETS = {
-  GLUTEN_FREE: ['GL'],
-  NUT_FREE: ['NU','PE'],
-  SHELLFISH_FREE: ['CR','MO'],
-  MUSHROOM_FREE: ['MR'],
-  DAIRY_FREE: ['Mi'],
-  EGG_FREE: ['EG'],
-  SOY_FREE: ['SO'],
-  SESAME_FREE: ['SE']
-};
-
-const state = {
-  safeOnly: true,
-  avoid: new Set()
-};
+const state = { mode: 'SAFE', avoid: new Set() };
 
 const els = {
   chips: document.getElementById('allergenChips'),
   grid: document.getElementById('dishGrid'),
   cardTmpl: document.getElementById('dishCardTmpl'),
-  presets: document.getElementById('presets')
+  modeSafe: document.getElementById('modeSafe'),
+  modeContains: document.getElementById('modeContains'),
+  presetBtn: document.getElementById('presetBtn'),
+  presetPanel: document.getElementById('presetPanel'),
+  status: document.getElementById('appStatus')
 };
 
-
-async function loadMenu(){
-  const candidates = [
-    'menu.json',
-    './menu.json',
-    (location.pathname.replace(/[^\/]+$/, '') + 'menu.json'),
-    (location.origin + location.pathname.replace(/[^\/]+$/, '') + 'menu.json')
-  ];
-  for (const url of candidates){
-    try {
-      const res = await fetch(url, { cache: 'no-store' });
-      if(res.ok){
-        return await res.json();
-      }
-    } catch(e) {
-      console.warn('Fetch failed for', url, e);
-    }
-  }
-  console.warn('Falling back: no menu.json found.');
-  return [];
+function note(msg){
+  if (els.status){ els.status.style.display='block'; els.status.textContent = 'Note: ' + msg; }
+  console.warn(msg);
 }
 
-function makeChip({code, name}){
-  const el = document.createElement('button');
-  el.className = 'chip';
-  el.setAttribute('role', 'switch');
-  el.setAttribute('aria-checked', 'false');
-  el.dataset.code = code;
-  el.textContent = name;
-  el.addEventListener('click', () => toggleAvoid(code, el));
-  return el;
+function makeChip(a){
+  const b = document.createElement('button');
+  b.className = 'chip';
+  b.textContent = a.name;
+  b.dataset.code = a.code;
+  b.setAttribute('aria-pressed','false');
+  b.addEventListener('click', () => {
+    if(state.avoid.has(a.code)){ state.avoid.delete(a.code); b.classList.remove('on'); b.setAttribute('aria-pressed','false'); }
+    else { state.avoid.add(a.code); b.classList.add('on'); b.setAttribute('aria-pressed','true'); }
+    render();
+  });
+  return b;
 }
 
-function toggleAvoid(code, el){
-  if(state.avoid.has(code)){
-    state.avoid.delete(code);
-    el.dataset.active = 'false';
-    el.setAttribute('aria-checked','false');
-  } else {
-    state.avoid.add(code);
-    el.dataset.active = 'true';
-    el.setAttribute('aria-checked','true');
-  }
-  render();
-}
-
-function applyPreset(key){
-  state.avoid = new Set(PRESETS[key] || []);
-  document.querySelectorAll('.chip').forEach(ch => {
-    const code = ch.dataset.code;
+function syncChips(){
+  if(!els.chips) return;
+  els.chips.querySelectorAll('.chip').forEach(btn => {
+    const code = btn.dataset.code;
     const on = state.avoid.has(code);
-    ch.dataset.active = on ? 'true' : 'false';
-    ch.setAttribute('aria-checked', on ? 'true':'false');
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
-  render();
 }
 
-
-// Mode-aware filter
 function isAllowed(dish){
-  if(state.avoid.size === 0) return true;
-  return !dish.allergens.some(code => state.avoid.has(code));
+  const dAll = Array.isArray(dish.allergens) ? dish.allergens : [];
+  const hasAny = dAll.some(c => state.avoid.has(c));
+  if(state.mode === 'SAFE') return !hasAny;
+  return state.avoid.size ? hasAny : true;
 }
-}
-
-function renderDish(dish){
-  const node = els.cardTmpl.content.firstElementChild.cloneNode(true);
-  node.querySelector('.card-title').textContent = dish.name;
-  node.querySelector('.card-desc').textContent = dish.description || '';
-  node.querySelector('.price').textContent = '';
-  const badges = node.querySelector('.badges');
-  dish.allergens.forEach(code=>{
-    const a = ALLERGENS.find(a=>a.code===code);
-    const b = document.createElement('span');
-    b.className = 'badge';
-    b.textContent = a ? a.name : code;
-    badges.appendChild(b);
-  });
-  return node;
-}
-
-let MENU = [];
 
 function render(){
+  if(!els.grid) { note('Missing #dishGrid container.'); return; }
   els.grid.innerHTML = '';
-  const filtered = MENU.filter(d => state.safeOnly ? isAllowed(d) : true);
-  if(filtered.length === 0){
-    const empty = document.createElement('p');
-    empty.style.color = 'var(--muted)';
-    empty.textContent = 'No dishes match the selected filters.';
-    els.grid.appendChild(empty);
+  if(!Array.isArray(MENU) || MENU.length === 0){
+    note('MENU is empty or failed to inline.');
+    const p = document.createElement('p'); p.className='empty'; p.textContent='No menu data loaded.'; els.grid.appendChild(p);
     return;
   }
-  filtered.forEach(d => els.grid.appendChild(renderDish(d)));
+  const filtered = MENU.filter(isAllowed);
+  if(!filtered.length){
+    const p = document.createElement('p');
+    p.className='empty';
+    p.textContent = 'No dishes match the current selection.';
+    els.grid.appendChild(p);
+    return;
+  }
+  filtered.forEach(d => {
+    const node = els.cardTmpl && els.cardTmpl.content ? els.cardTmpl.content.firstElementChild.cloneNode(true) : document.createElement('article');
+    node.classList.add('card');
+    const title = node.querySelector('.card-title') || node.appendChild(document.createElement('h3'));
+    title.className = 'card-title';
+    title.textContent = d.name;
+    const desc = node.querySelector('.card-desc') || node.appendChild(document.createElement('p'));
+    desc.className = 'card-desc';
+    desc.textContent = d.description || '';
+    let badges = node.querySelector('.badges');
+    if(!badges){ badges = document.createElement('div'); badges.className='badges'; node.appendChild(badges); }
+    badges.innerHTML='';
+    (d.allergens||[]).forEach(code => {
+      const s = document.createElement('span');
+      s.className='badge';
+      s.textContent = code;
+      s.title = ALLERGENS_MAP[code] || code;
+      badges.appendChild(s);
+    });
+    els.grid.appendChild(node);
+  });
 }
 
-async function init(){
-  try{
-    // Build chips first
-    ALLERGENS.forEach(a => els.chips.appendChild(makeChip(a)));
-    // Load menu
-    MENU = await loadMenu();
-    render();
-
-    // Wire up presets
-    if(els.presets){ els.presets.addEventListener('change', e => { if(e.target.value) applyPreset(e.target.value); }); }
-
-    // Single toggle for allergy-free mode
-    const safeBtn = document.getElementById('safeOnly');
-    if(safeBtn){
-      safeBtn.addEventListener('click', ()=>{
-        state.safeOnly = !state.safeOnly;
-        safeBtn.classList.toggle('active', state.safeOnly);
-        safeBtn.setAttribute('aria-checked', state.safeOnly ? 'true':'false');
-        render();
-      });
-    }
-
-    // Back to top
-    const toTop = document.getElementById('toTop');
-    if(toTop){ toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'})); }
-  } catch(err){
-    console.error('Init error:', err);
-    const grid = document.getElementById('dishGrid');
-    if(grid){
-      const p = document.createElement('p');
-      p.style.color = 'var(--muted)';
-      p.textContent = 'There was a problem loading the menu. Please refresh.';
-      grid.appendChild(p);
-    }
-  }
+function buildPresetsPanel(){
+  if(!els.presetPanel) return;
+  els.presetPanel.innerHTML = '';
+  const h = document.createElement('h4'); h.textContent = 'Presets';
+  const ul = document.createElement('div'); ul.className='preset-list';
+  PRESETS.forEach(p => {
+    const b = document.createElement('button');
+    b.textContent = p.name;
+    b.addEventListener('click', () => {
+      state.avoid = new Set(p.codes);
+      syncChips();
+      render();
+      togglePresets(false);
+    });
+    ul.appendChild(b);
+  });
+  const actions = document.createElement('div'); actions.className='preset-actions';
+  const clear = document.createElement('button'); clear.textContent='Clear'; clear.addEventListener('click', ()=>{ state.avoid.clear(); syncChips(); render(); togglePresets(false); });
+  const all = document.createElement('button'); all.textContent='Select all'; all.addEventListener('click', ()=>{ state.avoid = new Set(ALLERGENS.map(a=>a.code)); syncChips(); render(); togglePresets(false); });
+  actions.append(clear, all);
+  els.presetPanel.append(h, ul, actions);
 }
-document.addEventListener('DOMContentLoaded', ()=>{ init(); buildLegend(); });
 
-
-// Header behavior: transparent at top -> glass on scroll
-document.addEventListener('scroll', () => {
-  const header = document.querySelector('.glass-header');
-  if(!header) return;
-  if(window.scrollY > 40){ header.classList.add('scrolled'); }
-  else { header.classList.remove('scrolled'); }
-}, { passive: true });
-
-// Preset icon toggles select popover
-document.addEventListener('DOMContentLoaded', () => {
-  const toggle = document.getElementById('presetToggle');
-  const pop = document.getElementById('presetPopover');
-  if(toggle && pop){
-    toggle.addEventListener('click', (e)=>{
-      const open = pop.hasAttribute('hidden') ? false : true;
-      if(open){ pop.setAttribute('hidden',''); toggle.setAttribute('aria-expanded','false'); }
-      else { pop.removeAttribute('hidden'); toggle.setAttribute('aria-expanded','true'); document.getElementById('presets').focus(); }
-    });
-    document.addEventListener('click',(e)=>{
-      if(pop && !pop.hasAttribute('hidden')){
-        const within = pop.contains(e.target) || toggle.contains(e.target);
-        if(!within){ pop.setAttribute('hidden',''); toggle.setAttribute('aria-expanded','false'); }
-      }
-    });
-  }
-});
-
-
-// Chips scroll edge indicators
-(function(){
-  const chips = document.getElementById('allergenChips');
-  const bar = document.getElementById('selector');
-  if(!chips || !bar) return;
-  function update(){
-    const atStart = chips.scrollLeft <= 1;
-    const atEnd = Math.ceil(chips.scrollLeft + chips.clientWidth) >= chips.scrollWidth - 1;
-    bar.classList.toggle('at-start', atStart);
-    bar.classList.toggle('at-end', atEnd);
-  }
-  chips.addEventListener('scroll', update, {passive:true});
-  window.addEventListener('resize', update);
-  setTimeout(update, 0);
-})();
-
+function togglePresets(forceState){
+  if(!els.presetPanel || !els.presetBtn) return;
+  const open = (typeof forceState === 'boolean') ? forceState : els.presetPanel.hasAttribute('hidden');
+  if(open){ els.presetPanel.removeAttribute('hidden'); els.presetBtn.setAttribute('aria-expanded','true'); }
+  else    { els.presetPanel.setAttribute('hidden',''); els.presetBtn.setAttribute('aria-expanded','false'); }
+}
 
 function buildLegend(){
   const body = document.querySelector('#allergenLegend .legend-body .legend-row');
@@ -249,3 +179,45 @@ function buildLegend(){
     });
   }
 }
+
+function init(){
+  try{
+    if(!els.chips){ note('Missing chips row (#allergenChips).'); }
+    else {
+      els.chips.innerHTML='';
+      ALLERGENS.forEach(a => els.chips.appendChild(makeChip(a)));
+    }
+    if(els.modeSafe) els.modeSafe.addEventListener('click',()=>{ state.mode='SAFE'; els.modeSafe.classList.add('active'); if(els.modeContains) els.modeContains.classList.remove('active'); render(); });
+    if(els.modeContains) els.modeContains.addEventListener('click',()=>{ state.mode='CONTAINS'; els.modeContains.classList.add('active'); if(els.modeSafe) els.modeSafe.classList.remove('active'); render(); });
+    buildPresetsPanel();
+    if(els.presetBtn) els.presetBtn.addEventListener('click', ()=> togglePresets());
+    document.addEventListener('click', (e)=>{
+      if(!els.presetPanel || els.presetPanel.hasAttribute('hidden')) return;
+      if(e.target === els.presetBtn || els.presetPanel.contains(e.target)) return;
+      togglePresets(false);
+    });
+    render();
+    (function(){
+      const row = document.getElementById('allergenChips');
+      const prev = document.getElementById('chipsPrev');
+      const next = document.getElementById('chipsNext');
+      if(!row) return;
+      function updateArrows(){
+        const can = row.scrollWidth > row.clientWidth + 2;
+        if(prev) prev.hidden = !can || row.scrollLeft <= 2;
+        if(next) next.hidden = !can || Math.ceil(row.scrollLeft + row.clientWidth) >= row.scrollWidth - 2;
+      }
+      function nudge(dir){ row.scrollBy({left: Math.round(row.clientWidth*0.7)*dir, behavior:'smooth'}); }
+      if(prev) prev.addEventListener('click',()=>nudge(-1));
+      if(next) next.addEventListener('click',()=>nudge(+1));
+      row.addEventListener('scroll', updateArrows, {passive:true});
+      window.addEventListener('resize', updateArrows);
+      setTimeout(updateArrows, 0);
+    })();
+  }catch(e){
+    note('Init error: ' + (e && e.message ? e.message : e));
+    console.error(e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{ init(); buildLegend(); });

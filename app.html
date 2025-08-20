@@ -10,6 +10,8 @@
   <meta name="theme-color" content="#0C2E2A">
 </head>
 <body>
+<div id="appStatus" style="position:sticky;top:0;z-index:120;display:none;padding:8px 12px;margin:0;background:#4a1e1e;color:#ffdede;border-bottom:1px solid #cc6666;"><strong>Note:</strong> Failsafe mode. See console if blank.</div>
+>
   <header class="glass-header" role="banner">
     <div class="header-inner">
       <a class="brand" href="index.html" aria-label="Back to intro">
@@ -17,9 +19,11 @@
         <span class="brand-name">Shang Shi</span>
       </a>
       <nav aria-label="Allergen controls" class="controls">
-        <div class="mode-tabs" aria-label="Filter mode">
-          <button id="safeOnly" class="tab active" role="switch" aria-checked="true" title="Show only dishes without selected allergens">Allergy‑free only</button>
+        <div class="mode-tabs" role="tablist" aria-label="Filter mode">
+          <button id="modeSafe" class="tab active" role="tab" aria-selected="true" data-mode="SAFE">SAFE (exclude)</button>
+          <button id="modeContains" class="tab" role="tab" aria-selected="false" data-mode="CONTAINS">CONTAINS</button>
         </div>
+        <button id="clearFilters" class="btn subtle" title="Clear all selected allergens">Clear</button>
         <div class="preset-wrap">
           <button id="presetToggle" class="icon-btn" title="Presets" aria-label="Presets" aria-expanded="false">⋯</button>
           <div class="preset-popover" id="presetPopover" hidden>
@@ -37,6 +41,7 @@
             </select>
           </div>
         </div>
+        <input id="search" type="search" placeholder="Search dishes…" aria-label="Search dishes">
       </nav>
     </div>
   </header>
@@ -44,13 +49,6 @@
   <section id="selector" class="bar" aria-label="Allergen selector">
     <div id="allergenChips" class="chips"></div>
   </section>
-<section id="allergenLegend" class="legend" aria-label="Allergen legend">
-  <button id="legendToggle" class="legend-toggle" aria-expanded="false">Allergen legend</button>
-  <div class="legend-body" hidden>
-    <div class="legend-row"></div>
-  </div>
-</section>
-
 
   <main class="container" id="app" role="main">
     <div id="dishGrid" class="grid"></div>

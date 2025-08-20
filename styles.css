@@ -291,7 +291,7 @@ body.intro.fade-out { opacity:0; }
 .controls{ gap:8px; }
 
 
-/* Centered header brand using 3-column grid */
+/* --- Centered header brand using grid --- */
 .header-inner{
   display:grid;
   grid-template-columns: 1fr auto 1fr;
@@ -305,59 +305,21 @@ body.intro.fade-out { opacity:0; }
 .controls{ grid-column: 3; justify-self:end; display:flex; align-items:center; gap:10px; }
 
 
-/* Scroll hint arrows for chips bar */
-.bar{ position:sticky; top:58px; z-index:40; background:linear-gradient(180deg, rgba(12,46,42,.95), rgba(12,46,42,.75)); border-bottom:1px solid rgba(255,255,255,.08);}
-.bar{ overflow:visible; }
-.bar::before, .bar::after{
-  content:'›';
+/* --- Chips scroll arrows (appear only when overflow) --- */
+#selector{ position:sticky; top:calc(58px + env(safe-area-inset-top)); z-index:40; }
+#selector{ overflow:visible; }
+#selector .chips-arrow{
   position:absolute; top:50%; transform:translateY(-50%);
-  width:24px; height:24px; display:grid; place-items:center;
-  color:var(--gold); opacity:.5; pointer-events:none;
-  text-shadow: 0 2px 8px rgba(0,0,0,.4);
-}
-.bar::before{ content:'‹'; left:8px; }
-.bar::after{ right:8px; }
-.bar.at-start::before{ opacity:0; }
-.bar.at-end::after{ opacity:0; }
-
-/* single-toggle styles */
-.tab[role="switch"][aria-checked="true"]{ background:rgba(197,165,114,.16); border-color:rgba(197,165,114,.75); color:var(--text); }
-
-
-/* === Allergen code badges on cards === */
-.badges{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-.badge{
-  display:inline-flex; align-items:center; justify-content:center;
-  min-width: 26px; padding: 2px 6px;
-  font-size: 11px; letter-spacing:.2px;
-  border-radius: 8px;
-  background: rgba(197,165,114,.14);
-  border: 1px solid rgba(197,165,114,.35);
-  color: #e8e3d9;
-}
-.badge[title]{ cursor: help; }
-
-/* === Legend (collapsible) === */
-.legend{ position:relative; padding: 8px 16px; }
-.legend-toggle{
+  width:32px; height:32px; border-radius:999px;
   border:1px solid rgba(197,165,114,.45);
-  background: rgba(12,46,42,.55);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-  color:#c5a572; padding:8px 12px; border-radius:10px;
+  background: rgba(12,46,42,.60);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  color: var(--gold); font-size:18px; line-height:1; display:grid; place-items:center;
+  box-shadow: 0 4px 12px rgba(0,0,0,.35);
+  cursor:pointer; user-select:none;
 }
-.legend-body{ margin-top:10px; }
-.legend-row{ display:flex; flex-wrap:wrap; gap:8px; }
-.legend-chip{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:6px 8px; border-radius:10px;
-  background: rgba(18,56,52,.55);
-  border:1px solid rgba(255,255,255,.06);
-  color:#e8e3d9; font-size:12px;
-}
-.legend-chip .code{
-  display:inline-grid; place-items:center;
-  width:24px; height:22px; border-radius:7px;
-  background: rgba(197,165,114,.14);
-  border: 1px solid rgba(197,165,114,.35);
-  font-size:11px; letter-spacing:.2px;
-}
+#selector .chips-arrow.left{ left:8px; }
+#selector .chips-arrow.right{ right:8px; }
+#selector .chips-arrow[hidden]{ display:none; }
+/* Make sure chip row is scrollable on touch */
+#allergenChips{ -webkit-overflow-scrolling: touch; scroll-behavior:smooth; }
