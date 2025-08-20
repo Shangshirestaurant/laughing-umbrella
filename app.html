@@ -10,44 +10,19 @@
   <meta name="theme-color" content="#0C2E2A">
 </head>
 <body>
-<div id="appStatus" style="position:sticky;top:0;z-index:120;display:none;padding:8px 12px;margin:0;background:#4a1e1e;color:#ffdede;border-bottom:1px solid #cc6666;"><strong>Note:</strong> Failsafe mode. See console if blank.</div>
->
+  <a href="#selector" class="cta-open">Open selector</a>
   <header class="glass-header" role="banner">
     <div class="header-inner">
       <a class="brand" href="index.html" aria-label="Back to intro">
         <img src="shangshi_logo_main.png" alt="" class="brand-logo" width="36" height="36">
         <span class="brand-name">Shang Shi</span>
       </a>
-      <nav aria-label="Allergen controls" class="controls">
-        <div class="mode-tabs" role="tablist" aria-label="Filter mode">
-          <button id="modeSafe" class="tab active" role="tab" aria-selected="true" data-mode="SAFE">SAFE (exclude)</button>
-          <button id="modeContains" class="tab" role="tab" aria-selected="false" data-mode="CONTAINS">CONTAINS</button>
-        </div>
-        <button id="clearFilters" class="btn subtle" title="Clear all selected allergens">Clear</button>
-        <div class="preset-wrap">
-          <button id="presetToggle" class="icon-btn" title="Presets" aria-label="Presets" aria-expanded="false">⋯</button>
-          <div class="preset-popover" id="presetPopover" hidden>
-            <label for="presets" class="sr-only">Presets</label>
-            <select id="presets" class="preset-select">
-              <option value="">Choose a preset…</option>
-              <option value="GLUTEN_FREE">Gluten-free</option>
-              <option value="DAIRY_FREE">Dairy-free</option>
-              <option value="NUT_FREE">Nut-free</option>
-              <option value="SHELLFISH_FREE">Shellfish-free</option>
-              <option value="MUSHROOM_FREE">Mushroom-free</option>
-              <option value="EGG_FREE">Egg-free</option>
-              <option value="SOY_FREE">Soy-free</option>
-              <option value="SESAME_FREE">Sesame-free</option>
-            </select>
-          </div>
-        </div>
-        <input id="search" type="search" placeholder="Search dishes…" aria-label="Search dishes">
-      </nav>
+      <nav aria-label="Allergen controls" class="controls">  <div class="mode-tabs" role="tablist" aria-label="Filter mode">    <button id="modeSafe" class="tab active" role="tab" aria-selected="true" data-mode="SAFE">SAFE (exclude)</button>    <button id="modeContains" class="tab" role="tab" aria-selected="false" data-mode="CONTAINS">CONTAINS</button>  </div></nav>
     </div>
   </header>
 
   <section id="selector" class="bar" aria-label="Allergen selector">
-    <div id="allergenChips" class="chips"></div>
+    <button class="chips-arrow left" id="chipsPrev" aria-label="Scroll left" hidden>‹</button><div id="allergenChips" class="chips"></div><button class="chips-arrow right" id="chipsNext" aria-label="Scroll right" hidden>›</button>
   </section>
 
   <main class="container" id="app" role="main">
