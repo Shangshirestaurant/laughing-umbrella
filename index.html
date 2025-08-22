@@ -13,37 +13,9 @@
     .logo{width:140px;height:auto;display:block;border:none;background:transparent;
       box-shadow:0 0 12px rgba(212,175,55,0.5);border-radius:50%;cursor:pointer}
     .foot{color:#d4af37;font-size:12px;padding:16px 0;text-align:center;width:100%}
-  
-    .intro-bg {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: url('SHANG_SHI_DAY_10092_r.jpg') center center / cover no-repeat;
-      filter: blur(18px) brightness(0.65);
-      z-index: -2;
-    }
-    .intro-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(6px);
-      z-index: -1;
-    }
-    .logo {
-      width: 160px;
-      height: auto;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-    .logo:hover {
-      transform: scale(1.05);
-    }
-</style>
+  </style>
 </head>
 <body>
-  <div class="intro-bg"></div>
-  <div class="intro-overlay"></div>
   <div class="wrap">
     <div class="center">
       <img src="./logo.png" alt="Shang Shi logo" class="logo" id="enterLogo">
@@ -55,6 +27,5 @@
     document.getElementById('enterLogo').addEventListener('click', go, {passive:true});
     document.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') go(); });
   </script>
-<button id="themeToggle" class="theme-btn">🌙</button>
 </body>
 </html>
