@@ -4,7 +4,7 @@
     "allergens": [
       "CE",
       "GL",
-      "Mi",
+      "MI",
       "MR"
     ],
     "description": ""
@@ -19,12 +19,7 @@
   {
     "name": "Deep Fried Dim Sum Assortment",
     "allergens": [
-      "GL",
-      "MR",
-      "SE",
-      "CR",
-      "Mi",
-      "EG"
+      "GL"
     ],
     "description": ""
   },
@@ -32,8 +27,7 @@
     "name": "Golden Fried Soft Shell Crab with Chilli",
     "allergens": [
       "EG",
-      "GL",
-      "CR"
+      "GL"
     ],
     "description": ""
   },
@@ -56,8 +50,7 @@
   {
     "name": "Aromatic Crispy Duck Salad",
     "allergens": [
-      "GL",
-      "NU"
+      "GL"
     ],
     "description": ""
   },
@@ -93,8 +86,7 @@
       "CR",
       "EG",
       "GL",
-      "ON",
-      "SO"
+      "ON"
     ],
     "description": ""
   },
@@ -129,10 +121,9 @@
     "name": "Grilled Chilean Sea Bass in Honey",
     "allergens": [
       "GL",
-      "SO",
-      "FI"
+      "SO"
     ],
-    "description": "Marinated in Honey"
+    "description": ""
   },
   {
     "name": "Deep Fried King Scallop with Minced Prawns in Teriyaki Sauce",
@@ -142,8 +133,7 @@
       "GA",
       "GL",
       "ON",
-      "SO",
-      "MR"
+      "SO"
     ],
     "description": ""
   },
@@ -172,7 +162,7 @@
     "allergens": [
       "GA",
       "GL",
-      "Mi",
+      "MI",
       "ON",
       "SO"
     ],
@@ -182,8 +172,7 @@
     "name": "Sweet and Sour Iberico Pork with Pineapple",
     "allergens": [
       "GL",
-      "ON",
-      "MR"
+      "ON"
     ],
     "description": ""
   },
@@ -250,7 +239,7 @@
       "MU",
       "ON"
     ],
-    "description": "Can be vegetarian"
+    "description": ""
   },
   {
     "name": "Claypot Silken Egg Tofu with Vegetables (V)",
@@ -265,18 +254,16 @@
   {
     "name": "Stir-Fry Asparagus with Lily Bulbs, Water Chestnut, and Yellow Fungus (V)",
     "allergens": [
-      "MR",
-      "GL"
+      "MR"
     ],
     "description": ""
   },
   {
     "name": "Vegetable spring roll",
     "allergens": [
-      "MR",
-      "GL"
+      "MR"
     ],
-    "description": "Canape"
+    "description": ""
   },
   {
     "name": "Pumpkin ball",
@@ -289,7 +276,7 @@
   {
     "name": "Rack of Lamb with Chef's Special Sauce",
     "allergens": [
-      "Mi",
+      "MI",
       "ON"
     ],
     "description": ""
@@ -298,7 +285,7 @@
     "name": "Peach Melba",
     "allergens": [
       "EG",
-      "Mi"
+      "MI"
     ],
     "description": ""
   },
@@ -306,7 +293,7 @@
     "name": "Wasabi Blanch",
     "allergens": [
       "EG",
-      "Mi",
+      "MI",
       "NU"
     ],
     "description": ""
@@ -314,17 +301,14 @@
   {
     "name": "Venison Puff",
     "allergens": [
-      "Mi",
-      "EG",
-      "SE"
+      "MI"
     ],
     "description": ""
   },
   {
     "name": "Ham&Cheese Sandwich",
     "allergens": [
-      "Mi",
-      "GL"
+      "MI"
     ],
     "description": ""
   },
@@ -449,8 +433,7 @@
   {
     "name": "Baked venison puff",
     "allergens": [
-      "SE",
-      "Mi"
+      "SE"
     ],
     "description": ""
   },
