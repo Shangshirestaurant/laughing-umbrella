@@ -15,21 +15,8 @@
     .foot{color:#d4af37;font-size:12px;padding:16px 0;text-align:center;width:100%}
   
 /* Intro background & layers (fixed) */
-.intro-bg {
-  position: fixed;
-  inset: 0;
-  background: url('SHANG_SHI_DAY_10092_r.jpg') center center / cover no-repeat;
-  filter: blur(18px) brightness(0.65);
-  z-index: 0; /* visible layer */
-}
-.intro-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 1; /* above bg */
-}
+
+
 .intro-wrap {
   position: relative;
   z-index: 2; /* above overlay */
@@ -41,11 +28,36 @@
 .intro-wrap.slide-out { transform: translateY(-40px); opacity: 0; }
 body { transition: background-color 0.6s ease; }
 body.fade-bg { background-color: rgba(0,0,0,0.0); } /* no black */
+
+/* Intro background (blurred + darkened, no overlay) */
+.intro-bg {
+  position: fixed;
+  inset: 0;
+  background: url('SHANG_SHI_DAY_10092_r.jpg') center center / cover no-repeat;
+  filter: blur(8px) brightness(0.5); /* reduced blur + darker */
+  z-index: 0;
+}
+
+/* Subtle background zoom-in */
+.intro-bg {
+  transform-origin: center center;
+  will-change: transform;
+  animation: bg-zoom 7s ease-out forwards;
+}
+@keyframes bg-zoom {
+  from { transform: scale(1.00); }
+  to   { transform: scale(1.06); }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .intro-bg { animation: none; }
+}
 </style>
 </head>
 <body>
   <div class="intro-bg"></div>
-  <div class="intro-overlay"></div>
+  
   <div class="wrap intro-wrap">
     <div class="center">
       <img src="./logo.png" alt="Shang Shi logo" class="logo" id="enterLogo">
