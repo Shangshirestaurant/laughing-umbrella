@@ -843,3 +843,77 @@ body:not(.light) {
     radial-gradient(1200px 380px at 50% -180px, rgba(210,164,85,0.10), transparent),
     linear-gradient(var(--bg), var(--bg)) !important;
 }
+
+
+/* === ShangShi v3.2 — Canton accents + Light mode + Filters active fix === */
+/* — Restore subtle Cantonese accents on cards — */
+.card {
+  position: relative;
+  background-image:
+    radial-gradient(120% 160% at 80% -20%, rgba(210,164,85,0.06), transparent),
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px);
+  overflow: hidden;
+}
+.card::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: linear-gradient(90deg, #D2A455, rgba(210,164,85,0.0), #D2A455);
+  opacity: .7;
+}
+.card h3 { position: relative; }
+.card h3::after {
+  content:""; position:absolute; left:0; bottom:-6px; width: 26px; height:1.5px;
+  background: linear-gradient(90deg, #B33A2F, transparent);
+  opacity: 0; transform: translateY(2px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+.card:hover h3::after { opacity:.85; transform: translateY(0); }
+
+/* — Light mode availability restored — */
+body.light {
+  --bg: #f6f7f7;
+  --panel: #ffffff;
+  --card: #ffffff;
+  --text: #143d31;
+  --muted: #52615a;
+  --heading: #0b3a2e;
+}
+body.light .card {
+  background: var(--card) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.45) !important;
+}
+body.light .modal {
+  background: radial-gradient(1200px 600px at 50% 10%, rgba(255,255,255,0.55), rgba(255,255,255,0.75)) !important;
+  backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important;
+}
+body.light .modal-content {
+  background: rgba(255,255,255,0.72) !important;
+  color: #143d31 !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+/* — Filters button active state: NO white fill, halo only — */
+.filter-dock .filter-btn[aria-expanded="true"],
+.filter-dock #categoryToggle[aria-expanded="true"] {
+  background: rgba(255,255,255,0.10) !important; /* dark theme */
+  color: var(--text) !important;
+  box-shadow: 0 0 0 2px rgba(210,164,85,0.28), 0 8px 18px rgba(0,0,0,0.22) !important;
+}
+body.light .filter-dock .filter-btn[aria-expanded="true"],
+body.light .filter-dock #categoryToggle[aria-expanded="true"] {
+  background: rgba(0,0,0,0.04) !important; /* light theme */
+  color: #143d31 !important;
+  box-shadow: 0 0 0 2px rgba(47,110,79,0.25), 0 6px 14px rgba(0,0,0,0.12) !important;
+}
+
+/* — Keep dock neutral (no tray) — */
+.filter-dock .dock-inner { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+
+/* — Ensure dark background shows when not in light mode — */
+body:not(.light) {
+  background:
+    radial-gradient(1200px 380px at 50% -180px, rgba(210,164,85,0.10), transparent),
+    linear-gradient(var(--bg), var(--bg)) !important;
+}
