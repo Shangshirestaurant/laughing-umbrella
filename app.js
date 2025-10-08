@@ -432,3 +432,6 @@ console.log('%c ShangShi UI build: v3.2 ', 'background:#0c0f14;color:#D2A455;pad
 
 
 console.log('%c ShangShi UI build: v3.3 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
+
+
+console.log('%c ShangShi UI build: v3.4 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');

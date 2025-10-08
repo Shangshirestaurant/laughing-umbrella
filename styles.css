@@ -1004,3 +1004,31 @@ body.light .modal {
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
 }
+
+
+/* === ShangShi v3.4 — Clean cards + frosted active buttons === */
+/* Clean card surface: remove visible texture, keep gold rail + hover underline */
+.card {
+  background-image: none !important; /* kill cross-hatch/texture */
+  box-shadow: 0 12px 28px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,0.03); /* a touch softer */
+}
+
+/* Frosted active state for dock toggles (no white fill) */
+.filter-dock .filter-btn[aria-expanded="true"],
+.filter-dock #categoryToggle[aria-expanded="true"] {
+  background: rgba(255,255,255,0.10) !important;      /* same tone as idle in dark */
+  -webkit-backdrop-filter: saturate(140%) blur(6px) !important;
+  backdrop-filter: saturate(140%) blur(6px) !important;
+  color: var(--text) !important;
+  box-shadow: 0 0 0 1px rgba(210,164,85,0.40), 0 10px 22px rgba(0,0,0,0.28) !important;
+  background-image: none !important;                  /* prevent any white gradient overrides */
+}
+body.light .filter-dock .filter-btn[aria-expanded="true"],
+body.light .filter-dock #categoryToggle[aria-expanded="true"] {
+  background: rgba(0,0,0,0.04) !important;            /* same tone as idle in light */
+  -webkit-backdrop-filter: saturate(140%) blur(6px) !important;
+  backdrop-filter: saturate(140%) blur(6px) !important;
+  color: #143d31 !important;
+  box-shadow: 0 0 0 1px rgba(47,110,79,0.38), 0 8px 18px rgba(0,0,0,0.12) !important;
+  background-image: none !important;
+}
