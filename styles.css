@@ -948,3 +948,63 @@ body.filters-active #filterToggle .dot,
 body.filters-active .filter-btn .dot {
   background: #2F6E4F !important; box-shadow: 0 0 6px 1px rgba(47,110,79,.60) !important;
 }
+
+
+/* === v4.2.5 — Off-white frosted dock + brighter active allergens === */
+
+/* A) Filters/Categories: off-white frosted base in both themes */
+#filterToggle, #categoryToggle,
+.dock-inner button[id*="filter" i], .dock-inner button[id*="categ" i],
+.filter-btn, .category-btn {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+  background: rgba(255,255,255,0.88) !important;  /* off-white */
+  border: 1px solid rgba(0,0,0,0.12) !important;
+  color: #1C1A18 !important;
+  border-radius: 40px !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28) !important;
+}
+body.light #filterToggle, body.light #categoryToggle,
+body.light .dock-inner button[id*="filter" i], body.light .dock-inner button[id*="categ" i],
+body.light .filter-btn, body.light .category-btn {
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(0,0,0,0.10) !important;
+}
+#filterToggle:hover, #categoryToggle:hover,
+.dock-inner button[id*="filter" i]:hover, .dock-inner button[id*="categ" i]:hover,
+.filter-btn:hover, .category-btn:hover {
+  background: rgba(255,255,255,0.94) !important;
+}
+
+/* Keep jade dot behavior (existing .dot span already in HTML) */
+body.filters-active #filterToggle .dot,
+body.filters-active .filter-btn .dot {
+  background: #2F6E4F !important;
+  box-shadow: 0 0 6px 1px rgba(47,110,79,.60) !important;
+}
+
+/* B) Active allergen chips: brighten in their own color, no gold fill */
+#chips .chip, [id*="chips" i] .chip { position: relative; }
+
+/* kill legacy gold fill on active */
+#chips .chip.active, #chips .chip[aria-pressed="true"],
+[id*="chips" i] .chip.active, [id*="chips" i] .chip[aria-pressed="true"] {
+  background: inherit !important;
+  background-image: none !important;
+  border-color: currentColor !important;
+  filter: saturate(1.12) brightness(1.08);
+  transform: translateZ(0) scale(1.02);
+  box-shadow: 0 0 8px 2px currentColor;
+  transition: filter .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+/* subtle same-color wash to look brighter */
+#chips .chip.active::after, #chips .chip[aria-pressed="true"]::after,
+[id*="chips" i] .chip.active::after, [id*="chips" i] .chip[aria-pressed="true"]::after {
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit;
+  background: currentColor;
+  opacity: .12;
+  pointer-events: none;
+}
