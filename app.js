@@ -338,3 +338,35 @@ document.addEventListener('DOMContentLoaded', () => {
     scrub();
   });
 })();
+
+/* Category chip color classes (ensure Cantonese palette applies) */
+document.addEventListener('DOMContentLoaded', () => {
+  const root = document.getElementById('categories');
+  if (!root) return;
+  const slug = s => s.toLowerCase().replace(/\s+/g,'').replace(/[^a-z]/g,'');
+  const map = {
+    starters:'chip-starters',
+    mains:'chip-mains',
+    desserts:'chip-desserts',
+    dimsums:'chip-dimsums',
+    sauces:'chip-sauces',
+    sides:'chip-sides',
+    specials:'chip-specials'
+  };
+  const enhance = () => {
+    root.querySelectorAll('.chip').forEach(chip => {
+      const s = slug(chip.textContent || '');
+      if (map[s] && !chip.classList.contains(map[s])) {
+        chip.classList.add('category', map[s]);
+      } else if (!chip.classList.contains('category')) {
+        chip.classList.add('category');
+      }
+    });
+  };
+  enhance();
+  const mo = new MutationObserver(enhance);
+  mo.observe(root, { childList: true, subtree: true });
+});
+
+
+console.log('%c ShangShi UI build: v3.6 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');

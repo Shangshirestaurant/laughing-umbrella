@@ -781,3 +781,40 @@ body.light .filter-dock .filter-btn:active {
 
 /* Optional: remove iOS tap highlight flash */
 .filter-dock .filter-btn, .filter-dock #filterToggle { -webkit-tap-highlight-color: transparent; }
+
+
+/* === ShangShi v3.6 — Canton accents & palette restore === */
+/* Card accents (keep clean surface from v3.4) */
+.card::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: linear-gradient(90deg, #D2A455, rgba(210,164,85,0.0), #D2A455);
+  opacity: .7;
+}
+.card h3 { position: relative; }
+.card h3::after {
+  content:""; position:absolute; left:0; bottom:-6px; width: 26px; height:1.5px;
+  background: linear-gradient(90deg, #B33A2F, transparent);
+  opacity: 0; transform: translateY(2px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+.card:hover h3::after { opacity:.85; transform: translateY(0); }
+
+/* Cantonese category chip palette */
+.chip.category { font-weight: 700 !important; }
+.chip-starters  { background: rgba(179,58,47,0.26) !important; border:1px solid rgba(179,58,47,0.46) !important; color:#e9eef0 !important; }
+.chip-mains     { background: rgba(210,164,85,0.26) !important; border:1px solid rgba(210,164,85,0.46) !important; color:#1a1a1a !important; }
+.chip-desserts  { background: rgba(255,196,230,0.22) !important; border:1px solid rgba(255,196,230,0.42) !important; color:#e9eef0 !important; }
+.chip-dimsums   { background: rgba(71,181,132,0.24) !important; border:1px solid rgba(71,181,132,0.44) !important; color:#e9eef0 !important; }
+.chip-sauces    { background: rgba(120,186,255,0.22) !important; border:1px solid rgba(120,186,255,0.40) !important; color:#e9eef0 !important; }
+.chip-sides     { background: rgba(140,160,200,0.22) !important; border:1px solid rgba(140,160,200,0.40) !important; color:#e9eef0 !important; }
+.chip-specials  { background: rgba(210,164,85,0.30) !important; border:1px solid rgba(210,164,85,0.50) !important; color:#1a1a1a !important; }
+
+/* Allergen chips in Filters panel — ensure readable text on darker tones */
+#chips .chip { font-weight: 600; }
+#chips .chip.gl, #chips .chip.cr, #chips .chip.eg, #chips .chip.mu, #chips .chip.mo, #chips .chip.mr {
+  color: rgba(255,255,255,0.92) !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+}
+
+/* Keep frosted active state from v3.5 and neutral dock from v1.2 — not modified here */
