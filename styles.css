@@ -814,3 +814,75 @@ body.light .category-btn:hover {
   background: rgba(255,255,255,0.55);
   border-color: rgba(0,0,0,0.08);
 }
+
+
+/* === v4.2.3 — Robust selectors for chips + frosted buttons === */
+/* 1) Active allergen chips: stop any gold fill from legacy rules (handles UPPERCASE class tokens) */
+#chips .chip.active,
+#chips .chip[aria-pressed="true"],
+#chips .chip.is-active,
+#chips .chip.selected {
+  /* keep existing background; we only add glow/brighten */
+  filter: brightness(1.08);
+  transform: scale(1.02);
+  transition: filter .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+/* Per-allergen static glow using case-insensitive class matching */
+#chips .chip[class*=" gl" i].active,  #chips .chip[class*=" gl" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(200,70,70,.55); }
+#chips .chip[class*=" cr" i].active,  #chips .chip[class*=" cr" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(179,58,47,.55); }
+#chips .chip[class*=" eg" i].active,  #chips .chip[class*=" eg" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(255,214,98,.55); }
+#chips .chip[class*=" fi" i].active,  #chips .chip[class*=" fi" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(120,186,255,.55); }
+#chips .chip[class*=" mi" i].active,  #chips .chip[class*=" mi" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(210,164,85,.50); }
+#chips .chip[class*=" mu" i].active,  #chips .chip[class*=" mu" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(210,164,85,.55); }
+#chips .chip[class*=" so" i].active,  #chips .chip[class*=" so" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(47,110,79,.55); }
+#chips .chip[class*=" mo" i].active,  #chips .chip[class*=" mo" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(150,110,200,.55); }
+#chips .chip[class*=" mr" i].active,  #chips .chip[class*=" mr" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(120,100,180,.55); }
+#chips .chip[class*=" nu" i].active,  #chips .chip[class*=" nu" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(120,200,140,.55); }
+#chips .chip[class*=" on" i].active,  #chips .chip[class*=" on" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(160,120,90,.55); }
+#chips .chip[class*=" se" i].active,  #chips .chip[class*=" se" i][aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(180,160,90,.55); }
+
+/* Hard kill any gold fill background override */
+#chips .chip.active,
+#chips .chip[aria-pressed="true"] {
+  background-image: none !important;
+}
+
+/* 2) Frosted Filters & Categories using robust selectors (IDs + fallbacks) */
+#filterToggle, #categoryToggle,
+.dock-inner button[id*="filter" i], .dock-inner button[id*="categ" i],
+.filter-btn, .category-btn {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  background: rgba(20,20,20,0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 40px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: background .25s ease, border-color .25s ease;
+}
+body.light #filterToggle, body.light #categoryToggle,
+body.light .dock-inner button[id*="filter" i], body.light .dock-inner button[id*="categ" i],
+body.light .filter-btn, body.light .category-btn {
+  background: rgba(255,255,255,0.40);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+#filterToggle:hover, #categoryToggle:hover,
+.dock-inner button[id*="filter" i]:hover, .dock-inner button[id*="categ" i]:hover,
+.filter-btn:hover, .category-btn:hover {
+  background: rgba(40,40,40,0.45);
+  border-color: rgba(255,255,255,0.12);
+}
+body.light #filterToggle:hover, body.light #categoryToggle:hover,
+body.light .dock-inner button[id*="filter" i]:hover, body.light .dock-inner button[id*="categ" i]:hover,
+body.light .filter-btn:hover, body.light .category-btn:hover {
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(0,0,0,0.08);
+}
+
+/* 3) Filters jade dot retained (if .dot exists) */
+body.filters-active #filterToggle .dot,
+body.filters-active .filter-btn .dot {
+  background: #2F6E4F !important;
+  box-shadow: 0 0 6px 1px rgba(47,110,79,.60) !important;
+}

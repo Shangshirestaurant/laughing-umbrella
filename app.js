@@ -365,3 +365,20 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 console.log('%c Shang Shi Zen Edition v4.2.2 — Frosted Dock ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
+
+/* v4.2.3 dark-default theme controller */
+(function(){
+  const KEY='shangshi-theme'; const body=document.body;
+  let mode=localStorage.getItem(KEY) || 'dark';
+  if (mode==='light') body.classList.add('light'); else body.classList.remove('light');
+  const btn=document.getElementById('themeToggle');
+  const setIcon=()=>{ if(btn) btn.textContent = body.classList.contains('light') ? '🌙' : '☀️'; };
+  setIcon();
+  if(btn){
+    btn.addEventListener('click',()=>{
+      body.classList.toggle('light');
+      localStorage.setItem(KEY, body.classList.contains('light') ? 'light' : 'dark');
+      setIcon();
+    });
+  }
+})();
