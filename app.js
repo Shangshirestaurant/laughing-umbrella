@@ -382,3 +382,36 @@ console.log('%c Shang Shi Zen Edition v4.2.2 — Frosted Dock ', 'background:#0c
     });
   }
 })();
+
+/* === SHANG SHI v4.2.4 HOTFIX — robust filter indicator + frost attach === */
+(function () {
+  const body = document.body;
+  function anyChipActive() {
+    const root = document.querySelector('#chips, [id*="chips" i], .filter-panel .chips, .chips');
+    if (!root) return false;
+    return !!root.querySelector('.chip.active, .chip[aria-pressed="true"]');
+  }
+  function syncFiltersActive() { body.classList.toggle('filters-active', anyChipActive()); }
+  syncFiltersActive();
+  document.addEventListener('click', (e) => {
+    if (e.target.closest && e.target.closest('.chip')) setTimeout(syncFiltersActive, 50);
+  });
+  const chipsRoot = document.querySelector('#chips, [id*="chips" i], .filter-panel .chips, .chips');
+  if (chipsRoot) {
+    new MutationObserver(syncFiltersActive).observe(chipsRoot, {
+      subtree: true, childList: true, attributes: true, attributeFilter: ['class','aria-pressed']
+    });
+  }
+  const candidates = Array.from(document.querySelectorAll('button, .btn, .pill, [role="button"]'));
+  const frostIfMatch = (el, label) => el && el.textContent && el.textContent.trim().toLowerCase().startsWith(label);
+  const filtersBtn = candidates.find(el => frostIfMatch(el, 'filters')) || document.getElementById('filterToggle');
+  const categoriesBtn = candidates.find(el => frostIfMatch(el, 'categories')) || document.getElementById('categoryToggle');
+  [filtersBtn, categoriesBtn].forEach((btn) => {
+    if (!btn) return;
+    btn.classList.add('filter-btn');
+    if (btn === filtersBtn) {
+      let dot = btn.querySelector('.dot');
+      if (!dot) { dot = document.createElement('span'); dot.className = 'dot'; btn.appendChild(dot); }
+    }
+  });
+})();
