@@ -341,3 +341,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Build stamp
 console.log('%c ShangShi UI build: dark-rescue-v2 ', 'background:#111;color:#D2A455;padding:4px 8px;border-radius:6px');
+
+// === Theme Fix v3: robust persistence + system default ===
+(function(){
+  const THEME_KEY = 'shangshi-theme';
+  const body = document.body;
+  const btn = document.getElementById('themeToggle');
+  const saved = localStorage.getItem(THEME_KEY);
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  if (saved === 'light') body.classList.add('light');
+  else if (saved === 'dark') body.classList.remove('light');
+  else if (prefersDark) body.classList.remove('light');
+  else body.classList.add('light'); // default to light only if system isn't dark
+
+  if (btn) {
+    const setIcon = () => { btn.textContent = body.classList.contains('light') ? '🌙' : '☀️'; };
+    setIcon();
+    btn.addEventListener('click', () => {
+      body.classList.toggle('light');
+      localStorage.setItem(THEME_KEY, body.classList.contains('light') ? 'light' : 'dark');
+      setIcon();
+    });
+  }
+})();
+
+
+console.log('%c ShangShi UI build: theme-fix-v3 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');

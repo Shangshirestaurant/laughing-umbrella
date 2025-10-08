@@ -958,8 +958,8 @@ body:not(.light) {
 }
 
 /* Background depth: clearer vignette + cleaner base */
-body:not(.light) html, 
-body:not(.light) body {
+/* corrected: apply to body only */
+body:not(.light) {
   background:
     radial-gradient(1200px 380px at 50% -180px, rgba(210,164,85,0.10), transparent),
     linear-gradient(var(--bg), var(--bg)) !important;
@@ -1046,4 +1046,13 @@ body:not(.light) .footer {
 /* Active state halos */
 body:not(.light) .filter-btn[aria-expanded="true"] {
   box-shadow: 0 8px 18px rgba(0,0,0,.35), 0 0 0 2px rgba(210,164,85,0.32) !important;
+}
+
+
+/* === Theme Fix v3: strong dark background override === */
+/* Force dark background when body does NOT have .light */
+body:not(.light) {
+  background:
+    radial-gradient(1200px 380px at 50% -180px, rgba(210,164,85,0.10), transparent),
+    linear-gradient(var(--bg), var(--bg)) !important;
 }
