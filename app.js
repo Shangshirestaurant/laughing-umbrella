@@ -317,121 +317,24 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-/* Dark-default theme controller v1.2 */
+/* v3.5 inline style scrub for filter toggle */
 (function(){
-  const KEY = 'shangshi-theme';
-  const body = document.body;
-  const btn = document.getElementById('themeToggle');
-
-  // Determine initial mode: stored -> system -> dark
-  let mode = localStorage.getItem(KEY);
-  if (!mode) {
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    mode = prefersDark ? 'dark' : 'dark'; // force dark as default
-  }
-  if (mode === 'light') body.classList.add('light'); else body.classList.remove('light');
-
-  const setIcon = () => { if (btn) btn.textContent = body.classList.contains('light') ? '🌙' : '☀️'; };
-  setIcon();
-
-  if (btn) {
-    btn.addEventListener('click', () => {
-      body.classList.toggle('light');
-      localStorage.setItem(KEY, body.classList.contains('light') ? 'light' : 'dark');
-      setIcon();
-    });
-  }
+  const ids = ['filterToggle','categoryToggle'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const scrub = () => {
+      if (el.style) {
+        el.style.background = '';
+        el.style.backgroundColor = '';
+        el.style.backgroundImage = '';
+      }
+    };
+    el.addEventListener('click', scrub);
+    el.addEventListener('mousedown', scrub);
+    el.addEventListener('touchstart', scrub, {passive:true});
+    const mo = new MutationObserver(scrub);
+    mo.observe(el, { attributes: true, attributeFilter: ['aria-expanded','class','style'] });
+    scrub();
+  });
 })();
-
-/* All Fixes v3 controllers */
-(function(){
-  // Theme: dark default, robust persistence
-  const KEY = 'shangshi-theme';
-  const body = document.body;
-  const btn = document.getElementById('themeToggle');
-  let mode = localStorage.getItem(KEY);
-  if (!mode) {
-    // Force dark by default (regardless of system) unless user chose otherwise
-    mode = 'dark';
-    localStorage.setItem(KEY, 'dark');
-  }
-  if (mode === 'light') body.classList.add('light'); else body.classList.remove('light');
-  const setIcon = () => { if (btn) btn.textContent = body.classList.contains('light') ? '🌙' : '☀️'; };
-  setIcon();
-  if (btn) {
-    btn.addEventListener('click', () => {
-      body.classList.toggle('light');
-      localStorage.setItem(KEY, body.classList.contains('light') ? 'light' : 'dark');
-      setIcon();
-    });
-  }
-
-  // Empty-state controller: hide unless zero cards
-  const empty = document.getElementById('empty');
-  const grid = document.getElementById('grid');
-  const rc = document.getElementById('resultCount');
-  const compute = () => {
-    if (!empty || !grid) return;
-    const n = grid.querySelectorAll('.card').length;
-    if (n > 0) { empty.classList.remove('show'); empty.classList.add('hidden'); }
-    else { empty.classList.add('show'); empty.classList.remove('hidden'); }
-  };
-  if (grid) {
-    const mo = new MutationObserver(compute);
-    mo.observe(grid, { childList: true });
-  }
-  if (rc) {
-    const mo2 = new MutationObserver(compute);
-    mo2.observe(rc, { childList: true, characterData: true, subtree: true });
-  }
-  compute();
-
-  // Colorize allergen chips in Filters panel based on code
-  const chipsRoot = document.getElementById('chips');
-  const applyAllergenClasses = () => {
-    if (!chipsRoot) return;
-    chipsRoot.querySelectorAll('.chip').forEach(chip => {
-      const code = (chip.textContent || '').trim().split(/\s+/)[0].toLowerCase();
-      if (code && !chip.classList.contains(code)) chip.classList.add(code);
-    });
-  };
-  applyAllergenClasses();
-  if (chipsRoot) {
-    const mo3 = new MutationObserver(applyAllergenClasses);
-    mo3.observe(chipsRoot, { childList: true, subtree: true });
-  }
-})();
-
-// Build stamp
-console.log('%c ShangShi UI build: all-fixes-v3 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
-
-
-/* v3.2 theme controller */
-(function(){
-  const KEY='shangshi-theme';
-  const body=document.body;
-  const btn=document.getElementById('themeToggle');
-
-  // Default to dark if no choice stored
-  let mode=localStorage.getItem(KEY) || 'dark';
-  if (mode==='light') body.classList.add('light'); else body.classList.remove('light');
-
-  const setIcon=()=>{ if(btn){ btn.textContent = body.classList.contains('light') ? '🌙' : '☀️'; }};
-  setIcon();
-
-  if(btn){
-    btn.addEventListener('click', ()=>{
-      body.classList.toggle('light');
-      localStorage.setItem(KEY, body.classList.contains('light') ? 'light' : 'dark');
-      setIcon();
-    });
-  }
-})();
-
-console.log('%c ShangShi UI build: v3.2 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
-
-
-console.log('%c ShangShi UI build: v3.3 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
-
-
-console.log('%c ShangShi UI build: v3.4 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
