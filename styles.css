@@ -726,53 +726,29 @@ html { scroll-behavior: smooth; }
 
 
 
-/* === ShangShi v3.7 — Perimeter Glow for Cards === */
-/* allow glow beyond edges */
-.card { position: relative; overflow: visible !important; }
+/* === ShangShi v3.8 — Refined Cards (Cinzel Edition) === */
+/* Cinzel for titles & section headers */
+:root { --font-title: 'Cinzel', serif; }
 
-.card::before {
-  content: "";
-  position: absolute;
-  inset: -1.5px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  box-shadow:
-    0 0 0 1px rgba(210,164,85,0.36),
-    0 0 22px rgba(210,164,85,0.18);
-  background: radial-gradient(100% 100% at 50% 50%,
-              rgba(210,164,85,0.45) 0%,
-              rgba(210,164,85,0.28) 38%,
-              rgba(210,164,85,0.00) 60%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  padding: 2px;
-  filter: blur(6px);
-}
-.card:hover::before, .card:focus-within::before {
-  box-shadow:
-    0 0 0 1px rgba(210,164,85,0.45),
-    0 0 26px rgba(210,164,85,0.22);
-  filter: blur(7px);
+.card h3,
+.section-title,
+h1, h2, h3.section-heading {
+  font-family: var(--font-title);
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
-/* keep cinnabar underline */
-.card h3::after {
-  content:""; position:absolute; left:0; bottom:-6px; width: 26px; height:1.5px;
-  background: linear-gradient(90deg, #B33A2F, transparent);
-  opacity: 0; transform: translateY(2px);
-  transition: opacity .22s ease, transform .22s ease;
+.card h3 {
+  font-size: calc(1em + 1px);
+  line-height: 1.18;
+  margin-bottom: 8px;
 }
-.card:hover h3::after { opacity:.85; transform: translateY(0); }
 
-/* jade tint for light mode */
-body.light .card::before {
-  box-shadow:
-    0 0 0 1px rgba(47,110,79,0.32),
-    0 0 22px rgba(47,110,79,0.18);
-  background: radial-gradient(100% 100% at 50% 50%,
-              rgba(47,110,79,0.36) 0%,
-              rgba(47,110,79,0.22) 38%,
-              rgba(47,110,79,0.00) 60%);
+/* Category labels adopt Cinzel for cohesion */
+.pill.pill-category, .pill-category {
+  font-family: var(--font-title);
+  font-weight: 600;
 }
+
+/* Remove cinnabar underline */
+.card h3::after { content: none !important; display: none !important; }
