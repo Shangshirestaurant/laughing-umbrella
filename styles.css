@@ -1008,3 +1008,146 @@ body.filters-active .filter-btn .dot {
   opacity: .12;
   pointer-events: none;
 }
+
+
+/* === Hotfix v4.2.5.1 — Remove duplicate dot on Filters/Categories === */
+#filterToggle::before,
+#categoryToggle::before,
+.filter-btn::before,
+.category-btn::before {
+  content: none !important;
+}
+#filterToggle .dot,
+.category-btn .dot,
+.filter-btn .dot,
+#categoryToggle .dot {
+  display: inline-block !important;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 10px;
+  background: #2F6E4F !important;
+  box-shadow: 0 0 6px 1px rgba(47,110,79,.6);
+}
+
+
+/* === v4.2.6 — Light Theme Modal Polish === */
+/* Generic modal selectors to be safe across builds */
+.modal, .dialog, .popup, [role="dialog"] {
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  transition: background .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease;
+}
+
+/* Light theme: bright frosted surface */
+body.light .modal, 
+body.light .dialog, 
+body.light .popup, 
+body.light [role="dialog"] {
+  background: rgba(255,255,255,0.92) !important;
+  color: #1C1A18 !important; /* warm ink */
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.20), 0 0 0 1px rgba(0,0,0,0.02);
+}
+
+/* Dark theme: keep existing dark panel but ensure readability */
+body:not(.light) .modal,
+body:not(.light) .dialog,
+body:not(.light) .popup,
+body:not(.light) [role="dialog"] {
+  background: rgba(20,20,22,0.78) !important;
+  color: rgba(240,242,245,0.95) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Modal headings & close button tuned for light */
+body.light .modal h2, 
+body.light .dialog h2, 
+body.light .popup h2 {
+  color: #1C1A18 !important;
+}
+body.light .modal .close, 
+body.light .dialog .close, 
+body.light .popup .close {
+  background: rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Inputs & chips inside the modal for light theme */
+body.light .modal input,
+body.light .modal select,
+body.light .modal textarea,
+body.light .dialog input,
+body.light .dialog select,
+body.light .dialog textarea {
+  background: rgba(0,0,0,0.04);
+  color: #1C1A18;
+  border: 1px solid rgba(0,0,0,0.10);
+}
+
+/* Backdrop/overlay tone (slightly softer in light theme) */
+.modal-backdrop, .overlay, .backdrop, [data-overlay] {
+  transition: background .25s ease;
+}
+body.light .modal-backdrop, 
+body.light .overlay, 
+body.light .backdrop, 
+body.light [data-overlay] {
+  background: rgba(0,0,0,0.25) !important;
+}
+
+
+/* === v4.2.7 — Warm White Dock Edition (flat, dark default) === */
+
+/* A) Dock buttons — flat warm white base */
+#filterToggle, #categoryToggle,
+.dock-inner button[id*="filter" i], .dock-inner button[id*="categ" i],
+.filter-btn, .category-btn {
+  position: relative;
+  background: #F9F8F6 !important;
+  color: #1C1A18 !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  border-radius: 40px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+#filterToggle:hover, #categoryToggle:hover,
+.filter-btn:hover, .category-btn:hover {
+  background: #FFFFFF !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25) !important;
+}
+
+/* Dark mode still default, keep warm white tone visible on dark bg */
+body:not(.light) #filterToggle, body:not(.light) #categoryToggle,
+body:not(.light) .filter-btn, body:not(.light) .category-btn {
+  background: rgba(249,248,246,0.95) !important;
+}
+
+/* Keep jade dot indicator as is */
+#filterToggle .dot, .filter-btn .dot {
+  background: #2F6E4F !important;
+  box-shadow: 0 0 6px 1px rgba(47,110,79,.60) !important;
+}
+
+/* B) Selected allergens — retain their hue but slightly brighter */
+#chips .chip.active, #chips .chip[aria-pressed="true"],
+[id*="chips" i] .chip.active, [id*="chips" i] .chip[aria-pressed="true"] {
+  filter: saturate(1.15) brightness(1.10);
+  transform: translateZ(0) scale(1.02);
+  box-shadow: 0 0 10px 2px currentColor;
+  background-image: none !important;
+  background: inherit !important;
+  transition: filter .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+/* Add a soft overlay wash using their own color */
+#chips .chip.active::after, #chips .chip[aria-pressed="true"]::after,
+[id*="chips" i] .chip.active::after, [id*="chips" i] .chip[aria-pressed="true"]::after {
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit;
+  background: currentColor;
+  opacity: .15;
+  pointer-events: none;
+}

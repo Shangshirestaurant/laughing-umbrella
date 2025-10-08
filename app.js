@@ -417,3 +417,6 @@ console.log('%c Shang Shi Zen Edition v4.2.2 — Frosted Dock ', 'background:#0c
 })();
 
 console.log('%c Shang Shi Zen Edition v4.2.5 — Off-white Frost + Bright Chips ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
+
+
+console.log('%c Shang Shi Zen Edition v4.2.7 — Warm White Dock Edition ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
