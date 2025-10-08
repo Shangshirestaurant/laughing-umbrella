@@ -917,3 +917,90 @@ body:not(.light) {
     radial-gradient(1200px 380px at 50% -180px, rgba(210,164,85,0.10), transparent),
     linear-gradient(var(--bg), var(--bg)) !important;
 }
+
+
+/* === ShangShi v3.3 — Cantonese polish + dock symmetry === */
+/* Canonical pill metrics */
+:root {
+  --pill-h: 44px;
+  --pill-r: 999px;
+}
+
+/* Dock is button-only, perfectly aligned */
+.filter-dock .dock-inner {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  gap: 10px !important;
+  align-items: center !important;
+  display: flex !important;
+}
+.filter-dock .filter-btn,
+.filter-dock #categoryToggle,
+.filter-dock .add-btn,
+.filter-dock .reset-btn {
+  height: var(--pill-h) !important;
+  min-height: var(--pill-h) !important;
+  border-radius: var(--pill-r) !important;
+  line-height: calc(var(--pill-h) - 2px) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.filter-dock .add-btn,
+.filter-dock .reset-btn {
+  width: var(--pill-h) !important;
+  min-width: var(--pill-h) !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Active states — halo only, NO white fill */
+.filter-dock .filter-btn[aria-expanded="true"],
+.filter-dock #categoryToggle[aria-expanded="true"] {
+  background: rgba(255,255,255,0.10) !important; /* dark idle tone */
+  color: var(--text) !important;
+  box-shadow:
+    0 0 0 1px rgba(210,164,85,0.40),
+    0 10px 22px rgba(0,0,0,0.28) !important;
+}
+body.light .filter-dock .filter-btn[aria-expanded="true"],
+body.light .filter-dock #categoryToggle[aria-expanded="true"] {
+  background: rgba(0,0,0,0.04) !important;      /* light idle tone */
+  color: #143d31 !important;
+  box-shadow:
+    0 0 0 1px rgba(47,110,79,0.38),
+    0 8px 18px rgba(0,0,0,0.12) !important;
+}
+
+/* Category panel pills — keep Cantonese palette already added; enforce pill metrics */
+.filter-panel .chips .chip {
+  height: var(--pill-h) !important;
+  border-radius: var(--pill-r) !important;
+  align-items: center !important;
+  display: inline-flex !important;
+}
+
+/* Allergen chips — brighten label for darker tones */
+#chips .chip.gl,  /* Gluten (red) */
+#chips .chip.cr,  /* Crustaceans (plum) */
+#chips .chip.eg,  /* Eggs (olive) */
+#chips .chip.mu,  /* Mustard (ochre) */
+#chips .chip.mo,  /* Molluscs (violet) */
+#chips .chip.mr   /* ? darker tone */ {
+  color: rgba(255,255,255,0.92) !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+}
+
+/* Ensure Cantonese card accents remain */
+.card::before { height: 2px !important; opacity: .7 !important; }
+.card h3::after { height: 1.5px !important; }
+
+/* Light mode still bright frosted */
+body.light .modal {
+  background: radial-gradient(1200px 600px at 50% 10%, rgba(255,255,255,0.55), rgba(255,255,255,0.75)) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
