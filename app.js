@@ -416,3 +416,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 console.log('%c ShangShi UI build: canton-theme-v1 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
+
+
+/* Canton Theme v1.1 controllers */
+/* 1) Empty-state controller observing #grid & #resultCount */
+(function(){
+  const empty = document.getElementById('empty');
+  const grid = document.getElementById('grid');
+  const rc = document.getElementById('resultCount');
+  if (!empty || !grid) return;
+  const compute = () => {
+    const visibleCards = grid.querySelectorAll('.card');
+    const n = visibleCards.length;
+    if (n > 0) { empty.classList.remove('show'); empty.classList.add('hidden'); }
+    else { empty.classList.add('show'); empty.classList.remove('hidden'); }
+  };
+  const mo = new MutationObserver(compute);
+  mo.observe(grid, { childList: true, subtree: false });
+  if (rc) { 
+    const mo2 = new MutationObserver(compute);
+    mo2.observe(rc, { childList: true, characterData: true, subtree: true });
+  }
+  compute();
+})();
+
+/* 2) Allergen chips colorizer for Filters panel */
+(function(){
+  const root = document.getElementById('chips');
+  if (!root) return;
+  const mapCode = (txt) => (txt || '').trim().split(/\s+/)[0].toLowerCase();
+  const apply = () => {
+    root.querySelectorAll('.chip').forEach(chip => {
+      const code = mapCode(chip.textContent);
+      if (code && !chip.classList.contains(code)) chip.classList.add(code);
+    });
+  };
+  apply();
+  const mo = new MutationObserver(apply);
+  mo.observe(root, { childList: true, subtree: true });
+})();

@@ -1137,3 +1137,55 @@ body:not(.light) {
 
 /* Empty state spacing tuned (but hidden via JS when dishes exist) */
 .empty { margin: 20px auto; }
+
+
+/* === Canton Theme v1.1 — empty-state fix + chip colors === */
+/* Empty should be invisible by default unless JS reveals it */
+#empty { display: none; }
+#empty.show { display: grid; }
+
+/* Dock chip colors — clearer tints + readable text */
+.chip.category {
+  color: #e9eef0 !important;
+  font-weight: 700 !important;
+}
+.chip-starters  { background: rgba(179,58,47,0.26) !important; border:1px solid rgba(179,58,47,0.46) !important; }
+.chip-mains     { background: rgba(210,164,85,0.26) !important; border:1px solid rgba(210,164,85,0.46) !important; color:#1a1a1a !important; }
+.chip-desserts  { background: rgba(255,196,230,0.22) !important; border:1px solid rgba(255,196,230,0.42) !important; }
+.chip-dimsums   { background: rgba(71,181,132,0.24) !important; border:1px solid rgba(71,181,132,0.44) !important; }
+.chip-sauces    { background: rgba(120,186,255,0.22) !important; border:1px solid rgba(120,186,255,0.40) !important; }
+.chip-sides     { background: rgba(140,160,200,0.22) !important; border:1px solid rgba(140,160,200,0.40) !important; }
+.chip-specials  { background: rgba(210,164,85,0.30) !important; border:1px solid rgba(210,164,85,0.50) !important; color:#1a1a1a !important; }
+
+/* Allergen chips inside Filters panel (tinted by code) */
+#chips .chip { color:#e9eef0; font-weight:600; }
+#chips .chip.ce{ background:rgba(120,180,120,0.25) !important; border-color:rgba(120,180,120,0.45) !important; }
+#chips .chip.cr{ background:rgba(200,100,160,0.25) !important; border-color:rgba(200,100,160,0.45) !important; }
+#chips .chip.eg{ background:rgba(220,180,80,0.25) !important; border-color:rgba(220,180,80,0.45) !important; }
+#chips .chip.fi{ background:rgba(90,140,220,0.25) !important; border-color:rgba(90,140,220,0.45) !important; }
+#chips .chip.ga{ background:rgba(160,180,90,0.25) !important; border-color:rgba(160,180,90,0.45) !important; }
+#chips .chip.gl{ background:rgba(200,70,70,0.25) !important; border-color:rgba(200,70,70,0.45) !important; }
+#chips .chip.mo{ background:rgba(150,110,200,0.25) !important; border-color:rgba(150,110,200,0.45) !important; }
+#chips .chip.mr{ background:rgba(120,100,180,0.25) !important; border-color:rgba(120,100,180,0.45) !important; }
+#chips .chip.mu{ background:rgba(210,140,70,0.25) !important; border-color:rgba(210,140,70,0.45) !important; }
+#chips .chip.mi{ background:rgba(70,120,200,0.25) !important; border-color:rgba(70,120,200,0.45) !important; }
+#chips .chip.nu{ background:rgba(120,200,140,0.25) !important; border-color:rgba(120,200,140,0.45) !important; }
+#chips .chip.on{ background:rgba(160,120,90,0.25) !important; border-color:rgba(160,120,90,0.45) !important; }
+#chips .chip.se{ background:rgba(180,160,90,0.25) !important; border-color:rgba(180,160,90,0.45) !important; }
+#chips .chip.so{ background:rgba(90,180,180,0.25) !important; border-color:rgba(90,180,180,0.45) !important; }
+
+/* Card lacquer tweaks */
+.card::before { height: 2px; opacity: .7; }
+.card h3::after { height: 1.5px; opacity: .0; }
+.card:hover h3::after { opacity: .85; }
+
+/* Floating chips panel clarity */
+.filter-panel .chips {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28) !important;
+  background: rgba(20,24,28,0.72) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+body.light .filter-panel .chips {
+  background: rgba(255,255,255,0.86) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
