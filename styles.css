@@ -781,3 +781,36 @@ body.filters-active .filter-dock .filter-btn::after {
   background: transparent !important;
   background-image: none !important;
 }
+
+
+/* === v4.2.2 — Frosted Filters & Categories Buttons === */
+.filter-btn,
+.category-btn,
+.filters-toggle,
+.categories-toggle {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  background: rgba(20, 20, 20, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 40px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+body.light .filter-btn,
+body.light .category-btn,
+body.light .filters-toggle,
+body.light .categories-toggle {
+  background: rgba(255, 255, 255, 0.40);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.filter-btn:hover,
+.category-btn:hover {
+  background: rgba(40,40,40,0.45);
+  border-color: rgba(255,255,255,0.12);
+}
+body.light .filter-btn:hover,
+body.light .category-btn:hover {
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(0,0,0,0.08);
+}

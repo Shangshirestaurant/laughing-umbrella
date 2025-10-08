@@ -344,3 +344,24 @@ document.addEventListener('DOMContentLoaded', () => {
     mo.observe(root, { childList:true, subtree:true, attributes:true, attributeFilter:['class','aria-pressed'] });
   }
 })();
+
+/* v4.2.2 dark-default theme controller */
+(function(){
+  const KEY='shangshi-theme';
+  const body=document.body;
+  let mode=localStorage.getItem(KEY);
+  if(!mode){ mode='dark'; localStorage.setItem(KEY,'dark'); }
+  if(mode==='light') body.classList.add('light'); else body.classList.remove('light');
+  const btn=document.getElementById('themeToggle');
+  const setIcon=()=>{ if(btn) btn.textContent = body.classList.contains('light') ? '🌙' : '☀️'; };
+  setIcon();
+  if(btn){
+    btn.addEventListener('click',()=>{
+      body.classList.toggle('light');
+      localStorage.setItem(KEY, body.classList.contains('light') ? 'light' : 'dark');
+      setIcon();
+    });
+  }
+})();
+
+console.log('%c Shang Shi Zen Edition v4.2.2 — Frosted Dock ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
