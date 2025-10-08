@@ -1151,3 +1151,35 @@ body:not(.light) .filter-btn, body:not(.light) .category-btn {
   opacity: .15;
   pointer-events: none;
 }
+
+
+/* === v4.2.7.1 — Chip accent variables to prevent darkening === */
+#chips .chip, [id*="chips" i] .chip {
+  --chip-accent: currentColor;
+}
+#chips .chip.CR,  #chips .chip.cr,  [id*="chips" i] .chip.CR,  [id*="chips" i] .chip.cr { --chip-accent: rgba(179,58,47,1); }
+#chips .chip.GL,  #chips .chip.gl,  [id*="chips" i] .chip.GL,  [id*="chips" i] .chip.gl { --chip-accent: rgba(200,70,70,1); }
+#chips .chip.EG,  #chips .chip.eg,  [id*="chips" i] .chip.EG,  [id*="chips" i] .chip.eg { --chip-accent: rgba(255,214,98,1); }
+#chips .chip.FI,  #chips .chip.fi,  [id*="chips" i] .chip.FI,  [id*="chips" i] .chip.fi { --chip-accent: rgba(120,186,255,1); }
+#chips .chip.MU,  #chips .chip.mu,  [id*="chips" i] .chip.MU,  [id*="chips" i] .chip.mu { --chip-accent: rgba(210,164,85,1); }
+#chips .chip.SO,  #chips .chip.so,  [id*="chips" i] .chip.SO,  [id*="chips" i] .chip.so { --chip-accent: rgba(47,110,79,1); }
+#chips .chip.MI,  #chips .chip.mi,  [id*="chips" i] .chip.MI,  [id*="chips" i] .chip.mi { --chip-accent: rgba(200,170,110,1); }
+#chips .chip.NU,  #chips .chip.nu,  [id*="chips" i] .chip.NU,  [id*="chips" i] .chip.nu { --chip-accent: rgba(120,200,140,1); }
+#chips .chip.SE,  #chips .chip.se,  [id*="chips" i] .chip.SE,  [id*="chips" i] .chip.se { --chip-accent: rgba(180,160,90,1); }
+
+#chips .chip.active, #chips .chip[aria-pressed="true"],
+[id*="chips" i] .chip.active, [id*="chips" i] .chip[aria-pressed="true"] {
+  filter: saturate(1.15) brightness(1.10);
+  transform: translateZ(0) scale(1.02);
+  box-shadow: 0 0 10px 2px var(--chip-accent);
+  background-image: none !important;
+  background: inherit !important;
+}
+#chips .chip.active::after, #chips .chip[aria-pressed="true"]::after,
+[id*="chips" i] .chip.active::after, [id*="chips" i] .chip[aria-pressed="true"]::after {
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit;
+  background: var(--chip-accent);
+  opacity: .15;
+  pointer-events: none;
+}
