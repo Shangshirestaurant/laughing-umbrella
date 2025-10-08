@@ -317,141 +317,28 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// === Visual Finesse: Parallax driver ===
+/* Dark-default theme controller v1.2 */
 (function(){
-  const r = document.documentElement;
-  const update = () => r.style.setProperty('--scrollY', String(window.scrollY || 0));
-  update();
-  window.addEventListener('scroll', update, { passive: true });
-})();
-
-/* Elegance v2 microinteractions */
-(function(){
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (prefersReduced) return;
-  const springs = { open: 'cubic-bezier(.22,1,.36,1)' };
-
-  const toggles = [document.getElementById('filterToggle'), document.getElementById('categoryToggle')].filter(Boolean);
-  toggles.forEach(btn => {
-    btn.addEventListener('click', () => {
-      btn.animate([{ transform: 'scale(0.98)' }, { transform: 'scale(1)' }], { duration: 140, easing: springs.open });
-    });
-  });
-})();
-
-// Build stamp
-console.log('%c ShangShi UI build: dark-rescue-v2 ', 'background:#111;color:#D2A455;padding:4px 8px;border-radius:6px');
-
-// === Theme Fix v3: robust persistence + system default ===
-(function(){
-  const THEME_KEY = 'shangshi-theme';
+  const KEY = 'shangshi-theme';
   const body = document.body;
   const btn = document.getElementById('themeToggle');
-  const saved = localStorage.getItem(THEME_KEY);
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  if (saved === 'light') body.classList.add('light');
-  else if (saved === 'dark') body.classList.remove('light');
-  else if (prefersDark) body.classList.remove('light');
-  else body.classList.add('light'); // default to light only if system isn't dark
+  // Determine initial mode: stored -> system -> dark
+  let mode = localStorage.getItem(KEY);
+  if (!mode) {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    mode = prefersDark ? 'dark' : 'dark'; // force dark as default
+  }
+  if (mode === 'light') body.classList.add('light'); else body.classList.remove('light');
+
+  const setIcon = () => { if (btn) btn.textContent = body.classList.contains('light') ? '🌙' : '☀️'; };
+  setIcon();
 
   if (btn) {
-    const setIcon = () => { btn.textContent = body.classList.contains('light') ? '🌙' : '☀️'; };
-    setIcon();
     btn.addEventListener('click', () => {
       body.classList.toggle('light');
-      localStorage.setItem(THEME_KEY, body.classList.contains('light') ? 'light' : 'dark');
+      localStorage.setItem(KEY, body.classList.contains('light') ? 'light' : 'dark');
       setIcon();
     });
   }
-})();
-
-
-console.log('%c ShangShi UI build: theme-fix-v3 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
-
-
-/* Empty state auto-toggle */
-(function(){
-  const empty = document.getElementById('empty');
-  const rc = document.getElementById('resultCount');
-  if (!empty || !rc) return;
-  const parseCount = t => {
-    const m = String(t).match(/(\d+)/);
-    return m ? parseInt(m[1], 10) : 0;
-  };
-  const apply = () => {
-    const n = parseCount(rc.textContent || rc.innerText || "0");
-    if (n > 0) empty.classList.add('hidden'); else empty.classList.remove('hidden');
-  };
-  const obs = new MutationObserver(apply);
-  obs.observe(rc, { childList: true, subtree: true, characterData: true });
-  apply();
-})();
-
-
-/* Category chip color classes */
-document.addEventListener('DOMContentLoaded', () => {
-  const catRoot = document.getElementById('categories');
-  if (!catRoot) return;
-  const slug = s => s.toLowerCase().replace(/\s+/g,'').replace(/[^a-z]/g,'');
-  const map = {
-    starters:'chip-starters', mains:'chip-mains', desserts:'chip-desserts',
-    dimsums:'chip-dimsums', sauces:'chip-sauces', sides:'chip-sides', specials:'chip-specials'
-  };
-  const enhance = () => {
-    catRoot.querySelectorAll('.chip').forEach(chip => {
-      const s = slug(chip.textContent || '');
-      if (map[s] && !chip.classList.contains(map[s])) {
-        chip.classList.add('category', map[s]);
-      } else if (!chip.classList.contains('category')) {
-        chip.classList.add('category');
-      }
-    });
-  };
-  // Initial + re-run if panel updates dynamically
-  enhance();
-  const mo = new MutationObserver(enhance);
-  mo.observe(catRoot, { childList: true, subtree: true });
-});
-
-
-console.log('%c ShangShi UI build: canton-theme-v1 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
-
-
-/* Canton Theme v1.1 controllers */
-/* 1) Empty-state controller observing #grid & #resultCount */
-(function(){
-  const empty = document.getElementById('empty');
-  const grid = document.getElementById('grid');
-  const rc = document.getElementById('resultCount');
-  if (!empty || !grid) return;
-  const compute = () => {
-    const visibleCards = grid.querySelectorAll('.card');
-    const n = visibleCards.length;
-    if (n > 0) { empty.classList.remove('show'); empty.classList.add('hidden'); }
-    else { empty.classList.add('show'); empty.classList.remove('hidden'); }
-  };
-  const mo = new MutationObserver(compute);
-  mo.observe(grid, { childList: true, subtree: false });
-  if (rc) { 
-    const mo2 = new MutationObserver(compute);
-    mo2.observe(rc, { childList: true, characterData: true, subtree: true });
-  }
-  compute();
-})();
-
-/* 2) Allergen chips colorizer for Filters panel */
-(function(){
-  const root = document.getElementById('chips');
-  if (!root) return;
-  const mapCode = (txt) => (txt || '').trim().split(/\s+/)[0].toLowerCase();
-  const apply = () => {
-    root.querySelectorAll('.chip').forEach(chip => {
-      const code = mapCode(chip.textContent);
-      if (code && !chip.classList.contains(code)) chip.classList.add(code);
-    });
-  };
-  apply();
-  const mo = new MutationObserver(apply);
-  mo.observe(root, { childList: true, subtree: true });
 })();
