@@ -338,3 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 })();
+
+// Build stamp
+console.log('%c ShangShi UI build: dark-rescue-v2 ', 'background:#111;color:#D2A455;padding:4px 8px;border-radius:6px');

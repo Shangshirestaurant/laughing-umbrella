@@ -942,3 +942,108 @@ body.light .filter-btn { color: #143d31 !important; }
   letter-spacing: .3px;
   box-shadow: 0 6px 16px rgba(0,0,0,.16), 0 0 0 .5px rgba(255,255,255,.35) inset;
 }
+
+
+/* === Dark Rescue v2 — high-contrast, premium dark === */
+/* Force dark theme polish (applies when body is NOT .light) */
+body:not(.light) {
+  --bg:#0b0f12;
+  --panel:#0d1419;
+  --card:#11161a;
+  --text:#e7ecea;
+  --muted:#9aa6a2;
+  --heading:#f0f6f2;
+  --accent:#d2a455;
+  --accent2:#b5862e;
+}
+
+/* Background depth: clearer vignette + cleaner base */
+body:not(.light) html, 
+body:not(.light) body {
+  background:
+    radial-gradient(1200px 380px at 50% -180px, rgba(210,164,85,0.10), transparent),
+    linear-gradient(var(--bg), var(--bg)) !important;
+}
+
+/* Header glass more legible in dark */
+body:not(.light) .header {
+  background: linear-gradient(to bottom, rgba(13,20,25,0.86), rgba(13,20,25,0.62)) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+body:not(.light) .subtitle { color: var(--muted) !important; }
+
+/* Cards: stronger contrast, softer shadow */
+body:not(.light) .card {
+  background: var(--card) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,0.03) !important;
+}
+body:not(.light) .card h3 { color: var(--heading) !important; }
+body:not(.light) .desc { color: var(--muted) !important; }
+
+/* Chips: darker base + golden active for visibility */
+body:not(.light) .chip {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: var(--text) !important;
+}
+body:not(.light) .chip.active {
+  background: var(--accent) !important;
+  border-color: var(--accent2) !important;
+  color: #121212 !important;
+}
+
+/* Dock & filter buttons: reduce haze, increase legibility */
+body:not(.light) .dock-inner {
+  background: rgba(255,255,255,0.14) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.42) !important;
+}
+body:not(.light) .filter-btn {
+  background: rgba(255,255,255,0.12) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.20) !important;
+}
+
+/* Modal overlay/content: darker veil, brighter content panel */
+body:not(.light) .modal {
+  background: radial-gradient(1200px 640px at 50% 0%, rgba(0,0,0,.60), rgba(0,0,0,.75)) !important;
+}
+body:not(.light) .modal-content {
+  background: rgba(17,22,26,0.62) !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.06) !important;
+}
+body:not(.light) .modal-content .lbl,
+body:not(.light) .modal-content legend,
+body:not(.light) .modal-content label {
+  color: rgba(255,255,255,0.82) !important;
+}
+body:not(.light) .modal-content input:not([type="checkbox"]),
+body:not(.light) .modal-content textarea {
+  background: rgba(255,255,255,0.10) !important;
+  border: 1px solid rgba(255,255,255,0.20) !important;
+  color: var(--text) !important;
+}
+
+/* Buttons inside modal */
+body:not(.light) .btn-ghost {
+  background: rgba(255,255,255,0.10) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+}
+body:not(.light) .btn-primary {
+  background: linear-gradient(145deg, var(--accent), var(--accent2)) !important;
+  color: #111 !important;
+}
+
+/* Footer: darker gradient for balance */
+body:not(.light) .footer {
+  background: linear-gradient(to top, rgba(0,0,0,0.22), rgba(0,0,0,0)) !important;
+}
+
+/* Active state halos */
+body:not(.light) .filter-btn[aria-expanded="true"] {
+  box-shadow: 0 8px 18px rgba(0,0,0,.35), 0 0 0 2px rgba(210,164,85,0.32) !important;
+}
