@@ -368,3 +368,51 @@ console.log('%c ShangShi UI build: dark-rescue-v2 ', 'background:#111;color:#D2A
 
 
 console.log('%c ShangShi UI build: theme-fix-v3 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
+
+
+/* Empty state auto-toggle */
+(function(){
+  const empty = document.getElementById('empty');
+  const rc = document.getElementById('resultCount');
+  if (!empty || !rc) return;
+  const parseCount = t => {
+    const m = String(t).match(/(\d+)/);
+    return m ? parseInt(m[1], 10) : 0;
+  };
+  const apply = () => {
+    const n = parseCount(rc.textContent || rc.innerText || "0");
+    if (n > 0) empty.classList.add('hidden'); else empty.classList.remove('hidden');
+  };
+  const obs = new MutationObserver(apply);
+  obs.observe(rc, { childList: true, subtree: true, characterData: true });
+  apply();
+})();
+
+
+/* Category chip color classes */
+document.addEventListener('DOMContentLoaded', () => {
+  const catRoot = document.getElementById('categories');
+  if (!catRoot) return;
+  const slug = s => s.toLowerCase().replace(/\s+/g,'').replace(/[^a-z]/g,'');
+  const map = {
+    starters:'chip-starters', mains:'chip-mains', desserts:'chip-desserts',
+    dimsums:'chip-dimsums', sauces:'chip-sauces', sides:'chip-sides', specials:'chip-specials'
+  };
+  const enhance = () => {
+    catRoot.querySelectorAll('.chip').forEach(chip => {
+      const s = slug(chip.textContent || '');
+      if (map[s] && !chip.classList.contains(map[s])) {
+        chip.classList.add('category', map[s]);
+      } else if (!chip.classList.contains('category')) {
+        chip.classList.add('category');
+      }
+    });
+  };
+  // Initial + re-run if panel updates dynamically
+  enhance();
+  const mo = new MutationObserver(enhance);
+  mo.observe(catRoot, { childList: true, subtree: true });
+});
+
+
+console.log('%c ShangShi UI build: canton-theme-v1 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');

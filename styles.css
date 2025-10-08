@@ -1056,3 +1056,84 @@ body:not(.light) {
     radial-gradient(1200px 380px at 50% -180px, rgba(210,164,85,0.10), transparent),
     linear-gradient(var(--bg), var(--bg)) !important;
 }
+
+
+/* === Canton Theme v1 — fixes + Cantonese polish === */
+/* Strong hide for empty state when JS marks it hidden */
+#empty.hidden { display: none !important; }
+
+/* Canton palette */
+:root {
+  --canton-red: #B33A2F;     /* cinnabar */
+  --canton-red-deep: #8E2A22; 
+  --canton-gold: #D2A455; 
+  --canton-ink: #0c0f14;
+}
+
+/* Cards: subtle lacquer top rail + faint pattern */
+.card {
+  position: relative;
+  background-image:
+    radial-gradient(120% 160% at 80% -20%, rgba(210,164,85,0.06), transparent),
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px);
+  overflow: hidden;
+}
+.card::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+  background: linear-gradient(90deg, var(--canton-gold), rgba(210,164,85,0.0), var(--canton-gold));
+  opacity: .65;
+}
+/* Corner brackets (very subtle) */
+.card::after {
+  content: ""; position: absolute; inset: 10px; pointer-events: none;
+  border: 1px solid rgba(210,164,85,0.12);
+  border-radius: 18px;
+  mask: linear-gradient(#000 0 0) subtract, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) subtract, linear-gradient(#000 0 0);
+  opacity: .6;
+}
+
+/* Headings: slight cinnabar accent underline on hover */
+.card h3 {
+  position: relative;
+}
+.card h3::after {
+  content:""; position:absolute; left:0; bottom:-6px; width: 26px; height:2px;
+  background: linear-gradient(90deg, var(--canton-red), transparent);
+  opacity: .0; transition: opacity .25s ease, transform .25s ease;
+  transform: translateY(2px);
+}
+.card:hover h3::after { opacity:.65; transform: translateY(0); }
+
+/* Category pill (on card label row) — cinnabar tint */
+.pill.pill-category, .pill-category { 
+  display:inline-flex; 
+  background: linear-gradient(145deg, rgba(179,58,47,0.92), rgba(142,42,34,0.92)); 
+  color:#fff; 
+  border:1px solid rgba(255,255,255,0.18);
+}
+
+/* Panel chips: color mapping per category */
+.chip.category { font-weight:600; }
+.chip-starters  { background: rgba(179,58,47,0.16) !important; border:1px solid rgba(179,58,47,0.38) !important; }
+.chip-mains     { background: rgba(210,164,85,0.18) !important; border:1px solid rgba(210,164,85,0.34) !important; }
+.chip-desserts  { background: rgba(255,196,230,0.18) !important; border:1px solid rgba(255,196,230,0.34) !important; }
+.chip-dimsums   { background: rgba(165,235,190,0.18) !important; border:1px solid rgba(165,235,190,0.34) !important; }
+.chip-sauces    { background: rgba(120,186,255,0.18) !important; border:1px solid rgba(120,186,255,0.34) !important; }
+.chip-sides     { background: rgba(140,160,200,0.18) !important; border:1px solid rgba(140,160,200,0.34) !important; }
+.chip-specials  { background: rgba(210,164,85,0.22) !important; border:1px solid rgba(210,164,85,0.42) !important; }
+
+/* Active state keeps gold */
+.chip.category.active {
+  background: var(--canton-gold) !important;
+  color: #121212 !important;
+  border-color: color-mix(in srgb, var(--canton-gold) 80%, #B5862E) !important;
+}
+
+/* Dock panel container: slight gold tint for clarity on dark */
+.filter-panel .chips {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28) !important;
+}
+
+/* Empty state spacing tuned (but hidden via JS when dishes exist) */
+.empty { margin: 20px auto; }
