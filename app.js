@@ -27,8 +27,8 @@ const LEGEND = {
 let data = [];
 let selectedAllergens = new Set();
 let selectedCategory = null;
-const EXTRA_CATEGORIES = ["Sauces","Sides"];
-const CATEGORY_ORDER = ["Starters","Mains","Desserts","Sauces","Sides"];
+const EXTRA_CATEGORIES = ["Sauces","Specials"];
+const CATEGORY_ORDER = ["Starters","Mains","Desserts","Sauces"];
 
 const els = {
   grid: document.getElementById('grid'),
@@ -315,3 +315,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ const m=document.getElementById('addDishModal'); if(m && !m.classList.contains('hidden')) closeAddDish(); }}, {passive:true});
 });
+
+
+// === Visual Finesse: Parallax driver ===
+(function(){
+  const r = document.documentElement;
+  const update = () => r.style.setProperty('--scrollY', String(window.scrollY || 0));
+  update();
+  window.addEventListener('scroll', update, { passive: true });
+})();

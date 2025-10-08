@@ -725,70 +725,102 @@ html { scroll-behavior: smooth; }
 .reset-btn.spin svg{ transform: rotate(360deg); transition: transform .6s cubic-bezier(.22,1,.36,1); }
 
 
-/* === Light theme modal glass fix — v1 === */
-/* Bright frosted glass for light theme modals */
-body.light .modal {
-  background: radial-gradient(1200px 600px at 50% 10%, rgba(255,255,255,0.55), rgba(255,255,255,0.78));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+
+/* === Visual Finesse Pack v1 (parallax, glow, empty state) === */
+
+/* Parallax glass gradients driven by --scrollY */
+:root { --scrollY: 0px; }
+html, body {
+  background:
+    radial-gradient(1100px 320px at 50% calc(-160px + (var(--scrollY) * -0.06)), rgba(46,107,76,0.08), transparent),
+    linear-gradient(var(--bg), var(--bg));
+}
+body.light {
+  background:
+    radial-gradient(1100px 320px at 50% calc(-160px + (var(--scrollY) * -0.06)), rgba(210,164,85,0.08), transparent),
+    linear-gradient(var(--bg), var(--bg));
 }
 
-body.light .modal-content {
-  background: rgba(255,255,255,0.72);
-  color: #143d31;
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.10), inset 0 0 0 1px rgba(255,255,255,0.4);
+/* Footer progressive blur to mirror header */
+.footer {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.18), rgba(0,0,0,0));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+body.light .footer {
+  background: linear-gradient(to top, rgba(255,255,255,0.65), rgba(255,255,255,0));
 }
 
-/* Labels & help text */
-body.light .modal-content .lbl,
-body.light .modal-content legend,
-body.light .modal-content label {
-  color: #143d31;
-  opacity: 0.92;
+/* Micro-glow for cards and safe state */
+.card {
+  transition: transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s cubic-bezier(.22,1,.36,1), outline-color .22s ease;
+  outline: 0 solid transparent;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.28);
+}
+.card:focus-within {
+  outline-width: 2px;
+  outline-color: rgba(210,164,85,0.55);
+  outline-offset: 2px;
+}
+.card:has(.safe-pill) {
+  box-shadow: 0 0 0 1px rgba(52,199,89,0.28) inset, 0 10px 24px rgba(52,199,89,0.10);
+}
+.card:has(.safe-pill):hover {
+  box-shadow: 0 0 0 1px rgba(52,199,89,0.38) inset, 0 16px 34px rgba(52,199,89,0.16);
+}
+body.light .card:has(.safe-pill) {
+  box-shadow: 0 0 0 1px rgba(47,110,79,0.26) inset, 0 10px 22px rgba(47,110,79,0.08);
+}
+body.light .card:has(.safe-pill):hover {
+  box-shadow: 0 0 0 1px rgba(47,110,79,0.36) inset, 0 16px 32px rgba(47,110,79,0.12);
 }
 
-/* Inputs & textareas */
-body.light .modal-content input:not([type="checkbox"]),
-body.light .modal-content textarea {
-  background: rgba(255,255,255,0.70);
-  border: 1px solid rgba(0,0,0,0.10);
-  color: #143d31;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+/* Chips glow */
+.chip.category.active {
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.06) inset, 0 0 18px rgba(210,164,85,0.28);
+}
+body.light .chip.category.active {
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.06) inset, 0 0 16px rgba(47,110,79,0.28);
 }
 
-body.light .modal-content input::placeholder,
-body.light .modal-content textarea::placeholder {
-  color: rgba(20,61,49,0.55);
+/* Empty state styling */
+.empty {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 26px 12px;
+  color: var(--muted);
 }
-
-body.light .modal-content input:focus,
-body.light .modal-content textarea:focus {
-  border-color: rgba(46,107,76,0.45);
-  box-shadow: 0 0 0 3px rgba(46,107,76,0.14), 0 10px 20px rgba(0,0,0,0.08);
-  background: rgba(255,255,255,0.80);
+.empty-illustration svg {
+  width: 160px;
+  height: auto;
+  opacity: .9;
+  display: block;
+  margin: 0 auto 8px;
 }
-
-/* Allergen checklist text */
-body.light .modal-content .allergen-list label {
-  color: #143d31;
+.empty-copy h3 {
+  margin: 0 0 6px;
+  color: var(--heading);
+  font-size: 18px;
+  letter-spacing: .2px;
 }
-
-/* Close button & ghost buttons */
-body.light .modal-close {
-  background: rgba(0,0,0,0.04);
-  border: 1px solid rgba(0,0,0,0.08);
-  color: #143d31;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.6);
+.empty-copy p {
+  margin: 0;
+  font-size: 13.5px;
 }
+.empty-hint { opacity: .85; }
 
-body.light .btn-ghost {
-  background: rgba(0,0,0,0.06);
-  color: #143d31;
-  border: 1px solid rgba(0,0,0,0.08);
+/* Active filter button glow */
+.filter-btn[aria-expanded="true"] {
+  box-shadow: 0 8px 18px rgba(0,0,0,0.22), 0 0 0 2px rgba(210,164,85,0.35);
 }
-
-body.light .hint {
-  color: rgba(20,61,49,0.65);
+body.light .filter-btn[aria-expanded="true"] {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.10), 0 0 0 2px rgba(47,110,79,0.25);
 }
-

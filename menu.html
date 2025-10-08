@@ -17,7 +17,22 @@
 <div class="meta-row"><span id="resultCount">0 dishes</span> <span class="active-filter" id="activeFilter">No filters active</span></div>
 <main class="main">
 <section aria-live="polite" class="grid" id="grid"></section>
-<div class="empty hidden" id="empty">SAFE = dish does <strong>not</strong> contain selected allergen(s).</div>
+<div class="empty hidden" id="empty">
+  <div class="empty-illustration" aria-hidden="true">
+    <svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Empty plate illustration">
+      <g fill="none" stroke="currentColor" stroke-width="2.2" opacity="0.85">
+        <ellipse cx="90" cy="70" rx="52" ry="18"/>
+        <ellipse cx="90" cy="70" rx="32" ry="10" opacity="0.35"/>
+        <path d="M122 36 L164 18" stroke-linecap="round"/>
+        <path d="M116 42 L158 24" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+  <div class="empty-copy">
+    <h3>No safe dishes match… yet</h3>
+    <p>Try removing a filter or switching category. <span class="empty-hint">SAFE = dish does <strong>not</strong> contain the selected allergen(s).</span></p>
+  </div>
+</div>
 <footer class="footer">SAFE = dish does <strong>not</strong> contain selected allergen(s).</footer>
 </main>
 <!-- Add Dish Modal -->
