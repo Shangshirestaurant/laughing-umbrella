@@ -317,4 +317,30 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-console.log('%c Shang Shi Zen Edition v4.0 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
+/* v4.2 — Filter Indicator Logic */
+(function(){
+  const body = document.body;
+  function getChipsRoot(){
+    return document.getElementById('chips');
+  }
+  function computeActive(){
+    const root = getChipsRoot();
+    if (!root) return false;
+    const chips = root.querySelectorAll('.chip');
+    return Array.from(chips).some(c => c.classList.contains('active') || c.getAttribute('aria-pressed') === 'true');
+  }
+  function update(){ body.classList.toggle('filters-active', computeActive()); }
+  // Initial
+  update();
+  // Clicks on chips
+  document.addEventListener('click', (e)=>{
+    const t = e.target.closest && e.target.closest('#chips .chip');
+    if (t) setTimeout(update, 50);
+  });
+  // Observe dynamic changes to chips list or attributes
+  const root = getChipsRoot();
+  if (root) {
+    const mo = new MutationObserver(update);
+    mo.observe(root, { childList:true, subtree:true, attributes:true, attributeFilter:['class','aria-pressed'] });
+  }
+})();

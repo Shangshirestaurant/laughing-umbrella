@@ -726,56 +726,58 @@ html { scroll-behavior: smooth; }
 
 
 
-/* === ShangShi v3.8 — Refined Cards (Cinzel Edition) === */
-/* Cinzel for titles & section headers */
-:root { --font-title: 'Cinzel', serif; }
-
-.card h3,
-.section-title,
-h1, h2, h3.section-heading {
-  font-family: var(--font-title);
-  font-weight: 600;
-  letter-spacing: 0.2px;
+/* === Shang Shi v4.2 — Glowing Filters (Static Elegance) === */
+/* Static glow on active allergen chips (no animation) */
+#chips .chip.active,
+#chips .chip[aria-pressed="true"] {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+  transition: filter .2s ease, transform .2s ease, box-shadow .2s ease;
+  box-shadow: 0 0 8px 2px currentColor;
 }
 
-.card h3 {
-  font-size: calc(1em + 1px);
-  line-height: 1.18;
-  margin-bottom: 8px;
+/* Per-allergen color tuning for glow intensity */
+#chips .chip.gl.active,  #chips .chip.gl[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(179,58,47,0.60); }
+#chips .chip.cr.active,  #chips .chip.cr[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(179,58,47,0.60); }
+#chips .chip.eg.active,  #chips .chip.eg[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(255,214,98,0.60); }
+#chips .chip.mi.active,  #chips .chip.mi[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(210,164,85,0.55); }
+#chips .chip.mu.active,  #chips .chip.mu[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(210,164,85,0.60); }
+#chips .chip.so.active,  #chips .chip.so[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(47,110,79,0.60); }
+#chips .chip.fi.active,  #chips .chip.fi[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(120,186,255,0.60); }
+#chips .chip.ga.active,  #chips .chip.ga[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(160,180,90,0.55); }
+#chips .chip.mo.active,  #chips .chip.mo[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(150,110,200,0.60); }
+#chips .chip.mr.active,  #chips .chip.mr[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(120,100,180,0.60); }
+#chips .chip.nu.active,  #chips .chip.nu[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(120,200,140,0.60); }
+#chips .chip.on.active,  #chips .chip.on[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(160,120,90,0.60); }
+#chips .chip.se.active,  #chips .chip.se[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(180,160,90,0.60); }
+#chips .chip.so.active,  #chips .chip.so[aria-pressed="true"]  { box-shadow: 0 0 8px 2px rgba(90,180,180,0.60); }
+
+/* Filters button: neutral by default; jade dot when any filter active */
+.filter-btn {
+  position: relative;
+  background: transparent !important;
+  background-image: none !important;
+}
+.filter-dock .filter-btn::after {
+  content: '';
+  position: absolute;
+  top: 9px; right: 9px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  transition: background .25s ease, box-shadow .25s ease, transform .2s ease;
+}
+body.filters-active .filter-dock .filter-btn::after {
+  background: #2F6E4F; /* jade */
+  box-shadow: 0 0 6px 1px rgba(47,110,79,0.60);
+  transform: scale(1.02);
 }
 
-/* Category labels adopt Cinzel for cohesion */
-.pill.pill-category, .pill-category {
-  font-family: var(--font-title);
-  font-weight: 600;
+/* Prevent gold fill when filters selected (strong override) */
+.filter-dock .filter-btn.active,
+.filter-dock .filter-btn.is-active,
+.filter-dock .filter-btn[aria-pressed="true"],
+.filter-dock .filter-btn.selected {
+  background: transparent !important;
+  background-image: none !important;
 }
-
-/* Remove cinnabar underline */
-.card h3::after { content: none !important; display: none !important; }
-
-
-/* === Shang Shi Zen Edition v4.0 — global typography === */
-:root {
-  --ink-color: #1C1A18;
-  --font-zen: 'Zen Antique Soft', serif;
-  /* Ensure any components referencing --font-title inherit Zen too */
-  --font-title: var(--font-zen);
-}
-
-/* Apply Zen globally */
-html, body, button, input, textarea, select, .card, .chip, .pill, .modal, .dock-inner, .filter-btn, .add-btn, .reset-btn {
-  font-family: var(--font-zen) !important;
-}
-
-/* Warm ink default text tone */
-body { color: var(--ink-color); }
-
-/* Titles keep weight but use Zen (removes any Cinzel styling) */
-.card h3, .section-title, h1, h2, h3, h4, h5 {
-  font-family: var(--font-zen) !important;
-  letter-spacing: 0.1px;
-  font-weight: 500;
-}
-
-/* Keep cards clean (underline removed earlier stays removed) */
-.card h3::after { content: none !important; display: none !important; }
