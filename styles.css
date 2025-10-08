@@ -752,3 +752,30 @@ h1, h2, h3.section-heading {
 
 /* Remove cinnabar underline */
 .card h3::after { content: none !important; display: none !important; }
+
+
+/* === Shang Shi Zen Edition v4.0 — global typography === */
+:root {
+  --ink-color: #1C1A18;
+  --font-zen: 'Zen Antique Soft', serif;
+  /* Ensure any components referencing --font-title inherit Zen too */
+  --font-title: var(--font-zen);
+}
+
+/* Apply Zen globally */
+html, body, button, input, textarea, select, .card, .chip, .pill, .modal, .dock-inner, .filter-btn, .add-btn, .reset-btn {
+  font-family: var(--font-zen) !important;
+}
+
+/* Warm ink default text tone */
+body { color: var(--ink-color); }
+
+/* Titles keep weight but use Zen (removes any Cinzel styling) */
+.card h3, .section-title, h1, h2, h3, h4, h5 {
+  font-family: var(--font-zen) !important;
+  letter-spacing: 0.1px;
+  font-weight: 500;
+}
+
+/* Keep cards clean (underline removed earlier stays removed) */
+.card h3::after { content: none !important; display: none !important; }

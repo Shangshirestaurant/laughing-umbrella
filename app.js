@@ -315,3 +315,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ const m=document.getElementById('addDishModal'); if(m && !m.classList.contains('hidden')) closeAddDish(); }}, {passive:true});
 });
+
+
+console.log('%c Shang Shi Zen Edition v4.0 ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
