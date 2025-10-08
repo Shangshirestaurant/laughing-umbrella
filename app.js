@@ -324,3 +324,17 @@ document.addEventListener('DOMContentLoaded', () => {
   update();
   window.addEventListener('scroll', update, { passive: true });
 })();
+
+/* Elegance v2 microinteractions */
+(function(){
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReduced) return;
+  const springs = { open: 'cubic-bezier(.22,1,.36,1)' };
+
+  const toggles = [document.getElementById('filterToggle'), document.getElementById('categoryToggle')].filter(Boolean);
+  toggles.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.animate([{ transform: 'scale(0.98)' }, { transform: 'scale(1)' }], { duration: 140, easing: springs.open });
+    });
+  });
+})();

@@ -824,3 +824,121 @@ body.light .chip.category.active {
 body.light .filter-btn[aria-expanded="true"] {
   box-shadow: 0 8px 16px rgba(0,0,0,0.10), 0 0 0 2px rgba(47,110,79,0.25);
 }
+
+
+/* === Elegance v2 — Liquid Glass & Fine Dining polish === */
+
+/* Type scale & letter‑spacing tuned for elegance */
+:root {
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --shadow-soft: 0 8px 22px rgba(0,0,0,.18);
+  --shadow-mid: 0 14px 36px rgba(0,0,0,.22);
+  --ease-spring: cubic-bezier(.22,1,.36,1);
+  --t-100: 12px;   /* captions / chips */
+  --t-200: 13.5px; /* small */
+  --t-300: 15px;   /* body */
+  --t-400: 18px;   /* title */
+}
+
+body, .desc { letter-spacing: .2px; font-size: var(--t-300); }
+.card h3 { font-size: var(--t-400); letter-spacing: .25px; }
+
+/* Dish cards — calmer elevation and cleaner glass edges */
+.card {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-soft) !important;
+  border: 1px solid color-mix(in srgb, var(--text) 6%, transparent) !important;
+  transition: transform .22s var(--ease-spring), box-shadow .22s var(--ease-spring) !important;
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-mid) !important; }
+
+/* Liquid‑Glass modals: Clear material per Apple HIG (more translucent, better legibility) */
+.modal {
+  background: radial-gradient(1200px 640px at 50% 0%, rgba(0,0,0,.50), rgba(0,0,0,.65));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.modal-content {
+  border-radius: calc(var(--radius-lg) + 2px);
+  background: color-mix(in srgb, var(--panel) 60%, rgba(255,255,255,.06));
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: 0 28px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+/* Light theme: switch to Clear/Ultra‑thin look */
+body.light .modal {
+  background: radial-gradient(1200px 640px at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,.78));
+}
+body.light .modal-content {
+  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 18px 44px rgba(0,0,0,.12), inset 0 0 0 1px rgba(255,255,255,.45);
+}
+body.light .modal-content .field .lbl,
+body.light .modal-content label { color: #143d31; }
+
+/* Controls inside modals */
+.field input, .field textarea {
+  border-radius: 14px; 
+  transition: background .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.field input:focus, .field textarea:focus {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* Chips — pill aesthetics refined, subtle inner stroke */
+.chip {
+  padding: 7px 12px !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, #fff 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.10) !important;
+}
+.chip.active {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0,0,0,.18);
+}
+
+/* Bottom dock — reduce visual noise, keep premium button feel */
+.dock-inner {
+  gap: 10px !important;
+  background: color-mix(in srgb, #fff 82%, transparent);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 20px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+  padding: 8px 10px !important;
+}
+body.light .dock-inner {
+  background: rgba(255,255,255,.94) !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,.10) !important;
+}
+.filter-btn {
+  background: rgba(255,255,255,.92) !important;
+  color: #111 !important;
+}
+body.light .filter-btn { color: #143d31 !important; }
+
+/* Focus rings — tasteful, visible, WCAG‑friendly */
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, #a8e4c8);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+/* Empty state typography polish */
+.empty-copy h3 { font-weight: 650; }
+.empty-copy p { opacity: .92; }
+
+/* Motion timings for pop/tap feedback */
+.filter-btn:active, .add-btn:active, .btn:active { transform: translateY(0) scale(.985); }
+
+/* Safe pill refinement */
+.safe-pill {
+  font-weight: 800;
+  letter-spacing: .3px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.16), 0 0 0 .5px rgba(255,255,255,.35) inset;
+}
