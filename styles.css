@@ -766,3 +766,80 @@ body.light #categoryToggle[aria-expanded="true"] {
 #categoryToggle[aria-expanded="true"] .dot {
   opacity: .9 !important;
 }
+
+
+/* === ShangShi — All Fixes v3 (final overrides) === */
+/* Neutral dock: remove tray, keep only buttons */
+.filter-dock .dock-inner {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  gap: 10px !important;
+}
+/* Remove any stray outlines around dock */
+.filter-dock, .filter-dock * { outline: none !important; }
+
+/* Active state: halo only, no white fill */
+.filter-dock .filter-btn[aria-expanded="true"],
+.filter-dock #categoryToggle[aria-expanded="true"] {
+  background: rgba(255,255,255,0.10) !important;  /* matches idle in dark */
+  box-shadow: 0 0 0 2px rgba(210,164,85,0.28), 0 8px 18px rgba(0,0,0,0.22) !important;
+  color: var(--text) !important;
+}
+body.light .filter-dock .filter-btn[aria-expanded="true"],
+body.light .filter-dock #categoryToggle[aria-expanded="true"] {
+  background: rgba(0,0,0,0.04) !important;       /* matches idle in light */
+  box-shadow: 0 0 0 2px rgba(47,110,79,0.25), 0 6px 14px rgba(0,0,0,0.12) !important;
+  color: #143d31 !important;
+}
+
+/* Category & allergen chip coloring in panels */
+.chip.category { font-weight: 700 !important; }
+.chip-starters  { background: rgba(179,58,47,0.26) !important; border:1px solid rgba(179,58,47,0.46) !important; color:#e9eef0 !important; }
+.chip-mains     { background: rgba(210,164,85,0.26) !important; border:1px solid rgba(210,164,85,0.46) !important; color:#1a1a1a !important; }
+.chip-desserts  { background: rgba(255,196,230,0.22) !important; border:1px solid rgba(255,196,230,0.42) !important; color:#e9eef0 !important; }
+.chip-dimsums   { background: rgba(71,181,132,0.24) !important; border:1px solid rgba(71,181,132,0.44) !important; color:#e9eef0 !important; }
+.chip-sauces    { background: rgba(120,186,255,0.22) !important; border:1px solid rgba(120,186,255,0.40) !important; color:#e9eef0 !important; }
+.chip-sides     { background: rgba(140,160,200,0.22) !important; border:1px solid rgba(140,160,200,0.40) !important; color:#e9eef0 !important; }
+.chip-specials  { background: rgba(210,164,85,0.30) !important; border:1px solid rgba(210,164,85,0.50) !important; color:#1a1a1a !important; }
+
+/* Filters panel background remains glass; no dock tray */
+.filter-panel .chips {
+  background: rgba(20,24,28,0.72) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28) !important;
+}
+body.light .filter-panel .chips {
+  background: rgba(255,255,255,0.86) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+/* Light theme modals: bright frosted */
+body.light .modal {
+  background: radial-gradient(1200px 600px at 50% 10%, rgba(255,255,255,0.55), rgba(255,255,255,0.75)) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+body.light .modal-content {
+  background: rgba(255,255,255,0.72) !important;
+  color: #143d31 !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10), inset 0 0 0 1px rgba(255,255,255,0.4) !important;
+}
+
+/* Empty state logic: hidden unless JS reveals it */
+#empty { display: none !important; }
+#empty.show { display: grid !important; }
+
+/* Canton card accents — subtle */
+.card::before { height: 2px !important; opacity: .7 !important; }
+.card h3::after { height: 1.5px !important; opacity: 0 !important; }
+.card:hover h3::after { opacity: .85 !important; }
+
+/* Ensure dark background is applied when not in light mode */
+body:not(.light) {
+  background:
+    radial-gradient(1200px 380px at 50% -180px, rgba(210,164,85,0.10), transparent),
+    linear-gradient(var(--bg), var(--bg)) !important;
+}
