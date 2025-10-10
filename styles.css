@@ -1183,3 +1183,56 @@ body:not(.light) .filter-btn, body:not(.light) .category-btn {
   opacity: .15;
   pointer-events: none;
 }
+
+
+/* === Liquid Glass v1 — base tokens === */
+:root {
+  --lg-blur: 16px;
+  --lg-tint-dark: rgba(20,22,24,0.35);
+  --lg-tint-light: rgba(255,255,255,0.50);
+  --lg-stroke-dark: rgba(255,255,255,0.06);
+  --lg-stroke-light: rgba(0,0,0,0.08);
+  --lg-specular: rgba(255,255,255,0.25);
+  --lg-specular-strong: rgba(255,255,255,0.35);
+}
+.liquid-glass {
+  position: relative;
+  backdrop-filter: blur(var(--lg-blur)) saturate(120%);
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(120%);
+  background: var(--lg-tint-dark);
+  border: 1px solid var(--lg-stroke-dark);
+  overflow: hidden;
+}
+body.light .liquid-glass {
+  background: var(--lg-tint-light);
+  border-color: var(--lg-stroke-light);
+}
+.liquid-glass::before {
+  content: "";
+  position: absolute; inset: -10%;
+  background: inherit;
+  backdrop-filter: blur(calc(var(--lg-blur) * .6)) contrast(105%);
+  -webkit-backdrop-filter: blur(calc(var(--lg-blur) * .6)) contrast(105%);
+  mask-image:
+    radial-gradient(120px 120px at var(--lg-x,50%) var(--lg-y,50%), rgba(0,0,0,.15), transparent 60%),
+    radial-gradient(220px 180px at 60% 10%, rgba(0,0,0,.08), transparent 70%);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.liquid-glass::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(180px 140px at var(--lg-x,50%) var(--lg-y,50%), var(--lg-specular), transparent 60%),
+    radial-gradient(420px 320px at 30% -10%, var(--lg-specular-strong), transparent 70%);
+  mix-blend-mode: screen;
+  opacity: .55;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+.liquid-glass:where(:hover, :focus-within)::after { opacity: .75; }
+@media (prefers-reduced-motion: reduce) {
+  .liquid-glass::before,
+  .liquid-glass::after { display: none; }
+}
+.card.lg, .modal.lg, .filter-btn.lg, .category-btn.lg { border-radius: 20px; }

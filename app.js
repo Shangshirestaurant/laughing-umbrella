@@ -420,3 +420,32 @@ console.log('%c Shang Shi Zen Edition v4.2.5 — Off-white Frost + Bright Chips 
 
 
 console.log('%c Shang Shi Zen Edition v4.2.7 — Warm White Dock Edition ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
+
+
+/* === Liquid Glass v1 — pointer specular tracking === */
+(function () {
+  const targets = document.querySelectorAll('.card, .modal, #filterToggle, #categoryToggle, .filter-btn, .category-btn');
+  targets.forEach(el => el.classList.add('liquid-glass','lg'));
+
+  const els = document.querySelectorAll('.liquid-glass, .lg');
+  if (!els.length) return;
+
+  const set = (el, x, y) => {
+    el.style.setProperty('--lg-x', x + 'px');
+    el.style.setProperty('--lg-y', y + 'px');
+  };
+
+  els.forEach(el => {
+    const r = el.getBoundingClientRect();
+    set(el, r.width * 0.5, r.height * 0.35);
+
+    el.addEventListener('pointermove', (e) => {
+      const rect = el.getBoundingClientRect();
+      set(el, e.clientX - rect.left, e.clientY - rect.top);
+    });
+    el.addEventListener('pointerleave', () => {
+      const rect = el.getBoundingClientRect();
+      set(el, rect.width * 0.5, rect.height * 0.35);
+    });
+  });
+})();
