@@ -1185,23 +1185,24 @@ body:not(.light) .filter-btn, body:not(.light) .category-btn {
 }
 
 
-/* === Liquid Glass v1 — base tokens === */
+/* === Liquid Glass v1.1 — force-visible tint + attach to real buttons/cards === */
 :root {
   --lg-blur: 16px;
-  --lg-tint-dark: rgba(20,22,24,0.35);
-  --lg-tint-light: rgba(255,255,255,0.50);
-  --lg-stroke-dark: rgba(255,255,255,0.06);
-  --lg-stroke-light: rgba(0,0,0,0.08);
-  --lg-specular: rgba(255,255,255,0.25);
-  --lg-specular-strong: rgba(255,255,255,0.35);
+  --lg-tint-dark: rgba(15, 17, 19, 0.42);
+  --lg-tint-light: rgba(255, 255, 255, 0.60);
+  --lg-stroke-dark: rgba(255,255,255,0.08);
+  --lg-stroke-light: rgba(0,0,0,0.10);
+  --lg-specular: rgba(255,255,255,0.30);
+  --lg-specular-strong: rgba(255,255,255,0.40);
 }
 .liquid-glass {
   position: relative;
+  overflow: hidden;
   backdrop-filter: blur(var(--lg-blur)) saturate(120%);
   -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(120%);
   background: var(--lg-tint-dark);
   border: 1px solid var(--lg-stroke-dark);
-  overflow: hidden;
+  transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
 }
 body.light .liquid-glass {
   background: var(--lg-tint-light);
@@ -1211,12 +1212,11 @@ body.light .liquid-glass {
   content: "";
   position: absolute; inset: -10%;
   background: inherit;
-  backdrop-filter: blur(calc(var(--lg-blur) * .6)) contrast(105%);
-  -webkit-backdrop-filter: blur(calc(var(--lg-blur) * .6)) contrast(105%);
+  backdrop-filter: blur(calc(var(--lg-blur)*.6)) contrast(108%);
+  -webkit-backdrop-filter: blur(calc(var(--lg-blur)*.6)) contrast(108%);
   mask-image:
-    radial-gradient(120px 120px at var(--lg-x,50%) var(--lg-y,50%), rgba(0,0,0,.15), transparent 60%),
-    radial-gradient(220px 180px at 60% 10%, rgba(0,0,0,.08), transparent 70%);
-  mask-composite: exclude;
+    radial-gradient(120px 120px at var(--lg-x,50%) var(--lg-y,50%), rgba(0,0,0,.18), transparent 60%),
+    radial-gradient(220px 180px at 60% 10%, rgba(0,0,0,.10), transparent 70%);
   pointer-events: none;
 }
 .liquid-glass::after {
@@ -1226,13 +1226,33 @@ body.light .liquid-glass {
     radial-gradient(180px 140px at var(--lg-x,50%) var(--lg-y,50%), var(--lg-specular), transparent 60%),
     radial-gradient(420px 320px at 30% -10%, var(--lg-specular-strong), transparent 70%);
   mix-blend-mode: screen;
-  opacity: .55;
+  opacity: .7;
   pointer-events: none;
   transition: opacity .25s ease;
 }
-.liquid-glass:where(:hover, :focus-within)::after { opacity: .75; }
+.liquid-glass:hover::after,
+.liquid-glass:focus-within::after { opacity: .85; }
 @media (prefers-reduced-motion: reduce) {
   .liquid-glass::before,
   .liquid-glass::after { display: none; }
 }
-.card.lg, .modal.lg, .filter-btn.lg, .category-btn.lg { border-radius: 20px; }
+.card, .modal,
+#filterToggle, #categoryToggle,
+.filter-btn, .category-btn {
+  position: relative; overflow: hidden; border-radius: 20px;
+}
+#filterToggle, #categoryToggle,
+.filter-btn, .category-btn {
+  background: rgba(249,248,246,0.90) !important;
+  border: 1px solid rgba(0,0,0,0.10) !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25) !important;
+}
+body.light .modal,
+body.light [role="dialog"] {
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+.card, .modal, #filterToggle, #categoryToggle, .filter-btn, .category-btn {
+  backdrop-filter: blur(var(--lg-blur)) saturate(120%);
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(120%);
+}

@@ -422,12 +422,14 @@ console.log('%c Shang Shi Zen Edition v4.2.5 — Off-white Frost + Bright Chips 
 console.log('%c Shang Shi Zen Edition v4.2.7 — Warm White Dock Edition ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
 
 
-/* === Liquid Glass v1 — pointer specular tracking === */
+/* === Liquid Glass v1.1 — force attach + pointer specular tracking === */
 (function () {
-  const targets = document.querySelectorAll('.card, .modal, #filterToggle, #categoryToggle, .filter-btn, .category-btn');
-  targets.forEach(el => el.classList.add('liquid-glass','lg'));
+  const candidates = document.querySelectorAll(
+    '.card, .modal, [role="dialog"], #filterToggle, #categoryToggle, .filter-btn, .category-btn'
+  );
+  candidates.forEach(el => el.classList.add('liquid-glass'));
 
-  const els = document.querySelectorAll('.liquid-glass, .lg');
+  const els = document.querySelectorAll('.liquid-glass');
   if (!els.length) return;
 
   const set = (el, x, y) => {
@@ -448,4 +450,6 @@ console.log('%c Shang Shi Zen Edition v4.2.7 — Warm White Dock Edition ', 'bac
       set(el, rect.width * 0.5, rect.height * 0.35);
     });
   });
+
+  console.log('%c Liquid Glass v1.1 active ', 'background:#111;color:#C7A64F;padding:2px 6px;border-radius:4px');
 })();
