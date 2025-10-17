@@ -47,18 +47,31 @@ const els = {
 // Load
 async function loadMenu(){ const r = await fetch('./menu.json', {cache:'no-store'}); return r.ok ? r.json() : []; }
 
+// --- Normalization helpers ---
+const NORM = s => String(s ?? '').trim().toUpperCase();
+function normalizeData(arr){
+  return (arr||[]).map(d => ({
+    ...d,
+    allergens: Array.from(new Set((d.allergens||[]).map(NORM).filter(Boolean)))
+  }));
+}
+// Uppercase-key legend for consistent chips
+const LEGEND_UC = Object.fromEntries(Object.entries(LEGEND).map(([k,v]) => [k.toUpperCase(), v]));
+
+
 // Build chips
 function renderAllergenChips(){
   els.chips.innerHTML = '';
-  const codes = Array.from(Object.keys(LEGEND)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
+  const codes = Array.from(Object.keys(LEGEND_UC)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
   codes.forEach(code => {
     const btn = document.createElement('button');
     btn.className = 'chip';
-    btn.dataset.code = code;
+    btn.dataset.code = NORM(code);
     btn.innerHTML = `<b>${code}</b> ${LEGEND[code] || code}`; // Dock shows code + full name
     btn.addEventListener('click', () => {
-      if (selectedAllergens.has(code)){ selectedAllergens.delete(code); btn.classList.remove('active'); }
-      else { selectedAllergens.add(code); btn.classList.add('active'); }
+      const UC = NORM(code);
+      if (selectedAllergens.has(UC)){ selectedAllergens.delete(UC); btn.classList.remove('active'); }
+      else { selectedAllergens.add(UC); btn.classList.add('active'); }
       refresh();
 initResetEnhance();
 ensureDockUnsafeToggle();
@@ -93,23 +106,7 @@ function card(item){
   a.setAttribute('data-category', item.category||'');
   a.setAttribute('data-allergens', JSON.stringify(item.allergens||[]));
 
-  
-  // Guest Mode selection UI
-  const id = (item.id) ? item.id : (item.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-  if (guestMode){
-    a.classList.toggle('selected', selection.has(id));
-    let chip = a.querySelector('.select-chip');
-    if(!chip){
-      chip = document.createElement('button');
-      chip.className = 'select-chip';
-      chip.title = 'Select';
-      chip.textContent = '✓';
-      a.appendChild(chip);
-    }
-    chip.onclick = (e)=>{ e.stopPropagation(); toggleDishSelection(id); };
-    a.onclick = (e)=>{ if(e.target===chip) return; toggleDishSelection(id); };
-  }
-const labels = document.createElement('div');
+  const labels = document.createElement('div');
   ensureContainsPill(labels, item);
   labels.className = 'labels';
 
@@ -121,7 +118,7 @@ const labels = document.createElement('div');
 
   // SAFE only if allergens selected and dish safe
   if (selectedAllergens.size){
-    const al = item.allergens || [];
+    const al = (item.allergens || []).map(NORM);
     const ok = [...selectedAllergens].every(x => !al.includes(x));
     if (ok){
       const s = document.createElement('span');
@@ -213,63 +210,6 @@ function updateResetState(){
   }catch(e){ /* no-op */ }
 }
 
-
-// === Guest Mode (single-tablet selection) ===
-const G = {
-  selKey: 'guestSelection',
-  modeKey: 'guestMode',
-  pinKey: 'staffPIN'
-};
-let guestMode = localStorage.getItem(G.modeKey)==='1';
-const selection = new Set(JSON.parse(localStorage.getItem(G.selKey)||'[]'));
-function slug(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
-function itemId(d){ return d.id || slug(d.name); }
-function saveSelection(){ localStorage.setItem(G.selKey, JSON.stringify([...selection])); updateSelectionUI(); }
-function toggleDishSelection(id){ selection.has(id) ? selection.delete(id) : selection.add(id); saveSelection(); refresh(); }
-function updateSelectionUI(){
-  const drawer = document.getElementById('selectionDrawer');
-  const count = document.getElementById('selCount');
-  const ul = document.getElementById('selList');
-  if(count) count.textContent = String(selection.size);
-  if(drawer) drawer.hidden = !guestMode;
-  if(ul){
-    ul.innerHTML='';
-    [...selection].forEach(id=>{
-      const name = (data.find(d=>itemId(d)===id)?.name)||id;
-      const li=document.createElement('li'); li.textContent = name; ul.appendChild(li);
-    });
-  }
-}
-function enterGuestMode(){
-  guestMode = true; localStorage.setItem(G.modeKey,'1');
-  document.getElementById('guestModeBtn')?.setAttribute('aria-pressed','true');
-  updateSelectionUI(); refresh();
-}
-function exitGuestModeWithPin(){
-  const modal = document.getElementById('pinModal');
-  if(!modal) return;
-  modal.hidden=false;
-  const ok = document.getElementById('pinOk');
-  const cancel = document.getElementById('pinCancel');
-  ok.onclick = ()=>{
-    const expected = localStorage.getItem(G.pinKey)||'0000';
-    const val = (document.getElementById('pinInput').value||'').trim();
-    if(val===expected){
-      guestMode=false; localStorage.removeItem(G.modeKey);
-      document.getElementById('guestModeBtn')?.setAttribute('aria-pressed','false');
-      modal.hidden=true; refresh(); updateSelectionUI();
-    }else{
-      document.getElementById('pinInput').value='';
-    }
-  };
-  cancel.onclick = ()=> modal.hidden=true;
-}
-function wireGuestMode(){
-  document.getElementById('guestModeBtn')?.addEventListener('click',()=>{
-    if(!guestMode) enterGuestMode();
-  }, {passive:true});
-  document.getElementById('finishGuestBtn')?.addEventListener('click', exitGuestModeWithPin, {passive:true});
-}
 // Theme toggle kept minimal
 (function theme(){
   const btn = document.getElementById('themeToggle');
@@ -285,7 +225,7 @@ function wireGuestMode(){
 
 // Init
 (async function(){
-  data = await loadMenu();
+  data = normalizeData(await loadMenu());
   renderAllergenChips();
   renderCategoryChips();
   refresh();
@@ -487,6 +427,44 @@ function initResetEnhance(){
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
 
+// ===== Staff PIN handling — self-contained (pinfix-2) =====
+const GM = { modeKey: 'guestMode', pinKey: 'staffPIN' };
+try { var guestMode = (typeof guestMode !== 'undefined') ? guestMode : (localStorage.getItem(GM.modeKey) === '1'); } catch(_) { var guestMode = false; }
 
-  try{ wireGuestMode(); updateSelectionUI(); if(guestMode) enterGuestMode(); }catch(e){}
+function showPinModal(){
+  const m = document.getElementById('pinModal');
+  if (!m) return;
+  m.hidden = false;
+  setTimeout(()=>document.getElementById('pinInput')?.focus(), 0);
+}
+function hidePinModal(){
+  const m = document.getElementById('pinModal');
+  if (m) m.hidden = true;
+}
+function handlePinOk(){
+  const expected = (localStorage.getItem(GM.pinKey) || '0000').trim();
+  const given = (document.getElementById('pinInput')?.value || '').trim();
+  if (given === expected){
+    try { guestMode = false; localStorage.removeItem(GM.modeKey); } catch(_) {}
+    hidePinModal();
+    try{ updateSelectionUI?.(); }catch(_){}
+    try{ refresh?.(); }catch(_){}
+  } else {
+    const i = document.getElementById('pinInput');
+    if (i){ i.value = ''; i.focus(); }
+  }
+}
 
+document.addEventListener('click', (e)=>{
+  const t = e.target;
+  if (!t) return;
+  if (t.id === 'pinOk') handlePinOk();
+  if (t.id === 'pinCancel') hidePinModal();
+  if (t.id === 'finishGuestBtn' || t.dataset?.action === 'open-pin') showPinModal();
+}, { passive:true });
+
+document.addEventListener('keydown', (e)=>{
+  if (e.key === 'Enter' && !document.getElementById('pinModal')?.hidden){
+    handlePinOk();
+  }
+});
