@@ -6,10 +6,11 @@
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#0C0F14" name="theme-color"/>
 <title>Shang Shi Menu</title>
-<link href="./styles.css?v=pinfix-2" rel="stylesheet"/>
+<link href="./styles.css?v=guest-toggle-1" rel="stylesheet"/>
 </head>
 <body>
 <button aria-label="Toggle theme" class="theme-btn" id="themeToggle">🌙</button>
+<button id="guestToggle" class="icon-btn" aria-pressed="false" title="Guest mode"></button>
 <header class="header">
 <img alt="Shang Shi logo" class="header-logo" src="./logo.png"/>
 <p class="subtitle">Select allergen(s) to show only <strong>SAFE</strong> dishes.</p>
@@ -54,7 +55,8 @@
 <div class="filter-panel" id="categoryPanel">
 <div aria-label="Category filters" class="chips" id="categories" role="group"></div>
 </div>
-<script defer="" src="./app.js?v=pinfix-2"></script>
+<script defer="" src="./app.js?v=guest-toggle-1"></script>
+
 <!-- Staff PIN modal -->
 <div id="pinModal" hidden>
   <div class="pin-card" role="dialog" aria-labelledby="pinTitle" aria-modal="true">
@@ -66,5 +68,6 @@
     </div>
   </div>
 </div>
+
 </body>
 </html>

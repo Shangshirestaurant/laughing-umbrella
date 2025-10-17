@@ -427,9 +427,24 @@ function initResetEnhance(){
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
 
-// ===== Staff PIN handling — self-contained (pinfix-2) =====
+
+// === Guest Mode toggle + PIN exit (guest-toggle-1) ===
 const GM = { modeKey: 'guestMode', pinKey: 'staffPIN' };
-try { var guestMode = (typeof guestMode !== 'undefined') ? guestMode : (localStorage.getItem(GM.modeKey) === '1'); } catch(_) { var guestMode = false; }
+let guestMode = localStorage.getItem(GM.modeKey) === '1';
+
+function applyGuestMode(){
+  document.body.classList.toggle('guest-mode', guestMode);
+  const t = document.getElementById('guestToggle');
+  if (t) t.setAttribute('aria-pressed', guestMode ? 'true' : 'false');
+  try { updateSelectionUI?.(); } catch(_) {}
+  try { refresh?.(); } catch(_) {}
+}
+
+function enterGuestMode(){
+  guestMode = true;
+  localStorage.setItem(GM.modeKey, '1');
+  applyGuestMode();
+}
 
 function showPinModal(){
   const m = document.getElementById('pinModal');
@@ -441,30 +456,34 @@ function hidePinModal(){
   const m = document.getElementById('pinModal');
   if (m) m.hidden = true;
 }
-function handlePinOk(){
+function exitGuestModeIfPinOk(){
   const expected = (localStorage.getItem(GM.pinKey) || '0000').trim();
   const given = (document.getElementById('pinInput')?.value || '').trim();
   if (given === expected){
-    try { guestMode = false; localStorage.removeItem(GM.modeKey); } catch(_) {}
+    guestMode = false;
+    localStorage.removeItem(GM.modeKey);
     hidePinModal();
-    try{ updateSelectionUI?.(); }catch(_){}
-    try{ refresh?.(); }catch(_){}
+    applyGuestMode();
   } else {
-    const i = document.getElementById('pinInput');
-    if (i){ i.value = ''; i.focus(); }
+    const i = document.getElementById('pinInput'); if (i){ i.value=''; i.focus(); }
   }
 }
 
 document.addEventListener('click', (e)=>{
   const t = e.target;
   if (!t) return;
-  if (t.id === 'pinOk') handlePinOk();
+  if (t.id === 'guestToggle'){
+    if (!guestMode) { enterGuestMode(); }
+    else { showPinModal(); }
+  }
+  if (t.id === 'pinOk') exitGuestModeIfPinOk();
   if (t.id === 'pinCancel') hidePinModal();
-  if (t.id === 'finishGuestBtn' || t.dataset?.action === 'open-pin') showPinModal();
-}, { passive:true });
+}, {passive:true});
 
 document.addEventListener('keydown', (e)=>{
   if (e.key === 'Enter' && !document.getElementById('pinModal')?.hidden){
-    handlePinOk();
+    exitGuestModeIfPinOk();
   }
 });
+
+document.addEventListener('DOMContentLoaded', applyGuestMode);
