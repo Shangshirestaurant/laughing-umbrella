@@ -6,7 +6,7 @@
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#0C0F14" name="theme-color"/>
 <title>Shang Shi Menu</title>
-<link href="./styles.css?v=guest-toggle-1" rel="stylesheet"/>
+<link href="./styles.css?v=guest-mode-2" rel="stylesheet"/>
 </head>
 <body>
 <button aria-label="Toggle theme" class="theme-btn" id="themeToggle">🌙</button>
@@ -55,19 +55,6 @@
 <div class="filter-panel" id="categoryPanel">
 <div aria-label="Category filters" class="chips" id="categories" role="group"></div>
 </div>
-<script defer="" src="./app.js?v=guest-toggle-1"></script>
-
-<!-- Staff PIN modal -->
-<div id="pinModal" hidden>
-  <div class="pin-card" role="dialog" aria-labelledby="pinTitle" aria-modal="true">
-    <p id="pinTitle">Staff PIN</p>
-    <input id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" />
-    <div class="pin-actions">
-      <button id="pinOk" type="button" class="filter-btn">OK</button>
-      <button id="pinCancel" type="button" class="filter-btn">Cancel</button>
-    </div>
-  </div>
-</div>
-
+<script defer="" src="./app.js?v=guest-mode-2"></script>
 </body>
 </html>

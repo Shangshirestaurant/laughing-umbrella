@@ -428,62 +428,67 @@ function initResetEnhance(){
 }
 
 
-// === Guest Mode toggle + PIN exit (guest-toggle-1) ===
-const GM = { modeKey: 'guestMode', pinKey: 'staffPIN' };
-let guestMode = localStorage.getItem(GM.modeKey) === '1';
+// === Guest Mode card selection (guest-mode-2) ===
+const GSel = {
+  key: 'guestSelection'
+};
+let guestSelection = new Set();
+try { guestSelection = new Set(JSON.parse(localStorage.getItem(GSel.key) || '[]')); } catch(_){ guestSelection = new Set(); }
 
-function applyGuestMode(){
-  document.body.classList.toggle('guest-mode', guestMode);
-  const t = document.getElementById('guestToggle');
-  if (t) t.setAttribute('aria-pressed', guestMode ? 'true' : 'false');
-  try { updateSelectionUI?.(); } catch(_) {}
-  try { refresh?.(); } catch(_) {}
+function slugText(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+function idFromCard(card){
+  if (!card) return null;
+  if (card.dataset && card.dataset.id) return card.dataset.id;
+  // Try to derive from first heading text
+  const h = card.querySelector('h3,h2,.card-title,[data-title]');
+  const txt = (h?.textContent || card.getAttribute('aria-label') || '').trim();
+  return slugText(txt);
 }
-
-function enterGuestMode(){
-  guestMode = true;
-  localStorage.setItem(GM.modeKey, '1');
-  applyGuestMode();
+function saveGuestSelection(){
+  try { localStorage.setItem(GSel.key, JSON.stringify([...guestSelection])); } catch(_){}
 }
-
-function showPinModal(){
-  const m = document.getElementById('pinModal');
-  if (!m) return;
-  m.hidden = false;
-  setTimeout(()=>document.getElementById('pinInput')?.focus(), 0);
+function markCard(card){
+  const id = idFromCard(card);
+  if (!id) return;
+  card.classList.toggle('guest-selected', guestSelection.has(id));
 }
-function hidePinModal(){
-  const m = document.getElementById('pinModal');
-  if (m) m.hidden = true;
+function markAllCards(){
+  document.querySelectorAll('.card').forEach(markCard);
 }
-function exitGuestModeIfPinOk(){
-  const expected = (localStorage.getItem(GM.pinKey) || '0000').trim();
-  const given = (document.getElementById('pinInput')?.value || '').trim();
-  if (given === expected){
-    guestMode = false;
-    localStorage.removeItem(GM.modeKey);
-    hidePinModal();
-    applyGuestMode();
-  } else {
-    const i = document.getElementById('pinInput'); if (i){ i.value=''; i.focus(); }
+function wrapRefreshForGuest(){
+  if (typeof window.refresh === 'function' && !window.refresh.__guestWrapped){
+    const _r = window.refresh;
+    window.refresh = function(){
+      const out = _r.apply(this, arguments);
+      // after render, mark
+      setTimeout(markAllCards, 0);
+      return out;
+    };
+    window.refresh.__guestWrapped = true;
   }
 }
 
+// Delegate clicks on cards only while in guest mode
 document.addEventListener('click', (e)=>{
-  const t = e.target;
-  if (!t) return;
-  if (t.id === 'guestToggle'){
-    if (!guestMode) { enterGuestMode(); }
-    else { showPinModal(); }
-  }
-  if (t.id === 'pinOk') exitGuestModeIfPinOk();
-  if (t.id === 'pinCancel') hidePinModal();
-}, {passive:true});
+  try{
+    const t = e.target;
+    const card = t?.closest?.('.card');
+    if (!card) return;
+    if (!document.body.classList.contains('guest-mode')) return;
+    const id = idFromCard(card);
+    if (!id) return;
+    if (guestSelection.has(id)) guestSelection.delete(id);
+    else guestSelection.add(id);
+    saveGuestSelection();
+    markCard(card);
+  }catch(_){}
+}, {capture:false, passive:true});
 
-document.addEventListener('keydown', (e)=>{
-  if (e.key === 'Enter' && !document.getElementById('pinModal')?.hidden){
-    exitGuestModeIfPinOk();
-  }
-});
+// Hook into guest mode toggle we added earlier, if present
+(function initGuestUX(){
+  try{
+    // When the page (re)applies guest mode, mark all cards
+    document.addEventListener('DOMContentLoaded', ()=>{ wrapRefreshForGuest(); markAllCards(); });
+  }catch(_){}
+})();
 
-document.addEventListener('DOMContentLoaded', applyGuestMode);
