@@ -47,18 +47,31 @@ const els = {
 // Load
 async function loadMenu(){ const r = await fetch('./menu.json', {cache:'no-store'}); return r.ok ? r.json() : []; }
 
+// --- Normalization helpers ---
+const NORM = s => String(s ?? '').trim().toUpperCase();
+function normalizeData(arr){
+  return (arr||[]).map(d => ({
+    ...d,
+    allergens: Array.from(new Set((d.allergens||[]).map(NORM).filter(Boolean)))
+  }));
+}
+// Uppercase-key legend for consistent chips
+const LEGEND_UC = Object.fromEntries(Object.entries(LEGEND).map(([k,v]) => [k.toUpperCase(), v]));
+
+
 // Build chips
 function renderAllergenChips(){
   els.chips.innerHTML = '';
-  const codes = Array.from(Object.keys(LEGEND)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
+  const codes = Array.from(Object.keys(LEGEND_UC)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
   codes.forEach(code => {
     const btn = document.createElement('button');
     btn.className = 'chip';
-    btn.dataset.code = code;
+    btn.dataset.code = NORM(code);
     btn.innerHTML = `<b>${code}</b> ${LEGEND[code] || code}`; // Dock shows code + full name
     btn.addEventListener('click', () => {
-      if (selectedAllergens.has(code)){ selectedAllergens.delete(code); btn.classList.remove('active'); }
-      else { selectedAllergens.add(code); btn.classList.add('active'); }
+      const UC = NORM(code);
+      if (selectedAllergens.has(UC)){ selectedAllergens.delete(UC); btn.classList.remove('active'); }
+      else { selectedAllergens.add(UC); btn.classList.add('active'); }
       refresh();
 initResetEnhance();
 ensureDockUnsafeToggle();
@@ -105,7 +118,7 @@ function card(item){
 
   // SAFE only if allergens selected and dish safe
   if (selectedAllergens.size){
-    const al = item.allergens || [];
+    const al = (item.allergens || []).map(NORM);
     const ok = [...selectedAllergens].every(x => !al.includes(x));
     if (ok){
       const s = document.createElement('span');
@@ -212,7 +225,7 @@ function updateResetState(){
 
 // Init
 (async function(){
-  data = await loadMenu();
+  data = normalizeData(await loadMenu());
   renderAllergenChips();
   renderCategoryChips();
   refresh();
@@ -415,88 +428,59 @@ function initResetEnhance(){
 }
 
 
-// === Guest Mode: toggle + card selection + PIN exit (guest-mode-3) ===
+// === Guest Mode: suppress detail popup on card clicks (guest-mode-4) ===
 (function(){
-  const LS = { mode: 'guestMode', pin: 'staffPIN', sel: 'guestSelection' };
-  let guestMode = (localStorage.getItem(LS.mode) === '1');
-  let guestSelection = new Set();
-  try { guestSelection = new Set(JSON.parse(localStorage.getItem(LS.sel) || '[]')); } catch(_) {}
-
-  const slug = s => String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-
-  function cardId(card){
-    if (!card) return null;
-    if (card.dataset && card.dataset.id) return card.dataset.id;
+  const LS = { mode: 'guestMode', sel: 'guestSelection' };
+  function isGuest(){ return document.body.classList.contains('guest-mode') || localStorage.getItem(LS.mode)==='1'; }
+  function slug(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+  function cardId(node){
+    const card = node?.closest?.('.card'); if (!card) return null;
+    if (card.dataset?.id) return card.dataset.id;
     const h = card.querySelector('h3,h2,.card-title,[data-title]');
     const txt = (h?.textContent || card.getAttribute('aria-label') || '').trim();
     return slug(txt);
   }
-
-  function saveSel(){ try { localStorage.setItem(LS.sel, JSON.stringify([...guestSelection])); } catch(_){} }
-
-  function markCard(card){
+  let sel = new Set();
+  try { sel = new Set(JSON.parse(localStorage.getItem('guestSelection') || '[]')); } catch(_){ sel = new Set(); }
+  function save(){ try{ localStorage.setItem('guestSelection', JSON.stringify([...sel])); }catch(_){ } }
+  function mark(card){
     const id = cardId(card); if (!id) return;
-    card.classList.toggle('guest-selected', guestSelection.has(id));
+    card.classList.toggle('guest-selected', sel.has(id));
   }
-  function markAll(){ document.querySelectorAll('.card').forEach(markCard); }
-
-  function applyMode(){
-    document.body.classList.toggle('guest-mode', guestMode);
-    const btn = document.getElementById('guestToggle');
-    if (btn) btn.setAttribute('aria-pressed', guestMode ? 'true' : 'false');
-    setTimeout(markAll, 0);
-  }
-
-  (function wrapRefresh(){
-    const r = window.refresh;
-    if (typeof r === 'function' && !r.__guestWrapped){
-      window.refresh = function(){ const out = r.apply(this, arguments); setTimeout(markAll,0); return out; };
-      window.refresh.__guestWrapped = true;
-    }
-  })();
-
-  document.addEventListener('click', (e)=>{
+  function onCapture(e){
+    if (!isGuest()) return;
     const card = e.target?.closest?.('.card');
     if (!card) return;
-    if (!document.body.classList.contains('guest-mode')) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
     const id = cardId(card); if (!id) return;
-    if (guestSelection.has(id)) guestSelection.delete(id); else guestSelection.add(id);
-    saveSel(); markCard(card);
-  }, {passive:true});
-
+    if (sel.has(id)) sel.delete(id); else sel.add(id);
+    save(); mark(card);
+  }
+  if (!window.__guestCaptureInstalled){
+    document.addEventListener('click', onCapture, { capture: true });
+    window.__guestCaptureInstalled = true;
+  }
+  function applyPressed(){
+    const btn = document.getElementById('guestToggle');
+    if (btn) btn.setAttribute('aria-pressed', isGuest() ? 'true' : 'false');
+  }
+  document.addEventListener('DOMContentLoaded', applyPressed);
   document.addEventListener('click', (e)=>{
-    if (e.target?.id !== 'guestToggle') return;
-    if (!guestMode){
-      guestMode = true; localStorage.setItem(LS.mode,'1'); applyMode();
+    if (e.target?.id === 'guestToggle'){ setTimeout(applyPressed, 0); }
+  }, {passive:true});
+  (function wrapRefresh(){
+    const r = window.refresh;
+    if (typeof r === 'function' && !r.__guestCaptureWrapped){
+      window.refresh = function(){
+        const out = r.apply(this, arguments);
+        setTimeout(()=>document.querySelectorAll('.card').forEach(mark),0);
+        return out;
+      };
+      window.refresh.__guestCaptureWrapped = true;
     } else {
-      const m = document.getElementById('pinModal'); if (!m) return;
-      m.hidden = false;
-      setTimeout(()=>document.getElementById('pinInput')?.focus(), 0);
+      document.addEventListener('DOMContentLoaded', ()=>{
+        setTimeout(()=>document.querySelectorAll('.card').forEach(mark),0);
+      });
     }
-  }, {passive:true});
-
-  document.addEventListener('click', (e)=>{
-    const id = e.target?.id;
-    if (id === 'pinCancel'){ document.getElementById('pinModal').hidden = true; }
-    if (id === 'pinOk'){
-      const expected = (localStorage.getItem(LS.pin) || '0000').trim();
-      const given = (document.getElementById('pinInput')?.value || '').trim();
-      if (given === expected){
-        guestMode = false; localStorage.removeItem(LS.mode);
-        document.getElementById('pinModal').hidden = true;
-        applyMode();
-      } else {
-        const i = document.getElementById('pinInput'); if (i){ i.value=''; i.focus(); }
-      }
-    }
-  }, {passive:true});
-
-  document.addEventListener('keydown', (e)=>{
-    if (e.key === 'Enter' && !document.getElementById('pinModal')?.hidden){
-      document.getElementById('pinOk')?.click();
-    }
-  });
-
-  document.addEventListener('DOMContentLoaded', applyMode);
+  })();
 })();
-
