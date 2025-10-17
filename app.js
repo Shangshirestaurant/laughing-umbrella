@@ -11,7 +11,7 @@ const allergenClassMap = {
   "MO": "chip-mo",
   "MR": "chip-mr",
   "MU": "chip-mu",
-  "Mi": "chip-mi",
+  "MI": "chip-mi",
   "NU": "chip-nu",
   "ON": "chip-on",
   "SE": "chip-se",
@@ -20,16 +20,17 @@ const allergenClassMap = {
 };
 
 const LEGEND = {
-  CE:"Celery", GL:"Gluten", CR:"Crustaceans", EG:"Eggs", FI:"Fish", MO:"Molluscs", Mi:"Milk",
+  CE:"Celery", GL:"Gluten", CR:"Crustaceans", EG:"Eggs", FI:"Fish", MO:"Molluscs", MI:"Milk",
   MU:"Mustard", NU:"Nuts", SE:"Sesame", SO:"Soya", GA:"Garlic", ON:"Onion", MR:"Mushrooms", HO:"Honey"
 };
 
 let data = [];
 let selectedAllergens = new Set();
 let selectedCategory = null;
-const EXTRA_CATEGORIES = ["Sauces","Specials"];
-const CATEGORY_ORDER = ["Starters","Mains","Desserts","Sauces"];
+const EXTRA_CATEGORIES = ["Sauces","Sides"];
+const CATEGORY_ORDER = ["Starters","Mains","Desserts","Sauces","Sides"];
 
+let showUnsafeOnly = JSON.parse(localStorage.getItem("show-unsafe-only")||"false");
 const els = {
   grid: document.getElementById('grid'),
   chips: document.getElementById('chips'),
@@ -46,19 +47,34 @@ const els = {
 // Load
 async function loadMenu(){ const r = await fetch('./menu.json', {cache:'no-store'}); return r.ok ? r.json() : []; }
 
+// --- Normalization helpers ---
+const NORM = s => String(s ?? '').trim().toUpperCase();
+function normalizeData(arr){
+  return (arr||[]).map(d => ({
+    ...d,
+    allergens: Array.from(new Set((d.allergens||[]).map(NORM).filter(Boolean)))
+  }));
+}
+// Uppercase-key legend for consistent chips
+const LEGEND_UC = Object.fromEntries(Object.entries(LEGEND).map(([k,v]) => [k.toUpperCase(), v]));
+
+
 // Build chips
 function renderAllergenChips(){
   els.chips.innerHTML = '';
-  const codes = Array.from(Object.keys(LEGEND)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
+  const codes = Array.from(Object.keys(LEGEND_UC)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
   codes.forEach(code => {
     const btn = document.createElement('button');
     btn.className = 'chip';
-    btn.dataset.code = code;
+    btn.dataset.code = NORM(code);
     btn.innerHTML = `<b>${code}</b> ${LEGEND[code] || code}`; // Dock shows code + full name
     btn.addEventListener('click', () => {
-      if (selectedAllergens.has(code)){ selectedAllergens.delete(code); btn.classList.remove('active'); }
-      else { selectedAllergens.add(code); btn.classList.add('active'); }
+      const UC = NORM(code);
+      if (selectedAllergens.has(UC)){ selectedAllergens.delete(UC); btn.classList.remove('active'); }
+      else { selectedAllergens.add(UC); btn.classList.add('active'); }
       refresh();
+initResetEnhance();
+ensureDockUnsafeToggle();
     }, {passive:true});
     els.chips.appendChild(btn);
   });
@@ -91,6 +107,7 @@ function card(item){
   a.setAttribute('data-allergens', JSON.stringify(item.allergens||[]));
 
   const labels = document.createElement('div');
+  ensureContainsPill(labels, item);
   labels.className = 'labels';
 
   const key = (item.category||'').toLowerCase().replace(/\s+/g,'');
@@ -101,7 +118,7 @@ function card(item){
 
   // SAFE only if allergens selected and dish safe
   if (selectedAllergens.size){
-    const al = item.allergens || [];
+    const al = (item.allergens || []).map(NORM);
     const ok = [...selectedAllergens].every(x => !al.includes(x));
     if (ok){
       const s = document.createElement('span');
@@ -141,7 +158,7 @@ function renderGrid(){
     return i === -1 ? 999 : i;
   };
   const items = data
-    .filter(d => isSafe(d) && inCategory(d))
+    .filter(d => visible(d))
     .sort((a,b) => orderIndex(a.category) - orderIndex(b.category) || String(a.name).localeCompare(String(b.name)));
   items.forEach(d => els.grid.appendChild(card(d)));
   els.result.textContent = `${items.length} dishes`;
@@ -208,7 +225,7 @@ function updateResetState(){
 
 // Init
 (async function(){
-  data = await loadMenu();
+  data = normalizeData(await loadMenu());
   renderAllergenChips();
   renderCategoryChips();
   refresh();
@@ -317,139 +334,95 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-/* v4.2 — Filter Indicator Logic */
-(function(){
-  const body = document.body;
-  function getChipsRoot(){
-    return document.getElementById('chips');
+/* Decide visibility given current mode and selections */
+function visible(d){
+  // If no allergens are selected, just respect category filters
+  if(!selectedAllergens || selectedAllergens.size===0){
+    return inCategory(d);
   }
-  function computeActive(){
-    const root = getChipsRoot();
-    if (!root) return false;
-    const chips = root.querySelectorAll('.chip');
-    return Array.from(chips).some(c => c.classList.contains('active') || c.getAttribute('aria-pressed') === 'true');
-  }
-  function update(){ body.classList.toggle('filters-active', computeActive()); }
-  // Initial
-  update();
-  // Clicks on chips
-  document.addEventListener('click', (e)=>{
-    const t = e.target.closest && e.target.closest('#chips .chip');
-    if (t) setTimeout(update, 50);
-  });
-  // Observe dynamic changes to chips list or attributes
-  const root = getChipsRoot();
-  if (root) {
-    const mo = new MutationObserver(update);
-    mo.observe(root, { childList:true, subtree:true, attributes:true, attributeFilter:['class','aria-pressed'] });
-  }
-})();
+  // Safe when none of the selected allergens are present
+  const hasAny = (d.allergens||[]).some(a => selectedAllergens.has(String(a).toUpperCase()));
+  return showUnsafeOnly ? (hasAny && inCategory(d)) : (!hasAny && inCategory(d));
+}
 
-/* v4.2.2 dark-default theme controller */
-(function(){
-  const KEY='shangshi-theme';
-  const body=document.body;
-  let mode=localStorage.getItem(KEY);
-  if(!mode){ mode='dark'; localStorage.setItem(KEY,'dark'); }
-  if(mode==='light') body.classList.add('light'); else body.classList.remove('light');
-  const btn=document.getElementById('themeToggle');
-  const setIcon=()=>{ if(btn) btn.textContent = body.classList.contains('light') ? '🌙' : '☀️'; };
-  setIcon();
-  if(btn){
-    btn.addEventListener('click',()=>{
-      body.classList.toggle('light');
-      localStorage.setItem(KEY, body.classList.contains('light') ? 'light' : 'dark');
-      setIcon();
-    });
-  }
-})();
 
-console.log('%c Shang Shi Zen Edition v4.2.2 — Frosted Dock ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
-
-/* v4.2.3 dark-default theme controller */
-(function(){
-  const KEY='shangshi-theme'; const body=document.body;
-  let mode=localStorage.getItem(KEY) || 'dark';
-  if (mode==='light') body.classList.add('light'); else body.classList.remove('light');
-  const btn=document.getElementById('themeToggle');
-  const setIcon=()=>{ if(btn) btn.textContent = body.classList.contains('light') ? '🌙' : '☀️'; };
-  setIcon();
-  if(btn){
-    btn.addEventListener('click',()=>{
-      body.classList.toggle('light');
-      localStorage.setItem(KEY, body.classList.contains('light') ? 'light' : 'dark');
-      setIcon();
-    });
-  }
-})();
-
-/* === SHANG SHI v4.2.4 HOTFIX — robust filter indicator + frost attach === */
-(function () {
-  const body = document.body;
-  function anyChipActive() {
-    const root = document.querySelector('#chips, [id*="chips" i], .filter-panel .chips, .chips');
-    if (!root) return false;
-    return !!root.querySelector('.chip.active, .chip[aria-pressed="true"]');
-  }
-  function syncFiltersActive() { body.classList.toggle('filters-active', anyChipActive()); }
-  syncFiltersActive();
-  document.addEventListener('click', (e) => {
-    if (e.target.closest && e.target.closest('.chip')) setTimeout(syncFiltersActive, 50);
-  });
-  const chipsRoot = document.querySelector('#chips, [id*="chips" i], .filter-panel .chips, .chips');
-  if (chipsRoot) {
-    new MutationObserver(syncFiltersActive).observe(chipsRoot, {
-      subtree: true, childList: true, attributes: true, attributeFilter: ['class','aria-pressed']
-    });
-  }
-  const candidates = Array.from(document.querySelectorAll('button, .btn, .pill, [role="button"]'));
-  const frostIfMatch = (el, label) => el && el.textContent && el.textContent.trim().toLowerCase().startsWith(label);
-  const filtersBtn = candidates.find(el => frostIfMatch(el, 'filters')) || document.getElementById('filterToggle');
-  const categoriesBtn = candidates.find(el => frostIfMatch(el, 'categories')) || document.getElementById('categoryToggle');
-  [filtersBtn, categoriesBtn].forEach((btn) => {
-    if (!btn) return;
-    btn.classList.add('filter-btn');
-    if (btn === filtersBtn) {
-      let dot = btn.querySelector('.dot');
-      if (!dot) { dot = document.createElement('span'); dot.className = 'dot'; btn.appendChild(dot); }
+function ensureContainsPill(labels, item){
+  const anySel = selectedAllergens && selectedAllergens.size > 0;
+  const allergens = (item.allergens || []).map(a => String(a).toUpperCase());
+  const has = anySel && allergens.some(a => selectedAllergens.has(a));
+  let pill = labels.querySelector('.contains-pill');
+  if (showUnsafeOnly && has){
+    if(!pill){
+      pill = document.createElement('span');
+      pill.className = 'contains-pill';
+      pill.textContent = 'Contains';
+      labels.appendChild(pill);
     }
-  });
-})();
-
-console.log('%c Shang Shi Zen Edition v4.2.5 — Off-white Frost + Bright Chips ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
-
-
-console.log('%c Shang Shi Zen Edition v4.2.7 — Warm White Dock Edition ', 'background:#0c0f14;color:#D2A455;padding:4px 8px;border-radius:6px');
+  } else if (pill){
+    pill.remove();
+  }
+}
 
 
-/* === Liquid Glass v1.1 — force attach + pointer specular tracking === */
-(function () {
-  const candidates = document.querySelectorAll(
-    '.card, .modal, [role="dialog"], #filterToggle, #categoryToggle, .filter-btn, .category-btn'
-  );
-  candidates.forEach(el => el.classList.add('liquid-glass'));
+function initUnsafeDockToggle(){
+  const t = document.getElementById('unsafeToggle');
+  if(!t) return;
+  t.setAttribute('aria-pressed', String(showUnsafeOnly));
+  document.body.classList.toggle('show-unsafe-only', !!showUnsafeOnly);
+  t.addEventListener('click', () => {
+    showUnsafeOnly = !showUnsafeOnly;
+    localStorage.setItem('show-unsafe-only', JSON.stringify(showUnsafeOnly));
+    t.setAttribute('aria-pressed', String(showUnsafeOnly));
+    document.body.classList.toggle('show-unsafe-only', !!showUnsafeOnly);
+    refresh();
+  }, {passive:true});
+}
 
-  const els = document.querySelectorAll('.liquid-glass');
-  if (!els.length) return;
+function ensureDockUnsafeToggle(){
+  let t = document.getElementById('unsafeToggle');
+  if (!t){
+    const dockInner = document.querySelector('.dock-inner');
+    if (dockInner){
+      t = document.createElement('button');
+      t.id = 'unsafeToggle';
+      t.className = 'ios-toggle';
+      t.type = 'button';
+      t.title = 'Show dishes that CONTAIN selected allergen(s)';
+      t.setAttribute('aria-pressed','false');
+      const knob = document.createElement('span');
+      knob.className = 'knob';
+      t.appendChild(knob);
+      dockInner.insertBefore(t, dockInner.firstChild);
+    }
+  }
+  initUnsafeDockToggle();
+}
 
-  const set = (el, x, y) => {
-    el.style.setProperty('--lg-x', x + 'px');
-    el.style.setProperty('--lg-y', y + 'px');
-  };
 
-  els.forEach(el => {
-    const r = el.getBoundingClientRect();
-    set(el, r.width * 0.5, r.height * 0.35);
+function resetToSafeAndClearFilters(){
+  try{
+    if (typeof selectedAllergens !== 'undefined' && selectedAllergens.clear) selectedAllergens.clear();
+    // clear any active state on chips
+    const chipsRoot = document.querySelector('#chips, .chips');
+    if (chipsRoot){
+      chipsRoot.querySelectorAll('.chip').forEach(ch => {
+        ch.classList.remove('active');
+        ch.setAttribute && ch.setAttribute('aria-pressed','false');
+      });
+    }
+    // force SAFE mode
+    showUnsafeOnly = false;
+    localStorage.setItem('show-unsafe-only', 'false');
+    const t = document.getElementById('unsafeToggle');
+    if (t) t.setAttribute('aria-pressed','false');
+    document.body.classList.remove('show-unsafe-only');
+    refresh();
+  }catch(e){/*noop*/}
+}
 
-    el.addEventListener('pointermove', (e) => {
-      const rect = el.getBoundingClientRect();
-      set(el, e.clientX - rect.left, e.clientY - rect.top);
-    });
-    el.addEventListener('pointerleave', () => {
-      const rect = el.getBoundingClientRect();
-      set(el, rect.width * 0.5, rect.height * 0.35);
-    });
-  });
-
-  console.log('%c Liquid Glass v1.1 active ', 'background:#111;color:#C7A64F;padding:2px 6px;border-radius:4px');
-})();
+function initResetEnhance(){
+  const btn = document.getElementById('resetBtn');
+  if (!btn || btn.dataset.resetEnhanced==='1') return;
+  btn.dataset.resetEnhanced='1';
+  btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
+}
