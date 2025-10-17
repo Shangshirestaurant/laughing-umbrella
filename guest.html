@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Menu — Guest</title>
+  <link rel="stylesheet" href="./styles.css?v=guest-solo-1">
+  <style>
+    :root { --guest-accent: #00c878; }
+    body { background: #0f1215; color: #e9eef2; }
+    header.guest { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; }
+    header.guest h1 { font-size:18px; margin:0; opacity:.92; }
+    header.guest .count { font-weight:600; opacity:.86; }
+    .guest-dock { position:sticky; top:0; z-index:40; display:flex; gap:10px; padding:8px 12px; background:rgba(10,12,14,.65); backdrop-filter: blur(10px); }
+    .guest-btn { height:44px; min-width:44px; padding:0 14px; border-radius:14px; display:inline-flex; align-items:center; gap:8px; justify-content:center;
+      background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.12); color:#e9eef2;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 6px 18px rgba(0,0,0,.35);
+      transition: transform .18s ease, background .2s ease, box-shadow .2s ease;
+    }
+    .guest-btn:hover{ transform: translateY(-1px); }
+    .guest-btn:active{ transform: translateY(0) scale(.98); }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:12px; padding:12px; }
+    .card { position:relative; border-radius:16px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); padding:12px; min-height:120px; display:grid; gap:6px; }
+    .card h3 { margin:0; font-size:16px; line-height:1.25; }
+    .card p { margin:0; opacity:.8; font-size:13px; }
+    .price { font-weight:600; opacity:.9; }
+    .chip { font-size:11px; opacity:.75; display:inline-block; margin-right:6px; }
+    .select-chip{ position:absolute; top:10px; right:10px; width:28px; height:28px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .card.selected{ outline:2px solid rgba(0,200,120,.9); box-shadow: 0 8px 18px rgba(0,200,120,.25); }
+    .card.selected .select-chip{ background: rgba(0,200,120,.35); border-color: rgba(0,200,120,.6); }
+    #selectionDrawer{ position:fixed; left:12px; right:12px; bottom:12px; z-index:60;
+      background: rgba(22,24,28,.88); border:1px solid rgba(255,255,255,.08); border-radius:16px;
+      padding:10px 12px; display:none; max-height:40vh; overflow:auto; box-shadow: 0 18px 50px rgba(0,0,0,.45);
+    }
+    #selectionDrawer.open{ display:block; }
+    #selectionDrawer .row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    #selectionList{ list-style:none; margin:0; padding:0; display:grid; gap:6px; }
+    #selectionList li{ display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:8px 10px; }
+  </style>
+</head>
+<body>
+  <header class="guest">
+    <h1>Guest Menu</h1>
+    <div class="count">Selected: <span id="selCount">0</span></div>
+  </header>
+  <div class="guest-dock">
+    <button id="toggleDrawer" class="guest-btn">View selection</button>
+    <button id="clearSel" class="guest-btn">Clear</button>
+    <a class="guest-btn" href="./menu.html">Staff view</a>
+  </div>
+  <main id="grid" class="grid" role="list"></main>
+  <div id="selectionDrawer" aria-live="polite" aria-label="Selected dishes">
+    <div class="row">
+      <strong>My selection</strong>
+      <div><button id="closeDrawer" class="guest-btn" style="height:34px; padding:0 10px;">Close</button></div>
+    </div>
+    <ul id="selectionList"></ul>
+  </div>
+  <script src="./guest.js?v=guest-solo-1" defer></script>
+</body>
+</html>
