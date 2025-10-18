@@ -428,46 +428,131 @@ function initResetEnhance(){
 }
 
 
-// r4-hotfix: Guest -> Staff requires PIN (ES5-safe)
+// === r5 Guest Mode & Dock polish (safe) ===
 (function(){
-  function $(s){ return document.querySelector(s); }
-  var btn = document.getElementById('guestToggle');
-  var modal = document.getElementById('guestExitModal');
-  function isGuest(){ try{return localStorage.getItem('guestMode')==='1'}catch(e){return false;} }
+  function $(s, r){ return (r||document).querySelector(s); }
+  function on(el, ev, fn, opts){ if (el) el.addEventListener(ev, fn, opts||false); }
+
+  var body = document.body;
+  var guestBtn = $('#guestToggle');
+  var grid = $('#grid') || document;
+  var filterBtn = $('#filterToggle');
+  var catBtn = $('#categoryToggle');
+  var resetBtn = $('#resetBtn');
+  var viewPicksBtn = $('#viewPicksBtn');
+
+  var gxModal = $('#guestExitModal'), gxInput = $('#gxInput');
+  var gxOK = $('#gxOK'), gxCancel = $('#gxCancel'), gxCancel2 = $('#gxCancel2');
+
+  function isGuest(){ try{ return localStorage.getItem('guestMode')==='1'; }catch(e){ return false; } }
   function setGuest(on){
     try{ on ? localStorage.setItem('guestMode','1') : localStorage.removeItem('guestMode'); }catch(e){}
-    var body = document.body;
-    if (body){ if (on){ body.classList.add('guest'); } else { body.classList.remove('guest'); } }
-    if (btn){
-      if (on){ btn.classList.add('active'); btn.setAttribute('aria-pressed','true'); }
-      else { btn.classList.remove('active'); btn.setAttribute('aria-pressed','false'); }
+    if (on) body.classList.add('guest'); else body.classList.remove('guest');
+    if (guestBtn){ if (on){ guestBtn.classList.add('active'); guestBtn.setAttribute('aria-pressed','true'); } else { guestBtn.classList.remove('active'); guestBtn.setAttribute('aria-pressed','false'); } }
+    if (on) attachGuestHandlers(); else detachGuestHandlers();
+  }
+
+  // init
+  setGuest(isGuest());
+
+  // Toggle guest (leaving needs PIN)
+  on(guestBtn, 'click', function(e){
+    if (!isGuest()){ setGuest(true); return; }
+    if (gxModal){ gxModal.classList.remove('hidden'); setTimeout(function(){ gxInput && gxInput.focus(); }, 0); }
+    e.preventDefault(); e.stopPropagation();
+  });
+
+  function expectedPIN(){ 
+    var v = (localStorage.getItem('staffPIN') || '0000'); 
+    return (v||'').replace(/\s+/g,'');
+  }
+  function tryExitGuest(){
+    var given = (gxInput && gxInput.value || '').replace(/\s+/g,'');
+    if (given === expectedPIN()){ setGuest(false); gxModal && gxModal.classList.add('hidden'); }
+    else {
+      if (gxInput){ gxInput.value=''; gxInput.style.outline='2px solid #ff6b6b'; setTimeout(function(){ gxInput.style.outline=''; }, 220); gxInput.focus(); }
     }
   }
-  if (!btn || !modal){ return; }
-  if (!modal.hasAttribute('hidden')) modal.setAttribute('hidden','');
+  on(gxOK, 'click', tryExitGuest);
+  on(gxCancel, 'click', function(){ gxModal && gxModal.classList.add('hidden'); });
+  on(gxCancel2, 'click', function(){ gxModal && gxModal.classList.add('hidden'); });
+  on(gxInput, 'keydown', function(e){ if (e.key==='Enter'){ tryExitGuest(); } });
 
-  btn.addEventListener('click', function(ev){
-    if (!isGuest()){ setGuest(true); return; }
-    modal.removeAttribute('hidden');
-    var inp = document.getElementById('gxInput');
-    if (inp){ setTimeout(function(){ inp.focus(); }, 0); }
-    ev.preventDefault();
-    ev.stopPropagation();
-  }, false);
+  // Guest picks (session-scoped)
+  function getPicks(){ try{ return JSON.parse(sessionStorage.getItem('guestPicks')||'[]'); }catch(e){ return []; } }
+  function setPicks(arr){ try{ sessionStorage.setItem('guestPicks', JSON.stringify(arr)); }catch(e){} }
 
-  document.addEventListener('click', function(e){
-    var t = e.target || e.srcElement;
-    if (!t || !t.id) return;
-    if (t.id==='gxCancel'){ modal.setAttribute('hidden',''); return; }
-    if (t.id==='gxOK'){
-      var expected = (localStorage.getItem('staffPIN') || '0000').replace(/\s+/g,'');
-      var given = (document.getElementById('gxInput') && document.getElementById('gxInput').value || '').replace(/\s+/g,'');
-      if (given === expected){ modal.setAttribute('hidden',''); setGuest(false); }
-      else {
-        var i=document.getElementById('gxInput');
-        if(i){ i.value=''; i.focus(); i.style.outline='2px solid #ff6b6b'; setTimeout(function(){ i.style.outline=''; }, 240); }
-      }
+  function dishNameFromCard(card){
+    var h = card.querySelector('h3') || card.querySelector('[data-title]');
+    return h ? (h.textContent||'').trim() : '';
+  }
+
+  function guestClickHandler(e){
+    if (!isGuest()) return;
+    var card = e.target && e.target.closest ? e.target.closest('.card') : null;
+    if (!card) return;
+    e.preventDefault(); e.stopPropagation(); // block staff modal
+    var name = dishNameFromCard(card);
+    if (!name) return;
+    var picks = getPicks();
+    var i = picks.indexOf(name);
+    if (i>=0){ picks.splice(i,1); card.classList.remove('guest-picked'); }
+    else { picks.push(name); card.classList.add('guest-picked'); }
+    setPicks(picks);
+  }
+
+  function attachGuestHandlers(){
+    if (!grid) return;
+    grid.addEventListener('click', guestClickHandler, true);
+    // restore outlines
+    var picks = getPicks();
+    var cards = document.querySelectorAll('.card');
+    for (var k=0;k<cards.length;k++){
+      var c = cards[k];
+      var nm = dishNameFromCard(c);
+      if (picks.indexOf(nm)>=0) c.classList.add('guest-picked');
     }
-  }, false);
+  }
+  function detachGuestHandlers(){
+    if (!grid) return;
+    grid.removeEventListener('click', guestClickHandler, true);
+  }
+
+  // Reset clears guest picks
+  on(resetBtn, 'click', function(){
+    try{ sessionStorage.removeItem('guestPicks'); }catch(e){}
+    var sel = document.querySelectorAll('.card.guest-picked');
+    for (var i=0;i<sel.length;i++){ sel[i].classList.remove('guest-picked'); }
+  });
+
+  // Staff: view picks summary
+  on(viewPicksBtn, 'click', function(){
+    if (isGuest()) return;
+    var picks = getPicks();
+    if (!picks.length){ alert('No guest selections yet.'); return; }
+    var lines = [];
+    for (var p=0;p<picks.length;p++){
+      var name = picks[p];
+      var card;
+      var cards = document.querySelectorAll('.card');
+      for (var k=0;k<cards.length;k++){
+        var t = dishNameFromCard(cards[k]);
+        if (t===name){ card = cards[k]; break; }
+      }
+      if (!card){ lines.push('• '+name); continue; }
+      var cat = (card.querySelector('[data-cat]') && card.querySelector('[data-cat]').getAttribute('data-cat')) || (card.querySelector('.pill') && card.querySelector('.pill').textContent.trim()) || 'Unknown';
+      var chips = card.querySelectorAll('.badge, .chip, [data-allergen]');
+      var codes = [];
+      for (var c=0;c<chips.length;c++){ var txt = (chips[c].textContent||'').trim(); if (txt) codes.push(txt); }
+      lines.push('• '+name+'\\n   Category: '+cat+'\\n   Allergens: '+(codes.join(', ')||'—'));
+    }
+    alert('Guest selections:\\n\\n'+lines.join('\\n\\n'));
+  });
+
+  // Keep frosted state synced if your code toggles aria-expanded
+  function sync(btn){ if (!btn) return; btn.setAttribute('data-active', btn.getAttribute('aria-expanded')==='true'); }
+  on(filterBtn, 'click', function(){ setTimeout(function(){ sync(filterBtn); },0); }, true);
+  on(catBtn, 'click', function(){ setTimeout(function(){ sync(catBtn); },0); }, true);
+  sync(filterBtn); sync(catBtn);
 })();
 
