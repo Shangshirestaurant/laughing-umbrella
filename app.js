@@ -427,157 +427,22 @@ function initResetEnhance(){
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
 
-
-// r11: guest picks (counter inside button), green glow, single-PIN via existing app, working modal
+/* r11a guest toggle wire */
 (function(){
-  function $(s, r){ return (r||document).querySelector(s); }
-  function on(el, ev, fn, opts){ if (el) el.addEventListener(ev, fn, opts||false); }
-  function norm(s){ return (s||'').replace(/\s+/g,' ').trim(); }
-
-  var grid = $('#grid') || document;
-  var viewBtn = $('#viewPicksBtn');
-  var countEl = $('#guestPicksCount');
-  var resetBtn = $('#resetBtn');
-  var guestBtn = $('#guestToggle') || document.querySelector('.guest-btn'); // optional
-
-  // Guest mode detection (fallback to localStorage flag)
+  var btn = document.getElementById('guestToggle');
+  if (!btn) return;
   function isGuest(){ try{ return localStorage.getItem('guestMode')==='1'; }catch(e){ return false; } }
   function setGuest(on){
     try{ on ? localStorage.setItem('guestMode','1') : localStorage.removeItem('guestMode'); }catch(e){}
     document.body.classList.toggle('guest', !!on);
-    if (guestBtn){
-      guestBtn.classList.toggle('guest-on', !!on);
-      guestBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    }
+    btn.classList.toggle('guest-on', !!on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
   setGuest(isGuest());
-
-  // Avoid double-PIN: handle turning ON only; turning OFF uses app's PIN modal.
-  if (guestBtn){
-    on(guestBtn, 'click', function(e){
-      if (!isGuest()){
-        e.preventDefault(); e.stopPropagation();
-        setGuest(true);
-      }
-    }, true);
-  }
-
-  // picks storage
-  function getPicks(){ try{ return JSON.parse(sessionStorage.getItem('guestPicks')||'[]'); }catch(e){ return []; } }
-  function setPicks(arr){ try{ sessionStorage.setItem('guestPicks', JSON.stringify(arr)); }catch(e){} }
-  function updateCounter(bump){
-    if (!countEl) return;
-    var n = getPicks().length;
-    countEl.textContent = String(n);
-    if (bump){
-      countEl.classList.remove('bump'); void countEl.offsetWidth; countEl.classList.add('bump');
-      setTimeout(function(){ countEl.classList.remove('bump'); }, 160);
+  btn.addEventListener('click', function(e){
+    if (!isGuest()){
+      e.preventDefault(); e.stopPropagation();
+      setGuest(true);
     }
-  }
-  updateCounter(false);
-
-  // Guest card selection behavior
-  on(grid, 'click', function(e){
-    if (!isGuest()) return;
-    var card = e.target && e.target.closest ? e.target.closest('.card') : null;
-    if (!card) return;
-    e.preventDefault(); e.stopPropagation();
-    var t = card.querySelector('h3') || card.querySelector('[data-title]');
-    var key = t ? norm(t.textContent) : (card.dataset.id || '');
-    if (!key) return;
-    var arr = getPicks();
-    var i = arr.indexOf(key);
-    if (i>=0){ arr.splice(i,1); card.classList.remove('guest-picked'); }
-    else { arr.push(key); card.classList.add('guest-picked'); }
-    setPicks(arr); updateCounter(true);
   }, true);
-
-  // Restore outlines on load if guest
-  if (isGuest()){
-    var arr = getPicks();
-    document.querySelectorAll('.card').forEach(function(c){
-      var t = c.querySelector('h3') || c.querySelector('[data-title]');
-      var key = t ? norm(t.textContent) : (c.dataset.id||'');
-      if (arr.indexOf(key)>=0) c.classList.add('guest-picked');
-    });
-  }
-
-  // Reset clears picks
-  on(resetBtn, 'click', function(){
-    try{ sessionStorage.removeItem('guestPicks'); }catch(e){}
-    document.querySelectorAll('.card.guest-picked').forEach(function(c){ c.classList.remove('guest-picked'); });
-    updateCounter(false);
-  });
-
-  // Picks modal (staff view)
-  var gpModal = $('#guestPicksModal');
-  var gpBody  = $('#guestPicksBody');
-  var gpClose = $('#guestPicksClose');
-  var gpShowOnly = $('#showOnlyGuest');
-  var gpCopy = $('#copyGuest');
-  var gpClear = $('#clearGuest');
-
-  function openGuestPicks(){
-    if (!gpModal) return;
-    if (isGuest()) return; // guests can't open staff view
-    var picks = getPicks();
-    gpBody.innerHTML = '';
-    if (!picks.length){
-      gpBody.innerHTML = '<div class="picks-empty">No guest selections yet.</div>';
-    } else {
-      var cards = document.querySelectorAll('.card');
-      picks.forEach(function(name){
-        var card = Array.from(cards).find(function(c){
-          var t = c.querySelector('h3') || c.querySelector('[data-title]');
-          return t && norm(t.textContent)===name;
-        });
-        var cat = (card && card.querySelector('[data-cat]') && card.querySelector('[data-cat]').getAttribute('data-cat')) ||
-                  (card && card.querySelector('.pill') && norm(card.querySelector('.pill').textContent)) || '—';
-        var chips = card ? card.querySelectorAll('.badge, .chip, [data-allergen]') : [];
-        var codes = []; chips.forEach(function(ch){ var txt=norm(ch.textContent); if (txt) codes.push(txt); });
-        var row = document.createElement('div'); row.className='picks-row';
-        row.innerHTML = '<div><div class="title">'+name+'</div><div class="meta">Category: '+cat+'</div></div>' +
-                        '<div class="meta">'+ (codes.length? codes.map(function(c){return '<span class="chip">'+c+'</span>';}).join(' ') : '<span class="meta">No allergens</span>') +'</div>';
-        gpBody.appendChild(row);
-      });
-    }
-    gpModal.classList.remove('hidden');
-  }
-
-  on(viewBtn, 'click', function(e){ e.preventDefault(); e.stopPropagation(); openGuestPicks(); }, true);
-  on(gpClose, 'click', function(){ gpModal.classList.add('hidden'); });
-  on(gpModal, 'click', function(e){ if (e.target === gpModal) gpModal.classList.add('hidden'); });
-
-  on(gpShowOnly, 'click', function(){
-    var set = new Set(getPicks());
-    document.querySelectorAll('.card').forEach(function(c){
-      var t = c.querySelector('h3') || c.querySelector('[data-title]');
-      var key = t ? norm(t.textContent) : (c.dataset.id||'');
-      c.style.display = set.has(key) ? '' : 'none';
-    });
-  });
-  on(gpCopy, 'click', function(){
-    var arr = getPicks(); if (!arr.length) return;
-    var lines = [];
-    arr.forEach(function(name){
-      var card = Array.from(document.querySelectorAll('.card')).find(function(c){
-        var t=c.querySelector('h3')||c.querySelector('[data-title]'); return t && norm(t.textContent)===name;
-      });
-      var cat = (card && card.querySelector('[data-cat]') && card.querySelector('[data-cat]').getAttribute('data-cat')) ||
-                (card && card.querySelector('.pill') && norm(card.querySelector('.pill').textContent)) || '—';
-      var chips = card ? card.querySelectorAll('.badge, .chip, [data-allergen]') : [];
-      var codes = []; chips.forEach(function(ch){ var txt=norm(ch.textContent); if (txt) codes.push(txt); });
-      lines.push(name+' | '+cat+' | '+(codes.join(', ')||'—'));
-    });
-    var txt = lines.join('\\n');
-    if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); }
-  });
-  on(gpClear, 'click', function(){
-    try{ sessionStorage.removeItem('guestPicks'); }catch(e){};
-    document.querySelectorAll('.card.guest-picked').forEach(function(c){ c.classList.remove('guest-picked'); });
-    updateCounter(false); gpModal.classList.add('hidden');
-  });
-
-  document.addEventListener('menu:rendered', function(){ updateCounter(false); });
 })();
-
