@@ -949,7 +949,7 @@ body.show-unsafe-only .card .contains-pill{ display:inline-flex; }
 .filter-btn:active{ transform: translateY(0) scale(.98); }
 
 
-/* r10: Counter INSIDE button */
+/* r11: Counter INSIDE the "Picks" button */
 #viewPicksBtn{ position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
 #guestPicksCount.count-badge{
   min-width:20px; height:20px; padding:0 6px;
@@ -961,7 +961,7 @@ body.show-unsafe-only .card .contains-pill{ display:inline-flex; }
   box-shadow:0 2px 6px rgba(0,0,0,.25);
 }
 
-/* r10: Stronger green glow on selected cards */
+/* r11: Stronger green glow on selected cards */
 .card.guest-picked{
   outline: 2px solid rgba(52,199,89,0.85) !important;
   outline-offset: 2px;
@@ -971,20 +971,7 @@ body.show-unsafe-only .card .contains-pill{ display:inline-flex; }
     0 10px 28px rgba(0,0,0,0.35) !important;
 }
 
-/* r10: prevent Filters/Categories turning solid white when active */
-#filterToggle[aria-expanded="true"],
-#categoryToggle[aria-expanded="true"],
-#filterToggle[data-active="true"],
-#categoryToggle[data-active="true"]{
-  background: rgba(255,255,255,0.12) !important;
-  color: var(--text) !important;
-  border: 1px solid rgba(255,255,255,0.20) !important;
-  box-shadow: 0 10px 28px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.06) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-}
-
-/* r10: Picks modal body list */
+/* r11: Picks modal body list */
 #guestPicksModal.hidden{ display:none !important; opacity:0 !important; pointer-events:none !important; }
 #guestPicksBody.picks-body{ display:grid; gap:10px; max-height:56vh; overflow:auto; padding:6px 2px; }
 .picks-row{ display:grid; grid-template-columns: 1fr auto; gap:8px;

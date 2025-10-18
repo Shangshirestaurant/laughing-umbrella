@@ -428,7 +428,7 @@ function initResetEnhance(){
 }
 
 
-// r10: guest picks (counter inside button), green glow, single-PIN (use existing), working modal
+// r11: guest picks (counter inside button), green glow, single-PIN via existing app, working modal
 (function(){
   function $(s, r){ return (r||document).querySelector(s); }
   function on(el, ev, fn, opts){ if (el) el.addEventListener(ev, fn, opts||false); }
@@ -438,8 +438,9 @@ function initResetEnhance(){
   var viewBtn = $('#viewPicksBtn');
   var countEl = $('#guestPicksCount');
   var resetBtn = $('#resetBtn');
-  var guestBtn = $('#guestToggle') || document.querySelector('.guest-btn');
+  var guestBtn = $('#guestToggle') || document.querySelector('.guest-btn'); // optional
 
+  // Guest mode detection (fallback to localStorage flag)
   function isGuest(){ try{ return localStorage.getItem('guestMode')==='1'; }catch(e){ return false; } }
   function setGuest(on){
     try{ on ? localStorage.setItem('guestMode','1') : localStorage.removeItem('guestMode'); }catch(e){}
@@ -451,13 +452,15 @@ function initResetEnhance(){
   }
   setGuest(isGuest());
 
-  // Avoid double PIN: handle turning ON only; turning OFF uses app's PIN modal.
-  on(guestBtn, 'click', function(e){
-    if (!isGuest()){
-      e.preventDefault(); e.stopPropagation();
-      setGuest(true);
-    }
-  }, true);
+  // Avoid double-PIN: handle turning ON only; turning OFF uses app's PIN modal.
+  if (guestBtn){
+    on(guestBtn, 'click', function(e){
+      if (!isGuest()){
+        e.preventDefault(); e.stopPropagation();
+        setGuest(true);
+      }
+    }, true);
+  }
 
   // picks storage
   function getPicks(){ try{ return JSON.parse(sessionStorage.getItem('guestPicks')||'[]'); }catch(e){ return []; } }
@@ -574,5 +577,7 @@ function initResetEnhance(){
     document.querySelectorAll('.card.guest-picked').forEach(function(c){ c.classList.remove('guest-picked'); });
     updateCounter(false); gpModal.classList.add('hidden');
   });
+
+  document.addEventListener('menu:rendered', function(){ updateCounter(false); });
 })();
 
