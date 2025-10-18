@@ -947,13 +947,3 @@ body.show-unsafe-only .card .contains-pill{ display:inline-flex; }
 /* Micro-interactions */
 .filter-btn:hover{ transform: translateY(-1px); }
 .filter-btn:active{ transform: translateY(0) scale(.98); }
-
-
-/* === Guest toggle active state & subtle selection (guest-mode-4) === */
-#guestToggle[aria-pressed="true"]{
-  background: rgba(0,200,120,.22);
-  border-color: rgba(0,200,120,.45);
-  box-shadow: 0 8px 18px rgba(0,200,120,.25), inset 0 0 0 1px rgba(255,255,255,.06);
-  color: #e6fff3;
-}
-#guestToggle:focus{ outline: none; }
