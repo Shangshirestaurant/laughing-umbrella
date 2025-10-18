@@ -6,11 +6,10 @@
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#0C0F14" name="theme-color"/>
 <title>Shang Shi Menu</title>
-<link href="./styles.css?v=guest-6" rel="stylesheet"/>
+<link href="./styles.css?v=staff-only-add" rel="stylesheet"/>
 </head>
 <body>
 <button aria-label="Toggle theme" class="theme-btn" id="themeToggle">🌙</button>
-<button id="guestToggle" class="theme-btn" title="Guest mode" aria-pressed="false">👤</button>
 <header class="header">
 <img alt="Shang Shi logo" class="header-logo" src="./logo.png"/>
 <p class="subtitle">Select allergen(s) to show only <strong>SAFE</strong> dishes.</p>
@@ -55,17 +54,6 @@
 <div class="filter-panel" id="categoryPanel">
 <div aria-label="Category filters" class="chips" id="categories" role="group"></div>
 </div>
-<script defer="" src="./app.js?v=guest-6"></script>
-<!-- Staff PIN modal for exiting guest mode -->
-<div id="pinModal" hidden>
-  <div class="pin-card" role="dialog" aria-labelledby="pinTitle" aria-modal="true">
-    <p id="pinTitle">Staff PIN</p>
-    <input id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" />
-    <div class="pin-actions">
-      <button id="pinOk" type="button" class="filter-btn">OK</button>
-      <button id="pinCancel" type="button" class="filter-btn">Cancel</button>
-    </div>
-  </div>
-</div>
+<script defer="" src="./app.js?v=staff-only-add"></script>
 </body>
 </html>

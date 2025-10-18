@@ -948,31 +948,11 @@ body.show-unsafe-only .card .contains-pill{ display:inline-flex; }
 .filter-btn:hover{ transform: translateY(-1px); }
 .filter-btn:active{ transform: translateY(0) scale(.98); }
 
-/* === Guest Mode UI (guest-6) === */
-#guestToggle.theme-btn{
-  position: fixed;
-  top: max(10px, calc(env(safe-area-inset-top) + 8px));
-  right: 4.2rem; /* sits just left of the theme toggle */
-  z-index: 1000;
+
+/* Hide Add Dish button in guest mode */
+body.guest-mode [data-action="add-dish"],
+body.guest-mode #addDishBtn,
+body.guest-mode .add-dish-btn {
+  display: none !important;
 }
-#guestToggle[aria-pressed="true"]{
-  background: rgba(0,200,120,.22);
-  border: 1px solid rgba(0,200,120,.45);
-  color: #e6fff3;
-  box-shadow: 0 8px 18px rgba(0,200,120,.25), inset 0 0 0 1px rgba(255,255,255,.06);
-}
-.card.guest-selected{
-  outline: 2px solid rgba(0,200,120,.55);
-  box-shadow: 0 8px 18px rgba(0,200,120,.20);
-}
-#pinModal{ position:fixed; inset:0; display:grid; place-items:center; background:rgba(0,0,0,.35); z-index:1000; }
-#pinModal[hidden]{ display:none !important; }
-#pinModal .pin-card{
-  width:min(92vw,380px); border-radius:16px; padding:16px;
-  background:rgba(17,22,26,.65); color:var(--text);
-  border:1px solid rgba(255,255,255,.12);
-  backdrop-filter: blur(16px) saturate(150%); -webkit-backdrop-filter: blur(16px) saturate(150%);
-  box-shadow:0 18px 48px rgba(0,0,0,.45); display:grid; gap:10px;
-}
-#pinModal .pin-actions{ display:flex; gap:8px; justify-content:flex-end; }
-#pinModal input{ height:40px; border-radius:12px; padding:0 12px; border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.10); color:var(--text); outline:none; }
+
