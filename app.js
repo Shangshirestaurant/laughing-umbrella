@@ -558,7 +558,7 @@ function initResetEnhance(){
 
 
 
-// r7: Guest counter + modal + behavior (safe, append-only)
+// r8: Guest counter (numeric), green glow, single-modal, robust picks source
 (function(){
   function $(s, r){ return (r||document).querySelector(s); }
   function on(el, ev, fn, opts){ if (el) el.addEventListener(ev, fn, opts||false); }
@@ -568,6 +568,8 @@ function initResetEnhance(){
     guestMode = !!on;
     if (guestBtn){ guestBtn.classList.toggle('guest-on', guestMode); guestBtn.setAttribute('aria-pressed', guestMode?'true':'false'); }
   }
+  function norm(s){ return (s||'').replace(/\s+/g,' ').trim(); }
+
   var guestBtn = $('#guestToggle');
   var viewBtn = $('#viewPicksBtn');
   var resetBtn = $('#resetBtn');
@@ -576,32 +578,47 @@ function initResetEnhance(){
   var guestMode = isGuest();
   if (guestBtn){ guestBtn.classList.toggle('guest-on', guestMode); guestBtn.setAttribute('aria-pressed', guestMode?'true':'false'); }
 
-  // picks in session
+  // ---- Picks: sessionStorage + DOM fallback ----
   function getPicks(){ try{ return JSON.parse(sessionStorage.getItem('guestPicks')||'[]'); }catch(e){ return []; } }
   function setPicks(arr){ try{ sessionStorage.setItem('guestPicks', JSON.stringify(arr)); }catch(e){} }
-  function updateCount(bump){
-    var btn = viewBtn;
-    if (!btn) return;
-    var n = getPicks().length;
-    btn.setAttribute('data-count', String(n));
-    if (bump){ btn.classList.remove('bump'); void btn.offsetWidth; btn.classList.add('bump'); setTimeout(()=>btn.classList.remove('bump'), 180); }
+  function getPicksRobust(){
+    var arr = getPicks();
+    if (arr.length) return arr;
+    // fallback: read from DOM outlines
+    var names = [];
+    var cards = document.querySelectorAll('.card.guest-picked');
+    for (var i=0;i<cards.length;i++){
+      var t = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
+      var key = t ? norm(t.textContent) : (cards[i].dataset.id||'');
+      if (key) names.push(key);
+    }
+    return names;
   }
 
-  // Guest toggle (exit requires PIN 0000)
+  // ---- Counter (pure number badge) ----
+  function updateCount(bump){
+    if (!viewBtn) return;
+    var n = getPicksRobust().length;
+    viewBtn.setAttribute('data-count', String(n));
+    if (bump){ viewBtn.classList.remove('bump'); void viewBtn.offsetWidth; viewBtn.classList.add('bump'); setTimeout(function(){ viewBtn.classList.remove('bump'); }, 180); }
+  }
+  updateCount(false);
+
+  // ---- Guest toggle (PIN only when leaving guest) ----
   on(guestBtn, 'click', function(){
     if (!guestMode){ setGuest(true); return; }
     var pin = prompt('Enter staff PIN to exit guest mode:');
     if (pin === '0000'){ setGuest(false); } else if (pin !== null) { alert('Incorrect PIN'); }
   });
 
-  // Intercept card clicks in guest mode to toggle selection, not open modal
+  // ---- Intercept card clicks in guest mode only ----
   on(grid, 'click', function(e){
     if (!guestMode) return;
     var card = e.target && e.target.closest ? e.target.closest('.card') : null;
     if (!card) return;
     e.preventDefault(); e.stopPropagation();
-    var nameEl = card.querySelector('h3') || card.querySelector('[data-title]');
-    var key = nameEl ? nameEl.textContent.trim() : (card.dataset.id || '');
+    var t = card.querySelector('h3') || card.querySelector('[data-title]');
+    var key = t ? norm(t.textContent) : (card.dataset.id||'');
     if (!key) return;
     var arr = getPicks();
     var i = arr.indexOf(key);
@@ -610,26 +627,26 @@ function initResetEnhance(){
     setPicks(arr); updateCount(true);
   }, true);
 
-  // Restore outlines on load if guest
+  // ---- Restore outlines on load if guest ----
   if (guestMode){
     var arr = getPicks();
     var cards = document.querySelectorAll('.card');
     for (var i=0;i<cards.length;i++){
-      var title = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
-      var key = title ? title.textContent.trim() : (cards[i].dataset.id||'');
+      var t = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
+      var key = t ? norm(t.textContent) : (cards[i].dataset.id||'');
       if (arr.indexOf(key)>=0) cards[i].classList.add('guest-picked');
     }
   }
-  updateCount(false);
 
-  // Reset clears guest picks
+  // ---- Reset clears guest picks and counter ----
   on(resetBtn, 'click', function(){
     try{ sessionStorage.removeItem('guestPicks'); }catch(e){}
-    document.querySelectorAll('.card.guest-picked').forEach(function(c){ c.classList.remove('guest-picked'); });
+    var sel = document.querySelectorAll('.card.guest-picked');
+    for (var i=0;i<sel.length;i++){ sel[i].classList.remove('guest-picked'); }
     updateCount(false);
   });
 
-  // Fancy picks modal (staff only)
+  // ---- View Picks modal (single source of truth; not the PIN modal) ----
   var gpModal = $('#guestPicksModal');
   var gpBody  = $('#guestPicksBody');
   var gpClose = $('#guestPicksClose');
@@ -638,9 +655,9 @@ function initResetEnhance(){
   var gpClear = $('#clearGuest');
 
   function openGuestPicks(){
-    if (guestMode) return;
+    if (guestMode) return; // guests can't open staff view
     if (!gpModal) return;
-    var picks = getPicks();
+    var picks = getPicksRobust();
     gpBody.innerHTML = '';
     if (!picks.length){
       gpBody.innerHTML = '<div class="picks-empty">No guest selections yet.</div>';
@@ -650,7 +667,7 @@ function initResetEnhance(){
         var name = picks[p], card=null;
         for (var i=0;i<cards.length;i++){
           var t = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
-          if (t && t.textContent.trim()===name){ card = cards[i]; break; }
+          if (t && norm(t.textContent)===name){ card = cards[i]; break; }
         }
         var cat = (card && card.querySelector('[data-cat]') && card.querySelector('[data-cat]').getAttribute('data-cat')) ||
                   (card && card.querySelector('.pill') && card.querySelector('.pill').textContent.trim()) || '—';
@@ -665,28 +682,28 @@ function initResetEnhance(){
     gpModal.classList.remove('hidden');
   }
 
-  on(viewBtn, 'click', function(e){ e.preventDefault(); openGuestPicks(); }, true);
+  on(viewBtn, 'click', function(e){ e.preventDefault(); e.stopPropagation(); openGuestPicks(); }, true);
   on(gpClose, 'click', function(){ gpModal.classList.add('hidden'); });
   on(gpModal, 'click', function(e){ if (e.target === gpModal) gpModal.classList.add('hidden'); });
 
   on(gpShowOnly, 'click', function(){
-    var picks = new Set(getPicks());
+    var picks = new Set(getPicksRobust());
     var cards = document.querySelectorAll('.card');
     for (var i=0;i<cards.length;i++){
       var t = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
-      var nm = t ? t.textContent.trim() : (cards[i].dataset.id||'');
+      var nm = t ? norm(t.textContent) : (cards[i].dataset.id||'');
       cards[i].style.display = picks.has(nm) ? '' : 'none';
     }
   });
   on(gpCopy, 'click', function(){
-    var picks = getPicks(); if (!picks.length) return;
+    var picks = getPicksRobust(); if (!picks.length) return;
     var lines = [];
     var cards = document.querySelectorAll('.card');
     for (var p=0;p<picks.length;p++){
       var name = picks[p], card=null;
       for (var i=0;i<cards.length;i++){
         var t = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
-        if (t && t.textContent.trim()===name){ card = cards[i]; break; }
+        if (t && norm(t.textContent)===name){ card = cards[i]; break; }
       }
       var cat = (card && card.querySelector('[data-cat]') && card.querySelector('[data-cat]').getAttribute('data-cat')) ||
                 (card && card.querySelector('.pill') && card.querySelector('.pill').textContent.trim()) || '—';
@@ -698,13 +715,10 @@ function initResetEnhance(){
     if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); }
   });
   on(gpClear, 'click', function(){
-    try{ sessionStorage.removeItem('guestPicks'); }catch(e){}
-    document.querySelectorAll('.card.guest-picked').forEach(function(c){ c.classList.remove('guest-picked'); });
+    try{ sessionStorage.removeItem('guestPicks'); }catch(e){};
+    var sel = document.querySelectorAll('.card.guest-picked');
+    for (var i=0;i<sel.length;i++){ sel[i].classList.remove('guest-picked'); }
     updateCount(false); gpModal.classList.add('hidden');
   });
-
-  // Keep frosted state synced if aria-expanded changes elsewhere
-  function sync(btn){ if (!btn) return; btn.setAttribute('data-active', btn.getAttribute('aria-expanded')==='true'); }
-  on(document, 'click', function(){ var f=$('#filterToggle'), c=$('#categoryToggle'); sync(f); sync(c); }, true);
 })();
 
