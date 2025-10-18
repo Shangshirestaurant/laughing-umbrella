@@ -428,85 +428,225 @@ function initResetEnhance(){
 }
 
 
-// r12: guest picks + guest toggle wiring (no double-PIN), counter inside button, green glow, modal
+// === r5 Guest Mode & Dock polish (safe) ===
 (function(){
   function $(s, r){ return (r||document).querySelector(s); }
   function on(el, ev, fn, opts){ if (el) el.addEventListener(ev, fn, opts||false); }
-  function norm(s){ return (s||'').replace(/\s+/g,' ').trim(); }
 
+  var body = document.body;
+  var guestBtn = $('#guestToggle');
   var grid = $('#grid') || document;
-  var viewBtn = $('#viewPicksBtn');
-  var countEl = $('#guestPicksCount');
+  var filterBtn = $('#filterToggle');
+  var catBtn = $('#categoryToggle');
   var resetBtn = $('#resetBtn');
-  var guestBtn = $('#guestToggle') || document.querySelector('.guest-btn');
+  var viewPicksBtn = $('#viewPicksBtn');
+
+  var gxModal = $('#guestExitModal'), gxInput = $('#gxInput');
+  var gxOK = $('#gxOK'), gxCancel = $('#gxCancel'), gxCancel2 = $('#gxCancel2');
 
   function isGuest(){ try{ return localStorage.getItem('guestMode')==='1'; }catch(e){ return false; } }
   function setGuest(on){
     try{ on ? localStorage.setItem('guestMode','1') : localStorage.removeItem('guestMode'); }catch(e){}
-    document.body.classList.toggle('guest', !!on);
-    if (guestBtn){
-      guestBtn.classList.toggle('guest-on', !!on);
-      guestBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    }
+    if (on) body.classList.add('guest'); else body.classList.remove('guest');
+    if (guestBtn){ if (on){ guestBtn.classList.add('active'); guestBtn.setAttribute('aria-pressed','true'); } else { guestBtn.classList.remove('active'); guestBtn.setAttribute('aria-pressed','false'); } }
+    if (on) attachGuestHandlers(); else detachGuestHandlers();
   }
+
+  // init
   setGuest(isGuest());
 
-  if (guestBtn){
-    on(guestBtn, 'click', function(e){
-      if (!isGuest()){
-        e.preventDefault(); e.stopPropagation();
-        setGuest(true);
-      }
-    }, true);
-  }
+  // Toggle guest (leaving needs PIN)
+  on(guestBtn, 'click', function(e){
+    if (!isGuest()){ setGuest(true); return; }
+    if (gxModal){ gxModal.classList.remove('hidden'); setTimeout(function(){ gxInput && gxInput.focus(); }, 0); }
+    e.preventDefault(); e.stopPropagation();
+  });
 
-  function getPicks(){ try{ return JSON.parse(sessionStorage.getItem('guestPicks')||'[]'); }catch(e){ return []; } }
-  function setPicks(arr){ try{ sessionStorage.setItem('guestPicks', JSON.stringify(arr)); }catch(e){} }
-  function updateCounter(bump){
-    if (!countEl) return;
-    var n = getPicks().length;
-    countEl.textContent = String(n);
-    if (bump){
-      countEl.classList.remove('bump'); void countEl.offsetWidth; countEl.classList.add('bump');
-      setTimeout(function(){ countEl.classList.remove('bump'); }, 160);
+  function expectedPIN(){ 
+    var v = (localStorage.getItem('staffPIN') || '0000'); 
+    return (v||'').replace(/\s+/g,'');
+  }
+  function tryExitGuest(){
+    var given = (gxInput && gxInput.value || '').replace(/\s+/g,'');
+    if (given === expectedPIN()){ setGuest(false); gxModal && gxModal.classList.add('hidden'); }
+    else {
+      if (gxInput){ gxInput.value=''; gxInput.style.outline='2px solid #ff6b6b'; setTimeout(function(){ gxInput.style.outline=''; }, 220); gxInput.focus(); }
     }
   }
-  updateCounter(false);
+  on(gxOK, 'click', tryExitGuest);
+  on(gxCancel, 'click', function(){ gxModal && gxModal.classList.add('hidden'); });
+  on(gxCancel2, 'click', function(){ gxModal && gxModal.classList.add('hidden'); });
+  on(gxInput, 'keydown', function(e){ if (e.key==='Enter'){ tryExitGuest(); } });
 
-  // Guest selection
-  on(grid, 'click', function(e){
+  // Guest picks (session-scoped)
+  function getPicks(){ try{ return JSON.parse(sessionStorage.getItem('guestPicks')||'[]'); }catch(e){ return []; } }
+  function setPicks(arr){ try{ sessionStorage.setItem('guestPicks', JSON.stringify(arr)); }catch(e){} }
+
+  function dishNameFromCard(card){
+    var h = card.querySelector('h3') || card.querySelector('[data-title]');
+    return h ? (h.textContent||'').trim() : '';
+  }
+
+  function guestClickHandler(e){
     if (!isGuest()) return;
+    var card = e.target && e.target.closest ? e.target.closest('.card') : null;
+    if (!card) return;
+    e.preventDefault(); e.stopPropagation(); // block staff modal
+    var name = dishNameFromCard(card);
+    if (!name) return;
+    var picks = getPicks();
+    var i = picks.indexOf(name);
+    if (i>=0){ picks.splice(i,1); card.classList.remove('guest-picked'); }
+    else { picks.push(name); card.classList.add('guest-picked'); }
+    setPicks(picks);
+  }
+
+  function attachGuestHandlers(){
+    if (!grid) return;
+    grid.addEventListener('click', guestClickHandler, true);
+    // restore outlines
+    var picks = getPicks();
+    var cards = document.querySelectorAll('.card');
+    for (var k=0;k<cards.length;k++){
+      var c = cards[k];
+      var nm = dishNameFromCard(c);
+      if (picks.indexOf(nm)>=0) c.classList.add('guest-picked');
+    }
+  }
+  function detachGuestHandlers(){
+    if (!grid) return;
+    grid.removeEventListener('click', guestClickHandler, true);
+  }
+
+  // Reset clears guest picks
+  on(resetBtn, 'click', function(){
+    try{ sessionStorage.removeItem('guestPicks'); }catch(e){}
+    var sel = document.querySelectorAll('.card.guest-picked');
+    for (var i=0;i<sel.length;i++){ sel[i].classList.remove('guest-picked'); }
+  });
+
+  // Staff: view picks summary
+  on(viewPicksBtn, 'click', function(){
+    if (isGuest()) return;
+    var picks = getPicks();
+    if (!picks.length){ alert('No guest selections yet.'); return; }
+    var lines = [];
+    for (var p=0;p<picks.length;p++){
+      var name = picks[p];
+      var card;
+      var cards = document.querySelectorAll('.card');
+      for (var k=0;k<cards.length;k++){
+        var t = dishNameFromCard(cards[k]);
+        if (t===name){ card = cards[k]; break; }
+      }
+      if (!card){ lines.push('• '+name); continue; }
+      var cat = (card.querySelector('[data-cat]') && card.querySelector('[data-cat]').getAttribute('data-cat')) || (card.querySelector('.pill') && card.querySelector('.pill').textContent.trim()) || 'Unknown';
+      var chips = card.querySelectorAll('.badge, .chip, [data-allergen]');
+      var codes = [];
+      for (var c=0;c<chips.length;c++){ var txt = (chips[c].textContent||'').trim(); if (txt) codes.push(txt); }
+      lines.push('• '+name+'\\n   Category: '+cat+'\\n   Allergens: '+(codes.join(', ')||'—'));
+    }
+    alert('Guest selections:\\n\\n'+lines.join('\\n\\n'));
+  });
+
+  // Keep frosted state synced if your code toggles aria-expanded
+  function sync(btn){ if (!btn) return; btn.setAttribute('data-active', btn.getAttribute('aria-expanded')==='true'); }
+  on(filterBtn, 'click', function(){ setTimeout(function(){ sync(filterBtn); },0); }, true);
+  on(catBtn, 'click', function(){ setTimeout(function(){ sync(catBtn); },0); }, true);
+  sync(filterBtn); sync(catBtn);
+})();
+
+
+
+// r8: Guest counter (numeric), green glow, single-modal, robust picks source
+(function(){
+  function $(s, r){ return (r||document).querySelector(s); }
+  function on(el, ev, fn, opts){ if (el) el.addEventListener(ev, fn, opts||false); }
+  function isGuest(){ try{ return localStorage.getItem('guestMode')==='1'; }catch(e){ return false; } }
+  function setGuest(on){
+    try{ on ? localStorage.setItem('guestMode','1') : localStorage.removeItem('guestMode'); }catch(e){}
+    guestMode = !!on;
+    if (guestBtn){ guestBtn.classList.toggle('guest-on', guestMode); guestBtn.setAttribute('aria-pressed', guestMode?'true':'false'); }
+  }
+  function norm(s){ return (s||'').replace(/\s+/g,' ').trim(); }
+
+  var guestBtn = $('#guestToggle');
+  var viewBtn = $('#viewPicksBtn');
+  var resetBtn = $('#resetBtn');
+  var grid = $('#grid') || document;
+
+  var guestMode = isGuest();
+  if (guestBtn){ guestBtn.classList.toggle('guest-on', guestMode); guestBtn.setAttribute('aria-pressed', guestMode?'true':'false'); }
+
+  // ---- Picks: sessionStorage + DOM fallback ----
+  function getPicks(){ try{ return JSON.parse(sessionStorage.getItem('guestPicks')||'[]'); }catch(e){ return []; } }
+  function setPicks(arr){ try{ sessionStorage.setItem('guestPicks', JSON.stringify(arr)); }catch(e){} }
+  function getPicksRobust(){
+    var arr = getPicks();
+    if (arr.length) return arr;
+    // fallback: read from DOM outlines
+    var names = [];
+    var cards = document.querySelectorAll('.card.guest-picked');
+    for (var i=0;i<cards.length;i++){
+      var t = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
+      var key = t ? norm(t.textContent) : (cards[i].dataset.id||'');
+      if (key) names.push(key);
+    }
+    return names;
+  }
+
+  // ---- Counter (pure number badge) ----
+  function updateCount(bump){
+    if (!viewBtn) return;
+    var n = getPicksRobust().length;
+    viewBtn.setAttribute('data-count', String(n));
+    if (bump){ viewBtn.classList.remove('bump'); void viewBtn.offsetWidth; viewBtn.classList.add('bump'); setTimeout(function(){ viewBtn.classList.remove('bump'); }, 180); }
+  }
+  updateCount(false);
+
+  // ---- Guest toggle (PIN only when leaving guest) ----
+  on(guestBtn, 'click', function(){
+    if (!guestMode){ setGuest(true); return; }
+    var pin = prompt('Enter staff PIN to exit guest mode:');
+    if (pin === '0000'){ setGuest(false); } else if (pin !== null) { alert('Incorrect PIN'); }
+  });
+
+  // ---- Intercept card clicks in guest mode only ----
+  on(grid, 'click', function(e){
+    if (!guestMode) return;
     var card = e.target && e.target.closest ? e.target.closest('.card') : null;
     if (!card) return;
     e.preventDefault(); e.stopPropagation();
     var t = card.querySelector('h3') || card.querySelector('[data-title]');
-    var key = t ? norm(t.textContent) : (card.dataset.id || '');
+    var key = t ? norm(t.textContent) : (card.dataset.id||'');
     if (!key) return;
     var arr = getPicks();
     var i = arr.indexOf(key);
     if (i>=0){ arr.splice(i,1); card.classList.remove('guest-picked'); }
     else { arr.push(key); card.classList.add('guest-picked'); }
-    setPicks(arr); updateCounter(true);
+    setPicks(arr); updateCount(true);
   }, true);
 
-  // Restore on load
-  if (isGuest()){
+  // ---- Restore outlines on load if guest ----
+  if (guestMode){
     var arr = getPicks();
-    document.querySelectorAll('.card').forEach(function(c){
-      var t = c.querySelector('h3') || c.querySelector('[data-title]');
-      var key = t ? norm(t.textContent) : (c.dataset.id||'');
-      if (arr.indexOf(key)>=0) c.classList.add('guest-picked');
-    });
+    var cards = document.querySelectorAll('.card');
+    for (var i=0;i<cards.length;i++){
+      var t = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
+      var key = t ? norm(t.textContent) : (cards[i].dataset.id||'');
+      if (arr.indexOf(key)>=0) cards[i].classList.add('guest-picked');
+    }
   }
 
-  // Reset clears picks
+  // ---- Reset clears guest picks and counter ----
   on(resetBtn, 'click', function(){
     try{ sessionStorage.removeItem('guestPicks'); }catch(e){}
-    document.querySelectorAll('.card.guest-picked').forEach(function(c){ c.classList.remove('guest-picked'); });
-    updateCounter(false);
+    var sel = document.querySelectorAll('.card.guest-picked');
+    for (var i=0;i<sel.length;i++){ sel[i].classList.remove('guest-picked'); }
+    updateCount(false);
   });
 
-  // Picks modal (staff)
+  // ---- View Picks modal (single source of truth; not the PIN modal) ----
   var gpModal = $('#guestPicksModal');
   var gpBody  = $('#guestPicksBody');
   var gpClose = $('#guestPicksClose');
@@ -515,38 +655,158 @@ function initResetEnhance(){
   var gpClear = $('#clearGuest');
 
   function openGuestPicks(){
+    if (guestMode) return; // guests can't open staff view
     if (!gpModal) return;
-    if (isGuest()) return;
-    var picks = getPicks();
+    var picks = getPicksRobust();
     gpBody.innerHTML = '';
     if (!picks.length){
       gpBody.innerHTML = '<div class="picks-empty">No guest selections yet.</div>';
     } else {
       var cards = document.querySelectorAll('.card');
-      picks.forEach(function(name){
-        var card = Array.from(cards).find(function(c){
-          var t = c.querySelector('h3') || c.querySelector('[data-title]');
-          return t && norm(t.textContent)===name;
-        });
+      for (var p=0;p<picks.length;p++){
+        var name = picks[p], card=null;
+        for (var i=0;i<cards.length;i++){
+          var t = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
+          if (t && norm(t.textContent)===name){ card = cards[i]; break; }
+        }
         var cat = (card && card.querySelector('[data-cat]') && card.querySelector('[data-cat]').getAttribute('data-cat')) ||
-                  (card && card.querySelector('.pill') && norm(card.querySelector('.pill').textContent)) || '—';
+                  (card && card.querySelector('.pill') && card.querySelector('.pill').textContent.trim()) || '—';
         var chips = card ? card.querySelectorAll('.badge, .chip, [data-allergen]') : [];
-        var codes = []; chips.forEach(function(ch){ var txt=norm(ch.textContent); if (txt) codes.push(txt); });
+        var codes = []; for (var k=0;k<chips.length;k++){ var txt=(chips[k].textContent||'').trim(); if (txt) codes.push(txt); }
         var row = document.createElement('div'); row.className='picks-row';
         row.innerHTML = '<div><div class="title">'+name+'</div><div class="meta">Category: '+cat+'</div></div>' +
                         '<div class="meta">'+ (codes.length? codes.map(function(c){return '<span class="chip">'+c+'</span>';}).join(' ') : '<span class="meta">No allergens</span>') +'</div>';
         gpBody.appendChild(row);
-      });
+      }
     }
     gpModal.classList.remove('hidden');
   }
 
-  if (viewBtn){ on(viewBtn, 'click', function(e){ e.preventDefault(); e.stopPropagation(); openGuestPicks(); }, true); }
-  if (gpClose){ on(gpClose, 'click', function(){ gpModal.classList.add('hidden'); }); on(gpModal, 'click', function(e){ if (e.target===gpModal) gpModal.classList.add('hidden'); }); }
-  if (gpShowOnly){ on(gpShowOnly, 'click', function(){ var set = new Set(getPicks()); document.querySelectorAll('.card').forEach(function(c){ var t=c.querySelector('h3')||c.querySelector('[data-title]'); var key=t?norm(t.textContent):(c.dataset.id||''); c.style.display = set.has(key)?'':''; }); }); }
-  if (gpCopy){ on(gpCopy, 'click', function(){ var arr=getPicks(); if(!arr.length) return; var lines=[]; arr.forEach(function(name){ var card=Array.from(document.querySelectorAll('.card')).find(function(c){ var t=c.querySelector('h3')||c.querySelector('[data-title]'); return t&&norm(t.textContent)===name; }); var cat=(card&&card.querySelector('[data-cat]')&&card.querySelector('[data-cat]').getAttribute('data-cat'))||(card&&card.querySelector('.pill')&&norm(card.querySelector('.pill').textContent))||'—'; var chips=card?card.querySelectorAll('.badge, .chip, [data-allergen]'):[]; var codes=[]; chips.forEach(function(ch){ var txt=norm(ch.textContent); if(txt) codes.push(txt); }); lines.push(name+' | '+cat+' | '+(codes.join(', ')||'—')); }); var txt=lines.join('\\n'); if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); } }); }
-  if (gpClear){ on(gpClear, 'click', function(){ try{ sessionStorage.removeItem('guestPicks'); }catch(e){}; document.querySelectorAll('.card.guest-picked').forEach(function(c){ c.classList.remove('guest-picked'); }); updateCounter(false); gpModal.classList.add('hidden'); }); }
+  on(viewBtn, 'click', function(e){ e.preventDefault(); e.stopPropagation(); openGuestPicks(); }, true);
+  on(gpClose, 'click', function(){ gpModal.classList.add('hidden'); });
+  on(gpModal, 'click', function(e){ if (e.target === gpModal) gpModal.classList.add('hidden'); });
 
-  document.addEventListener('menu:rendered', function(){ updateCounter(false); });
+  on(gpShowOnly, 'click', function(){
+    var picks = new Set(getPicksRobust());
+    var cards = document.querySelectorAll('.card');
+    for (var i=0;i<cards.length;i++){
+      var t = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
+      var nm = t ? norm(t.textContent) : (cards[i].dataset.id||'');
+      cards[i].style.display = picks.has(nm) ? '' : 'none';
+    }
+  });
+  on(gpCopy, 'click', function(){
+    var picks = getPicksRobust(); if (!picks.length) return;
+    var lines = [];
+    var cards = document.querySelectorAll('.card');
+    for (var p=0;p<picks.length;p++){
+      var name = picks[p], card=null;
+      for (var i=0;i<cards.length;i++){
+        var t = cards[i].querySelector('h3') || cards[i].querySelector('[data-title]');
+        if (t && norm(t.textContent)===name){ card = cards[i]; break; }
+      }
+      var cat = (card && card.querySelector('[data-cat]') && card.querySelector('[data-cat]').getAttribute('data-cat')) ||
+                (card && card.querySelector('.pill') && card.querySelector('.pill').textContent.trim()) || '—';
+      var chips = card ? card.querySelectorAll('.badge, .chip, [data-allergen]') : [];
+      var codes = []; for (var k=0;k<chips.length;k++){ var txt=(chips[k].textContent||'').trim(); if (txt) codes.push(txt); }
+      lines.push(name+' | '+cat+' | '+(codes.join(', ')||'—'));
+    }
+    var txt = lines.join('\\n');
+    if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); }
+  });
+  on(gpClear, 'click', function(){
+    try{ sessionStorage.removeItem('guestPicks'); }catch(e){};
+    var sel = document.querySelectorAll('.card.guest-picked');
+    for (var i=0;i<sel.length;i++){ sel[i].classList.remove('guest-picked'); }
+    updateCount(false); gpModal.classList.add('hidden');
+  });
 })();
 
+
+// r12b: harden Guest toggle + Picks button wiring
+(function () {
+  function $(s, r) { return (r || document).querySelector(s); }
+  function on(el, ev, fn, opts) { if (el) el.addEventListener(ev, fn, opts || false); }
+  function isGuest() { try { return localStorage.getItem('guestMode') === '1'; } catch (e) { return false; } }
+  function setGuest(on) {
+    try { on ? localStorage.setItem('guestMode', '1') : localStorage.removeItem('guestMode'); } catch (e) {}
+    document.body.classList.toggle('guest', !!on);
+    var btn = $('#guestToggle');
+    if (btn) {
+      btn.classList.toggle('guest-on', !!on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    console.log('[guest] mode =', !!on);
+  }
+  setGuest(isGuest());
+
+  var guestBtn = $('#guestToggle');
+  on(guestBtn, 'click', function (e) {
+    console.log('[guestToggle] click');
+    if (!isGuest()) {
+      e.preventDefault(); e.stopPropagation();
+      setGuest(true);
+    }
+  }, true);
+
+  var viewBtn = $('#viewPicksBtn');
+  var gpModal = $('#guestPicksModal');
+  var gpBody  = $('#guestPicksBody');
+  var gpClose = $('#guestPicksClose');
+
+  function norm(s){ return (s || '').replace(/\s+/g, ' ').trim(); }
+  function getPicks(){ try { return JSON.parse(sessionStorage.getItem('guestPicks') || '[]'); } catch (e) { return []; } }
+
+  function renderPicks(readOnly) {
+    if (!gpBody) return;
+    var picks = getPicks();
+    gpBody.innerHTML = '';
+    if (!picks.length) {
+      gpBody.innerHTML = '<div class="picks-empty">No guest selections yet.</div>';
+      return;
+    }
+    var cards = document.querySelectorAll('.card');
+    picks.forEach(function(name){
+      var card = Array.from(cards).find(function(c){
+        var t = c.querySelector('h3') || c.querySelector('[data-title]');
+        return t && norm(t.textContent) === name;
+      });
+      var cat = (card && card.querySelector('[data-cat]') && card.querySelector('[data-cat]').getAttribute('data-cat')) ||
+                (card && card.querySelector('.pill') && norm(card.querySelector('.pill').textContent)) || '—';
+      var chips = card ? card.querySelectorAll('.badge, .chip, [data-allergen]') : [];
+      var codes = []; chips.forEach(function(ch){ var txt = norm(ch.textContent); if (txt) codes.push(txt); });
+      var row = document.createElement('div'); row.className = 'picks-row';
+      row.innerHTML = '<div><div class="title">'+name+'</div><div class="meta">Category: '+cat+'</div></div>' +
+                      '<div class="meta">'+(codes.length ? codes.map(function(c){return '<span class="chip">'+c+'</span>';}).join(' ') : '<span class="meta">No allergens</span>')+'</div>';
+      gpBody.appendChild(row);
+    });
+
+    if (readOnly) {
+      ['showOnlyGuest','copyGuest','clearGuest'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (el) { el.disabled = true; el.classList.add('disabled'); }
+      });
+    }
+  }
+
+  on(viewBtn, 'click', function (e) {
+    console.log('[viewPicksBtn] click');
+    e.preventDefault(); e.stopPropagation();
+    if (!gpModal) {
+      console.warn('Guest Picks modal markup missing (#guestPicksModal)');
+      return;
+    }
+    var readOnly = isGuest();
+    renderPicks(readOnly);
+    gpModal.classList.remove('hidden');
+  }, true);
+
+  on(gpClose, 'click', function(){ if (gpModal) gpModal.classList.add('hidden'); });
+  on(gpModal, 'click', function(e){ if (e.target === gpModal) gpModal.classList.add('hidden'); });
+
+  var countEl = document.getElementById('guestPicksCount');
+  function syncCount() { if (countEl) countEl.textContent = String(getPicks().length); }
+  syncCount();
+  document.addEventListener('menu:rendered', syncCount);
+  window.addEventListener('storage', function(e){ if (e.key === 'guestPicks') syncCount(); });
+})();
