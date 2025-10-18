@@ -428,40 +428,46 @@ function initResetEnhance(){
 }
 
 
-// r4: Guest -> Staff requires PIN on leaving guest mode
+// r4-hotfix: Guest -> Staff requires PIN (ES5-safe)
 (function(){
-  const $ = s => document.querySelector(s);
-  const btn = document.getElementById('guestToggle');
-  const modal = document.getElementById('guestExitModal');
-  function isGuest(){ try{return localStorage.getItem('guestMode')==='1'}catch(_){return false} }
+  function $(s){ return document.querySelector(s); }
+  var btn = document.getElementById('guestToggle');
+  var modal = document.getElementById('guestExitModal');
+  function isGuest(){ try{return localStorage.getItem('guestMode')==='1'}catch(e){return false;} }
   function setGuest(on){
-    try{ on ? localStorage.setItem('guestMode','1') : localStorage.removeItem('guestMode'); }catch(_){}
-    document.body.classList.toggle('guest', !!on);
-    btn?.classList.toggle('active', !!on);
-    btn?.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
-  if (btn){
-    btn.addEventListener('click', (ev)=>{
-      if (!isGuest()){ setGuest(true); return; } // enter
-      if (modal){ modal.hidden = false }  # intentional error to test
-    });
-  }
-})();
-
-
-
-document.addEventListener('click', (e)=>{
-  const id = e.target?.id;
-  if (id==='gxCancel'){ const m=document.getElementById('guestExitModal'); if(m) m.hidden = true; return; }
-  if (id==='gxOK'){
-    const exp = (localStorage.getItem('staffPIN') || '0000').trim();
-    const val = (document.getElementById('gxInput')?.value || '').trim();
-    if (val === exp){ const m=document.getElementById('guestExitModal'); if(m) m.hidden = true; try{localStorage.removeItem('guestMode');}catch(_){}
-      document.body.classList.remove('guest');
-      const b = document.getElementById('guestToggle'); if (b){ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); }
-    } else {
-      const i = document.getElementById('gxInput'); if (i){ i.value=''; i.focus(); i.style.outline='2px solid #ff6b6b'; setTimeout(()=>i.style.outline='',240); }
+    try{ on ? localStorage.setItem('guestMode','1') : localStorage.removeItem('guestMode'); }catch(e){}
+    var body = document.body;
+    if (body){ if (on){ body.classList.add('guest'); } else { body.classList.remove('guest'); } }
+    if (btn){
+      if (on){ btn.classList.add('active'); btn.setAttribute('aria-pressed','true'); }
+      else { btn.classList.remove('active'); btn.setAttribute('aria-pressed','false'); }
     }
   }
-}, {passive:true});
+  if (!btn || !modal){ return; }
+  if (!modal.hasAttribute('hidden')) modal.setAttribute('hidden','');
+
+  btn.addEventListener('click', function(ev){
+    if (!isGuest()){ setGuest(true); return; }
+    modal.removeAttribute('hidden');
+    var inp = document.getElementById('gxInput');
+    if (inp){ setTimeout(function(){ inp.focus(); }, 0); }
+    ev.preventDefault();
+    ev.stopPropagation();
+  }, false);
+
+  document.addEventListener('click', function(e){
+    var t = e.target || e.srcElement;
+    if (!t || !t.id) return;
+    if (t.id==='gxCancel'){ modal.setAttribute('hidden',''); return; }
+    if (t.id==='gxOK'){
+      var expected = (localStorage.getItem('staffPIN') || '0000').replace(/\s+/g,'');
+      var given = (document.getElementById('gxInput') && document.getElementById('gxInput').value || '').replace(/\s+/g,'');
+      if (given === expected){ modal.setAttribute('hidden',''); setGuest(false); }
+      else {
+        var i=document.getElementById('gxInput');
+        if(i){ i.value=''; i.focus(); i.style.outline='2px solid #ff6b6b'; setTimeout(function(){ i.style.outline=''; }, 240); }
+      }
+    }
+  }, false);
+})();
 
