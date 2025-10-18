@@ -6,7 +6,7 @@
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#0C0F14" name="theme-color"/>
 <title>Shang Shi Menu</title>
-<link href="./styles.css?v=dock-r8" rel="stylesheet"/>
+<link href="./styles.css?v=r10" rel="stylesheet"/>
 </head>
 <body>
 <button aria-label="Toggle theme" class="theme-btn" id="themeToggle">🌙</button>
@@ -54,6 +54,23 @@
 <div class="filter-panel" id="categoryPanel">
 <div aria-label="Category filters" class="chips" id="categories" role="group"></div>
 </div>
-<script defer="" src="./app.js?v=fs2-1759673818"></script>
+<script defer="" src="./app.js?v=r10"></script>
+
+<!-- r10: Guest Picks Modal -->
+<div id="guestPicksModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="guestPicksTitle">
+    <button class="modal-close" id="guestPicksClose" aria-label="Close">✕</button>
+    <div class="modal-head"><h3 id="guestPicksTitle">Guest Selections</h3></div>
+    <div id="guestPicksBody" class="picks-body"></div>
+    <div class="form-actions">
+      <button id="showOnlyGuest" class="btn btn-ghost">Show only picks</button>
+      <div style="display:flex; gap:8px;">
+        <button id="copyGuest" class="btn btn-ghost">Copy list</button>
+        <button id="clearGuest" class="btn btn-primary">Clear picks</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
