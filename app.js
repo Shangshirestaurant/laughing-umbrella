@@ -47,31 +47,18 @@ const els = {
 // Load
 async function loadMenu(){ const r = await fetch('./menu.json', {cache:'no-store'}); return r.ok ? r.json() : []; }
 
-// --- Normalization helpers ---
-const NORM = s => String(s ?? '').trim().toUpperCase();
-function normalizeData(arr){
-  return (arr||[]).map(d => ({
-    ...d,
-    allergens: Array.from(new Set((d.allergens||[]).map(NORM).filter(Boolean)))
-  }));
-}
-// Uppercase-key legend for consistent chips
-const LEGEND_UC = Object.fromEntries(Object.entries(LEGEND).map(([k,v]) => [k.toUpperCase(), v]));
-
-
 // Build chips
 function renderAllergenChips(){
   els.chips.innerHTML = '';
-  const codes = Array.from(Object.keys(LEGEND_UC)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
+  const codes = Array.from(Object.keys(LEGEND)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
   codes.forEach(code => {
     const btn = document.createElement('button');
     btn.className = 'chip';
-    btn.dataset.code = NORM(code);
+    btn.dataset.code = code;
     btn.innerHTML = `<b>${code}</b> ${LEGEND[code] || code}`; // Dock shows code + full name
     btn.addEventListener('click', () => {
-      const UC = NORM(code);
-      if (selectedAllergens.has(UC)){ selectedAllergens.delete(UC); btn.classList.remove('active'); }
-      else { selectedAllergens.add(UC); btn.classList.add('active'); }
+      if (selectedAllergens.has(code)){ selectedAllergens.delete(code); btn.classList.remove('active'); }
+      else { selectedAllergens.add(code); btn.classList.add('active'); }
       refresh();
 initResetEnhance();
 ensureDockUnsafeToggle();
@@ -118,7 +105,7 @@ function card(item){
 
   // SAFE only if allergens selected and dish safe
   if (selectedAllergens.size){
-    const al = (item.allergens || []).map(NORM);
+    const al = item.allergens || [];
     const ok = [...selectedAllergens].every(x => !al.includes(x));
     if (ok){
       const s = document.createElement('span');
@@ -225,7 +212,7 @@ function updateResetState(){
 
 // Init
 (async function(){
-  data = normalizeData(await loadMenu());
+  data = await loadMenu();
   renderAllergenChips();
   renderCategoryChips();
   refresh();
@@ -428,22 +415,97 @@ function initResetEnhance(){
 }
 
 
-// [patch:r1] reflect filter panel open state on the Filters button
-function __setFilterOpenUI(open){
-  var btn = document.getElementById('filterToggle');
-  if (btn) btn.classList.toggle('is-open', !!open);
-}
+
+
+// === r2: Dock + Filters UI + Guest Picks meta + Reset clears picks ===
 (function(){
-  var btn = document.getElementById('filterToggle');
-  var panel = document.getElementById('filterPanel');
-  if (btn){
-    btn.addEventListener('click', function(){
-      // slight delay to allow your existing toggle code to run
-      setTimeout(function(){
-        var open = (btn.getAttribute('aria-expanded') === 'true') || (panel && panel.classList.contains('open'));
-        __setFilterOpenUI(open);
-      }, 0);
-    }, {passive:true});
+  function getFilterBtn(){
+    return document.querySelector('#filtersBtn, #filterToggle, [data-action="filters"], button[aria-label*="Filter" i]')
+        || document.querySelector('button:has(.icon-filter)');
   }
-})(); // end patch
+  function isPanelOpenGuess(){
+    const panel = document.querySelector('.filters-popover:not([hidden]), #filterPanel.open, #filtersPanel.open, [data-panel="filters"]:not([hidden])');
+    if (panel) return true;
+    const btn = getFilterBtn();
+    if (btn && btn.hasAttribute('aria-expanded')) return btn.getAttribute('aria-expanded') === 'true';
+    return false;
+  }
+  function reflectFilterOpen(){
+    const btn = getFilterBtn();
+    if (!btn) return;
+    btn.classList.toggle('is-open', !!isPanelOpenGuess());
+  }
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest && e.target.closest('#filtersBtn, #filterToggle, [data-action="filters"], button[aria-label*="Filter" i]');
+    if (!btn) return;
+    setTimeout(reflectFilterOpen, 0);
+  }, {passive:true});
+  document.addEventListener('click', (e)=>{
+    if (e.target.closest && e.target.closest('.filters-popover, #filterPanel, #filtersPanel, [data-panel="filters"]')) return;
+    setTimeout(reflectFilterOpen, 0);
+  }, {passive:true});
+  const mo = new MutationObserver(()=>reflectFilterOpen());
+  mo.observe(document.documentElement, {subtree:true, attributes:true, attributeFilter:['hidden','class','aria-expanded']});
+
+  // Reset clears guest picks
+  document.addEventListener('click', (e)=>{
+    const resetBtn = e.target.closest && e.target.closest('#resetBtn, [data-action="reset"]');
+    if (!resetBtn) return;
+    try { localStorage.removeItem('guestSelection'); } catch(_){}
+    document.querySelectorAll('.card.guest-selected').forEach(c=>c.classList.remove('guest-selected'));
+    const b = document.getElementById('guestPicksCount'); if (b){ b.textContent = '0'; b.style.opacity = '.45'; }
+    document.body.classList.remove('show-only-guest');
+  }, {passive:true});
+
+  // Guest Picks with meta
+  function slug(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+  function cardId(card){
+    if (!card) return null;
+    if (card.dataset && card.dataset.id) return card.dataset.id;
+    const h = card.querySelector('h3,h2,.card-title,[data-title]');
+    const txt = (h?.textContent || card.getAttribute('aria-label') || '').trim();
+    return slug(txt);
+  }
+  function cardTitle(card){ const h = card.querySelector('h3,h2,.card-title,[data-title]'); return (h?.textContent || card.getAttribute('aria-label') || 'Untitled').trim(); }
+  function cardCategory(card){ const tag = card.querySelector('.pill-category, .category, .category-badge, .section, .pill:first-child'); const t = (tag?.textContent || '').trim(); return t || '—'; }
+  function cardAllergens(card){
+    const nodes = card.querySelectorAll('[data-allergen],[data-code],.badge,.chip,.allergen');
+    const raw = [];
+    nodes.forEach(el=>{ const v = el.getAttribute('data-allergen') || el.getAttribute('data-code') || (el.textContent||'').trim(); if (v) raw.push(v); });
+    const seen = new Set(); const out = [];
+    raw.forEach(x=>{ const k = x.trim().toUpperCase(); if (!seen.has(k)){ seen.add(k); out.push(x.trim()); } });
+    const codes = out.filter(x=>/^[A-Z]{2,3}$/.test(x));
+    return (codes.length ? codes : out).join(' · ') || '—';
+  }
+  function picksWithMeta(){
+    let ids = [];
+    try { ids = JSON.parse(localStorage.getItem('guestSelection')||'[]')||[]; } catch(_) {}
+    const set = new Set(ids); const items = [];
+    document.querySelectorAll('.card').forEach(card=>{ const id = cardId(card); if (id && set.has(id)) items.push({id, title:cardTitle(card), category:cardCategory(card), allergens:cardAllergens(card)}); });
+    return items;
+  }
+
+  (function(){
+    const modal = document.getElementById('guestPicksModal');
+    const list  = document.getElementById('gpList');
+    const btn   = document.getElementById('guestPicksBtn') || document.querySelector('[data-action="guest-picks"]');
+    if (!modal || !list || !btn) return;
+    function render(){
+      const items = picksWithMeta();
+      list.innerHTML = items.length ? items.map(p=>`<li data-id="${p.id}"><div class="gp-title">${p.title}</div><div class="gp-meta">${p.category} · ${p.allergens}</div></li>`).join('') : '<li>No dishes selected yet.</li>';
+    }
+    btn.addEventListener('click', ()=>{ render(); modal.hidden = false; }, {passive:true});
+    document.addEventListener('click', (e)=>{
+      const id = e.target?.id;
+      if (id==='gpClose'){ modal.hidden = true; }
+      if (id==='gpCopy'){ const t = picksWithMeta().map(p=>'• '+p.title+' — '+p.category+' · '+p.allergens).join('\n'); if (t) navigator.clipboard?.writeText(t).catch(()=>{}); }
+      if (id==='gpShowOnly'){ document.body.classList.add('show-only-guest'); }
+      if (id==='gpClear'){ try{ localStorage.removeItem('guestSelection'); }catch(_){}
+        document.querySelectorAll('.card.guest-selected').forEach(c=>c.classList.remove('guest-selected'));
+        const b = document.getElementById('guestPicksCount'); if (b){ b.textContent='0'; b.style.opacity='.45'; }
+        render();
+      }
+    }, {passive:true});
+  })();
+})();
 
