@@ -47,31 +47,18 @@ const els = {
 // Load
 async function loadMenu(){ const r = await fetch('./menu.json', {cache:'no-store'}); return r.ok ? r.json() : []; }
 
-// --- Normalization helpers ---
-const NORM = s => String(s ?? '').trim().toUpperCase();
-function normalizeData(arr){
-  return (arr||[]).map(d => ({
-    ...d,
-    allergens: Array.from(new Set((d.allergens||[]).map(NORM).filter(Boolean)))
-  }));
-}
-// Uppercase-key legend for consistent chips
-const LEGEND_UC = Object.fromEntries(Object.entries(LEGEND).map(([k,v]) => [k.toUpperCase(), v]));
-
-
 // Build chips
 function renderAllergenChips(){
   els.chips.innerHTML = '';
-  const codes = Array.from(Object.keys(LEGEND_UC)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
+  const codes = Array.from(Object.keys(LEGEND)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
   codes.forEach(code => {
     const btn = document.createElement('button');
     btn.className = 'chip';
-    btn.dataset.code = NORM(code);
+    btn.dataset.code = code;
     btn.innerHTML = `<b>${code}</b> ${LEGEND[code] || code}`; // Dock shows code + full name
     btn.addEventListener('click', () => {
-      const UC = NORM(code);
-      if (selectedAllergens.has(UC)){ selectedAllergens.delete(UC); btn.classList.remove('active'); }
-      else { selectedAllergens.add(UC); btn.classList.add('active'); }
+      if (selectedAllergens.has(code)){ selectedAllergens.delete(code); btn.classList.remove('active'); }
+      else { selectedAllergens.add(code); btn.classList.add('active'); }
       refresh();
 initResetEnhance();
 ensureDockUnsafeToggle();
@@ -118,7 +105,7 @@ function card(item){
 
   // SAFE only if allergens selected and dish safe
   if (selectedAllergens.size){
-    const al = (item.allergens || []).map(NORM);
+    const al = item.allergens || [];
     const ok = [...selectedAllergens].every(x => !al.includes(x));
     if (ok){
       const s = document.createElement('span');
@@ -225,7 +212,7 @@ function updateResetState(){
 
 // Init
 (async function(){
-  data = normalizeData(await loadMenu());
+  data = await loadMenu();
   renderAllergenChips();
   renderCategoryChips();
   refresh();
@@ -428,16 +415,162 @@ function initResetEnhance(){
 }
 
 
+// === Guest Mode (guest-picks-1) & Guest Picks ===
+(function(){
+  const LS = { mode:'guestMode', pin:'staffPIN', sel:'guestSelection' };
+  let sel = new Set();
+  try { sel = new Set(JSON.parse(localStorage.getItem(LS.sel) || '[]')); } catch(_) {}
 
-// Guard: block "add dish" actions in guest mode even if DOM shows it
-document.addEventListener('click', (e) => {
-  const isGuest = document.body.classList.contains('guest-mode') || localStorage.getItem('guestMode') === '1';
-  if (!isGuest) return;
-  const addBtn = e.target.closest('#addDishBtn, [data-action="add-dish"], .add-dish-btn');
-  if (addBtn) {
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
+  const slug = s => String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  function cardId(card){
+    if (!card) return null;
+    if (card.dataset?.id) return card.dataset.id;
+    const h = card.querySelector('h3,h2,.card-title,[data-title]');
+    const txt = (h?.textContent || card.getAttribute('aria-label') || '').trim();
+    return slug(txt);
   }
-}, { capture: true, passive: true });
+  function saveSel(){ try{ localStorage.setItem(LS.sel, JSON.stringify([...sel])); }catch(_){ } }
+  function mark(card){ const id = cardId(card); if (!id) return; card.classList.toggle('guest-selected', sel.has(id)); }
+  function markAll(){ document.querySelectorAll('.card').forEach(mark); }
+
+  const isGuest = () => localStorage.getItem(LS.mode)==='1';
+  function setGuest(on){
+    if (on) localStorage.setItem(LS.mode,'1'); else localStorage.removeItem(LS.mode);
+    document.body.classList.toggle('guest-mode', on);
+    const btn = document.getElementById('guestToggle');
+    if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    setTimeout(markAll,0);
+  }
+
+  function ensureBtn(){
+    if (document.getElementById('guestToggle')) return;
+    const b = document.createElement('button');
+    b.id='guestToggle'; b.className='theme-btn'; b.title='Guest mode'; b.textContent='👤';
+    const theme = document.getElementById('themeToggle');
+    if (theme && theme.parentNode) theme.parentNode.insertBefore(b, theme.nextSibling);
+    else document.body.appendChild(b);
+  }
+
+  function capture(e){
+    if (!isGuest()) return;
+    const card = e.target?.closest?.('.card'); if (!card) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    const id = cardId(card); if (!id) return;
+    if (sel.has(id)) sel.delete(id); else sel.add(id);
+    saveSel(); mark(card);
+    document.dispatchEvent(new CustomEvent('guestSelectionChanged'));
+  }
+  if (!window.__guestCaptureInstalled){
+    document.addEventListener('click', capture, { capture:true });
+    window.__guestCaptureInstalled = true;
+  }
+
+  document.addEventListener('click', (e)=>{
+    if (e.target?.id !== 'guestToggle') return;
+    if (!isGuest()){ setGuest(true); }
+    else {
+      const m = document.getElementById('pinModal'); if (!m) return;
+      m.hidden = false;
+      setTimeout(()=>document.getElementById('pinInput')?.focus(), 0);
+    }
+  }, {passive:true});
+
+  document.addEventListener('click', (e)=>{
+    const id = e.target?.id;
+    if (id === 'pinCancel'){ document.getElementById('pinModal').hidden = true; }
+    if (id === 'pinOk'){
+      const expected = (localStorage.getItem(LS.pin) || '0000').trim();
+      const given = (document.getElementById('pinInput')?.value || '').trim();
+      if (given === expected){
+        document.getElementById('pinModal').hidden = true;
+        setGuest(false);
+      } else {
+        const i = document.getElementById('pinInput'); if (i){ i.value=''; i.focus(); }
+      }
+    }
+  }, {passive:true});
+
+  // Add-dish hard block in guest mode
+  document.addEventListener('click', (e)=>{
+    if (!isGuest()) return;
+    const addBtn = e.target.closest?.('#addDishBtn, [data-action="add-dish"], .add-dish-btn');
+    if (addBtn){ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); }
+  }, {capture:true, passive:true});
+
+  // Persist after grid refresh
+  (function wrapRefresh(){
+    const r = window.refresh;
+    if (typeof r === 'function' && !r.__guestWrapped){
+      window.refresh = function(){ const out = r.apply(this, arguments); setTimeout(markAll,0); return out; };
+      window.refresh.__guestWrapped = true;
+    }
+  })();
+
+  // Guest Picks: badge + modal
+  function getSel(){ try{ return JSON.parse(localStorage.getItem(LS.sel) || '[]'); } catch(_){ return []; } }
+  function slug2(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+  function cardId2(card){
+    if (!card) return null;
+    if (card.dataset?.id) return card.dataset.id;
+    const h = card.querySelector('h3,h2,.card-title,[data-title]');
+    const txt = (h?.textContent || card.getAttribute('aria-label') || '').trim();
+    return slug2(txt);
+  }
+  function titleOf(card){
+    const h = card.querySelector('h3,h2,.card-title,[data-title]');
+    return (h?.textContent || card.getAttribute('aria-label') || 'Untitled').trim();
+  }
+  function picks(){
+    const ids = new Set(getSel());
+    const items = [];
+    document.querySelectorAll('.card').forEach(c=>{
+      const id = cardId2(c);
+      if (id && ids.has(id)) items.push({id, title:titleOf(c)});
+    });
+    return items;
+  }
+  function updateBadge(){
+    const n = getSel().length;
+    const b = document.getElementById('guestPicksCount');
+    if (b){ b.textContent = n; b.style.opacity = n ? '1' : '.45'; }
+  }
+  function openPicks(){
+    if (localStorage.getItem(LS.mode)==='1') return;
+    const m = document.getElementById('guestPicksModal');
+    const list = document.getElementById('gpList');
+    if (!m || !list) return;
+    const ps = picks();
+    list.innerHTML = ps.length ? ps.map(p=>`<li data-id="${p.id}">${p.title}</li>`).join('') : '<li>No dishes selected yet.</li>';
+    m.hidden = false;
+  }
+  function closePicks(){ const m = document.getElementById('guestPicksModal'); if (m) m.hidden = true; }
+  function copyList(){ const t = picks().map(p=>`• ${p.title}`).join('\\n'); if (t) navigator.clipboard?.writeText(t).catch(()=>{}); }
+  function showOnly(toggle=true){ document.body.classList.toggle('show-only-guest', toggle ? undefined : true); }
+  function clearSel(){
+    localStorage.removeItem(LS.sel);
+    document.querySelectorAll('.card.guest-selected').forEach(c=>c.classList.remove('guest-selected'));
+    updateBadge(); closePicks();
+  }
+
+  document.addEventListener('click', (e)=>{
+    if (e.target.closest?.('#guestPicksBtn')) openPicks();
+    const id = e.target?.id;
+    if (id==='gpClose') closePicks();
+    if (id==='gpCopy')  copyList();
+    if (id==='gpShowOnly') showOnly(true);
+    if (id==='gpClear') clearSel();
+  }, {passive:true});
+
+  document.addEventListener('DOMContentLoaded', ()=>{ ensureBtn(); setGuest(isGuest()); setTimeout(markAll,0); updateBadge(); });
+  document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) updateBadge(); });
+  document.addEventListener('guestSelectionChanged', updateBadge);
+
+  (function wrapRefresh2(){
+    const r = window.refresh;
+    if (typeof r === 'function' && !r.__guestPicksWrapped){
+      window.refresh = function(){ const out = r.apply(this, arguments); setTimeout(updateBadge,0); return out; };
+      window.refresh.__guestPicksWrapped = true;
+    }
+  })();
+})();
 
