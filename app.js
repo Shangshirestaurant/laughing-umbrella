@@ -426,3 +426,95 @@ function initResetEnhance(){
   btn.dataset.resetEnhanced='1';
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
+
+// === Guest Mode (guest-6): toggle, selection, suppress staff popup ===
+(function(){
+  const LS = { mode:'guestMode', pin:'staffPIN', sel:'guestSelection' };
+
+  // Keep guest selections
+  let sel = new Set();
+  try { sel = new Set(JSON.parse(localStorage.getItem(LS.sel) || '[]')); } catch(_) {}
+
+  const slug = s => String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  function cardId(card){
+    if (!card) return null;
+    if (card.dataset?.id) return card.dataset.id;
+    const h = card.querySelector('h3,h2,.card-title,[data-title]');
+    const txt = (h?.textContent || card.getAttribute('aria-label') || '').trim();
+    return slug(txt);
+  }
+  function saveSel(){ try{ localStorage.setItem(LS.sel, JSON.stringify([...sel])); }catch(_){ } }
+  function mark(card){ const id = cardId(card); if (!id) return; card.classList.toggle('guest-selected', sel.has(id)); }
+  function markAll(){ document.querySelectorAll('.card').forEach(mark); }
+
+  function isGuest(){ return localStorage.getItem(LS.mode)==='1'; }
+  function setGuest(on){
+    if (on) localStorage.setItem(LS.mode,'1'); else localStorage.removeItem(LS.mode);
+    document.body.classList.toggle('guest-mode', on);
+    const btn = document.getElementById('guestToggle');
+    if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    setTimeout(markAll, 0);
+  }
+
+  // Ensure button exists even if not in HTML
+  function ensureBtn(){
+    if (document.getElementById('guestToggle')) return;
+    const b = document.createElement('button');
+    b.id='guestToggle'; b.className='theme-btn'; b.title='Guest mode'; b.textContent='👤';
+    const theme = document.getElementById('themeToggle');
+    if (theme && theme.parentNode) theme.parentNode.insertBefore(b, theme.nextSibling);
+    else document.body.appendChild(b);
+  }
+
+  // Capture-phase blocker: in guest mode, stop staff popup and toggle selection instead
+  function capture(e){
+    if (!isGuest()) return;
+    const card = e.target?.closest?.('.card'); if (!card) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    const id = cardId(card); if (!id) return;
+    if (sel.has(id)) sel.delete(id); else sel.add(id);
+    saveSel(); mark(card);
+  }
+  if (!window.__guestCaptureInstalled){
+    document.addEventListener('click', capture, { capture:true });
+    window.__guestCaptureInstalled = true;
+  }
+
+  // Toggle + PIN to exit
+  document.addEventListener('click', (e)=>{
+    if (e.target?.id !== 'guestToggle') return;
+    if (!isGuest()){
+      setGuest(true);
+    } else {
+      const m = document.getElementById('pinModal'); if (!m) return;
+      m.hidden = false;
+      setTimeout(()=>document.getElementById('pinInput')?.focus(), 0);
+    }
+  }, {passive:true});
+
+  document.addEventListener('click', (e)=>{
+    const id = e.target?.id;
+    if (id === 'pinCancel'){ document.getElementById('pinModal').hidden = true; }
+    if (id === 'pinOk'){
+      const expected = (localStorage.getItem(LS.pin) || '0000').trim();
+      const given = (document.getElementById('pinInput')?.value || '').trim();
+      if (given === expected){
+        document.getElementById('pinModal').hidden = true;
+        setGuest(false);
+      } else {
+        const i = document.getElementById('pinInput'); if (i){ i.value=''; i.focus(); }
+      }
+    }
+  }, {passive:true});
+
+  // Persist outlines after your grid re-renders
+  (function wrapRefresh(){
+    const r = window.refresh;
+    if (typeof r === 'function' && !r.__guestWrapped){
+      window.refresh = function(){ const out = r.apply(this, arguments); setTimeout(markAll,0); return out; };
+      window.refresh.__guestWrapped = true;
+    }
+  })();
+
+  document.addEventListener('DOMContentLoaded', ()=>{ ensureBtn(); setGuest(isGuest()); });
+})();
