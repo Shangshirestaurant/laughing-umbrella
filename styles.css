@@ -992,3 +992,59 @@ body.guest .add-btn{ display:none !important; }
 #guestExitModal .form-actions{ display:flex; gap:8px; justify-content:flex-end; }
 #guestExitModal input{ height:42px; border-radius:12px; padding:0 12px; border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.10); color:var(--text); }
 
+
+
+/* r7: View Picks counter badge via data-count (no HTML changes) */
+#viewPicksBtn{ position:relative; }
+#viewPicksBtn::after{
+  content: attr(data-count);
+  position:absolute; top:-6px; right:-6px;
+  min-width:18px; height:18px; padding:0 5px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius:999px; font-size:11px; font-weight:700; line-height:1;
+  color:#0b1114;
+  background: radial-gradient(120% 140% at 30% 10%, rgba(255,255,255,.98), rgba(255,255,255,.88));
+  border:1px solid rgba(0,0,0,.15);
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
+  transform:scale(.9); transition:transform .16s ease, opacity .16s ease;
+}
+#viewPicksBtn[data-count="0"]::after, #viewPicksBtn:not([data-count])::after{ content:""; display:none; }
+#viewPicksBtn.bump::after{ transform:scale(1.15); }
+
+/* r7: Guest toggle turns green when active */
+#guestToggle.theme-btn.guest-on{
+  background:linear-gradient(145deg,#34c759,#2bb24f) !important;
+  color:#0b1311 !important;
+  border:1px solid rgba(0,0,0,.12) !important;
+  box-shadow:0 10px 28px rgba(0,0,0,.30),0 0 8px rgba(52,199,89,.5) !important;
+}
+
+/* r7: Guest-picked outline */
+.card.guest-picked{
+  outline:2px solid rgba(52,199,89,0.65);
+  outline-offset:2px;
+  box-shadow:0 12px 28px rgba(0,0,0,0.35), 0 0 0 1px rgba(52,199,89,0.25) inset;
+}
+
+/* r7: Frosted Filters/Categories when active (no solid white) */
+#filterToggle[aria-expanded="true"],
+#categoryToggle[aria-expanded="true"],
+#filterToggle[data-active="true"],
+#categoryToggle[data-active="true"]{
+  background: rgba(255,255,255,0.12) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.20) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.06) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+/* r7: Guest Picks Modal body layout */
+#guestPicksModal.hidden{ display:none !important; opacity:0 !important; pointer-events:none !important; }
+#guestPicksModal .picks-body{ display:grid; gap:10px; max-height:56vh; overflow:auto; padding:6px 2px; }
+.picks-row{ display:grid; grid-template-columns: 1fr auto; gap:8px;
+  border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06);
+  border-radius:12px; padding:10px 12px; }
+.picks-row .meta{ font-size:12px; opacity:.85; display:flex; gap:6px; flex-wrap:wrap; }
+.picks-empty{ opacity:.7; font-style:italic; padding:8px 2px; }
+
