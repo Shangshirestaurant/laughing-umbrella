@@ -427,151 +427,89 @@ function initResetEnhance(){
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
 
-
-// === r5 Guest Mode & Dock polish (safe) ===
+// r12d picks modal wiring
 (function(){
-  function $(s, r){ return (r||document).querySelector(s); }
-  function on(el, ev, fn, opts){ if (el) el.addEventListener(ev, fn, opts||false); }
+  const $ = (s, r=document)=>r.querySelector(s);
+  const on = (el, ev, fn)=>el&&el.addEventListener(ev, fn, true);
+  const norm = s => (s||'').replace(/\s+/g,' ').trim();
+  const isGuest = () => localStorage.getItem('guestMode') === '1';
+  const getPicks = () => {
+    try { return new Set(JSON.parse(localStorage.getItem('guestPicks') || '[]')); }
+    catch { return new Set(); }
+  };
 
-  var body = document.body;
-  var guestBtn = $('#guestToggle');
-  var grid = $('#grid') || document;
-  var filterBtn = $('#filterToggle');
-  var catBtn = $('#categoryToggle');
-  var resetBtn = $('#resetBtn');
-  var viewPicksBtn = $('#viewPicksBtn');
+  const countEl = document.getElementById('picksCount');
+  function syncCount(){
+    if (countEl){ countEl.textContent = String(getPicks().size); }
+  }
+  syncCount();
+  window.addEventListener('storage', (e)=>{ if (e.key==='guestPicks') syncCount(); });
+  document.addEventListener('menu:rendered', syncCount);
 
-  var gxModal = $('#guestExitModal'), gxInput = $('#gxInput');
-  var gxOK = $('#gxOK'), gxCancel = $('#gxCancel'), gxCancel2 = $('#gxCancel2');
-
-  function isGuest(){ try{ return localStorage.getItem('guestMode')==='1'; }catch(e){ return false; } }
-  function setGuest(on){
-    try{ on ? localStorage.setItem('guestMode','1') : localStorage.removeItem('guestMode'); }catch(e){}
-    if (on) body.classList.add('guest'); else body.classList.remove('guest');
-    if (guestBtn){ if (on){ guestBtn.classList.add('active'); guestBtn.setAttribute('aria-pressed','true'); } else { guestBtn.classList.remove('active'); guestBtn.setAttribute('aria-pressed','false'); } }
-    if (on) attachGuestHandlers(); else detachGuestHandlers();
+  if (!$('#guestPicksModal')) {
+    const stub = document.createElement('div');
+    stub.innerHTML = `<div id="guestPicksModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="guestPicksTitle">
+        <button class="modal-close" id="guestPicksClose" aria-label="Close">✕</button>
+        <div class="modal-head"><h3 id="guestPicksTitle">Guest Selections</h3></div>
+        <div id="guestPicksBody" class="picks-body"></div>
+        <div class="form-actions">
+          <button id="showOnlyGuest" class="btn btn-ghost" type="button">Show only picks</button>
+          <div style="display:flex; gap:8px;">
+            <button id="copyGuest" class="btn btn-ghost" type="button">Copy list</button>
+            <button id="clearGuest" class="btn btn-primary" type="button">Clear picks</button>
+          </div>
+        </div>
+      </div></div>`;
+    document.body.appendChild(stub.firstElementChild);
   }
 
-  // init
-  setGuest(isGuest());
+  const viewBtn = $('#viewPicksBtn');
+  const modal   = $('#guestPicksModal');
+  const bodyEl  = $('#guestPicksBody');
+  const closeEl = $('#guestPicksClose'];
 
-  // Toggle guest (leaving needs PIN)
-  on(guestBtn, 'click', function(e){
-    if (!isGuest()){ setGuest(true); return; }
-    if (gxModal){ gxModal.classList.remove('hidden'); setTimeout(function(){ gxInput && gxInput.focus(); }, 0); }
-    e.preventDefault(); e.stopPropagation();
-  });
-
-  function expectedPIN(){ 
-    var v = (localStorage.getItem('staffPIN') || '0000'); 
-    return (v||'').replace(/\s+/g,'');
-  }
-  function tryExitGuest(){
-    var given = (gxInput && gxInput.value || '').replace(/\s+/g,'');
-    if (given === expectedPIN()){ setGuest(false); gxModal && gxModal.classList.add('hidden'); }
-    else {
-      if (gxInput){ gxInput.value=''; gxInput.style.outline='2px solid #ff6b6b'; setTimeout(function(){ gxInput.style.outline=''; }, 220); gxInput.focus(); }
+  function renderPicks(readOnly){
+    if (!bodyEl) return;
+    const picks = Array.from(getPicks());
+    bodyEl.innerHTML='';
+    if (!picks.length){
+      bodyEl.innerHTML = '<div class="picks-empty">No guest selections yet.</div>';
+      return;
     }
-  }
-  on(gxOK, 'click', tryExitGuest);
-  on(gxCancel, 'click', function(){ gxModal && gxModal.classList.add('hidden'); });
-  on(gxCancel2, 'click', function(){ gxModal && gxModal.classList.add('hidden'); });
-  on(gxInput, 'keydown', function(e){ if (e.key==='Enter'){ tryExitGuest(); } });
-
-  // Guest picks (session-scoped)
-  function getPicks(){ try{ return JSON.parse(sessionStorage.getItem('guestPicks')||'[]'); }catch(e){ return []; } }
-  function setPicks(arr){ try{ sessionStorage.setItem('guestPicks', JSON.stringify(arr)); }catch(e){} }
-
-  function dishNameFromCard(card){
-    var h = card.querySelector('h3') || card.querySelector('[data-title]');
-    return h ? (h.textContent||'').trim() : '';
-  }
-
-  function guestClickHandler(e){
-    if (!isGuest()) return;
-    var card = e.target && e.target.closest ? e.target.closest('.card') : null;
-    if (!card) return;
-    e.preventDefault(); e.stopPropagation(); // block staff modal
-    var name = dishNameFromCard(card);
-    if (!name) return;
-    var picks = getPicks();
-    var i = picks.indexOf(name);
-    if (i>=0){ picks.splice(i,1); card.classList.remove('guest-picked'); }
-    else { picks.push(name); card.classList.add('guest-picked'); }
-    setPicks(picks);
-  }
-
-  function attachGuestHandlers(){
-    if (!grid) return;
-    grid.addEventListener('click', guestClickHandler, true);
-    // restore outlines
-    var picks = getPicks();
-    var cards = document.querySelectorAll('.card');
-    for (var k=0;k<cards.length;k++){
-      var c = cards[k];
-      var nm = dishNameFromCard(c);
-      if (picks.indexOf(nm)>=0) c.classList.add('guest-picked');
-    }
-  }
-  function detachGuestHandlers(){
-    if (!grid) return;
-    grid.removeEventListener('click', guestClickHandler, true);
-  }
-
-  // Reset clears guest picks
-  on(resetBtn, 'click', function(){
-    try{ sessionStorage.removeItem('guestPicks'); }catch(e){}
-    var sel = document.querySelectorAll('.card.guest-picked');
-    for (var i=0;i<sel.length;i++){ sel[i].classList.remove('guest-picked'); }
-  });
-
-  // Staff: view picks summary
-  on(viewPicksBtn, 'click', function(){
-    if (isGuest()) return;
-    var picks = getPicks();
-    if (!picks.length){ alert('No guest selections yet.'); return; }
-    var lines = [];
-    for (var p=0;p<picks.length;p++){
-      var name = picks[p];
-      var card;
-      var cards = document.querySelectorAll('.card');
-      for (var k=0;k<cards.length;k++){
-        var t = dishNameFromCard(cards[k]);
-        if (t===name){ card = cards[k]; break; }
+    const cards = document.querySelectorAll('.card');
+    picks.forEach(name => {
+      let card = Array.from(cards).find(c => c.dataset && (c.dataset.id === name));
+      if (!card) {
+        card = Array.from(cards).find(c => {
+          const t = c.querySelector('h3,[data-title]');
+          return t && norm(t.textContent) === name;
+        });
       }
-      if (!card){ lines.push('• '+name); continue; }
-      var cat = (card.querySelector('[data-cat]') && card.querySelector('[data-cat]').getAttribute('data-cat')) || (card.querySelector('.pill') && card.querySelector('.pill').textContent.trim()) || 'Unknown';
-      var chips = card.querySelectorAll('.badge, .chip, [data-allergen]');
-      var codes = [];
-      for (var c=0;c<chips.length;c++){ var txt = (chips[c].textContent||'').trim(); if (txt) codes.push(txt); }
-      lines.push('• '+name+'\\n   Category: '+cat+'\\n   Allergens: '+(codes.join(', ')||'—'));
-    }
-    alert('Guest selections:\\n\\n'+lines.join('\\n\\n'));
-  });
+      const cat =
+        (card && card.querySelector('[data-cat]')?.getAttribute('data-cat')) ||
+        (card && card.querySelector('.pill') && norm(card.querySelector('.pill').textContent)) || '—';
+      const chips = card ? card.querySelectorAll('.badge,.chip,[data-allergen]') : [];
+      const codes = Array.from(chips).map(x=>norm(x.textContent)).filter(Boolean);
+      const row = document.createElement('div');
+      row.className = 'picks-row';
+      row.innerHTML = `<div><div class="title">${name}</div><div class="meta">Category: ${cat}</div></div>` +
+        `<div class="meta">${codes.length?codes.map(c=>`<span class="chip">${c}</span>`).join(' '):'<span class="meta">No allergens</span>'}</div>`;
+      bodyEl.appendChild(row);
+    });
 
-  // Keep frosted state synced if your code toggles aria-expanded
-  function sync(btn){ if (!btn) return; btn.setAttribute('data-active', btn.getAttribute('aria-expanded')==='true'); }
-  on(filterBtn, 'click', function(){ setTimeout(function(){ sync(filterBtn); },0); }, true);
-  on(catBtn, 'click', function(){ setTimeout(function(){ sync(catBtn); },0); }, true);
-  sync(filterBtn); sync(catBtn);
-})();
-
-
-// r12c: listen for guestMode changes from elsewhere (e.g., app PIN flow)
-(function(){
-  function $(s, r){ return (r||document).querySelector(s); }
-  function isGuest(){ try{ return localStorage.getItem('guestMode')==='1'; }catch(e){ return false; } }
-  function reflect(){
-    var on = isGuest();
-    document.body.classList.toggle('guest', !!on);
-    var btn = $('#guestToggle');
-    if (btn){
-      btn.classList.toggle('guest-on', !!on);
-      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    }
+    ['showOnlyGuest','copyGuest','clearGuest'].forEach(id=>{
+      const el = document.getElementById(id);
+      if (el){ el.disabled = !!readOnly; el.classList.toggle('disabled', !!readOnly); }
+    });
   }
-  reflect();
-  window.addEventListener('storage', function(e){
-    if (e.key === 'guestMode'){ reflect(); }
+
+  on(viewBtn,'click', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    renderPicks(isGuest());
+    modal?.classList.remove('hidden');
   });
+
+  on(closeEl,'click', ()=> modal?.classList.add('hidden'));
+  on(modal,'click', (e)=>{ if (e.target === modal) modal.classList.add('hidden'); });
 })();
