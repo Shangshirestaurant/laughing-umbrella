@@ -947,3 +947,75 @@ body.show-unsafe-only .card .contains-pill{ display:inline-flex; }
 /* Micro-interactions */
 .filter-btn:hover{ transform: translateY(-1px); }
 .filter-btn:active{ transform: translateY(0) scale(.98); }
+
+
+/* === Guest mode & dock polish (patch R3) === */
+
+/* Center icons in dock buttons */
+.dock-inner button,
+.filter-btn,
+.reset-btn,
+.add-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Make Filters pill share Reset glass look */
+#filterToggle.filter-btn {
+  background: rgba(255,255,255,0.12) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.20) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.06) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+/* When the filter panel is open, turn Filters fully white like you requested */
+#filterToggle[aria-expanded="true"] {
+  background: #ffffff !important;
+  color: #222 !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(0,0,0,0.05) !important;
+}
+#filterToggle[aria-expanded="true"] .dot { background: #d2a455 !important; }
+
+/* Guest selection outline */
+.card.guest-selected {
+  outline: 2px solid rgba(64,186,108,0.85) !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(64,186,108,0.25), 0 8px 24px rgba(64,186,108,0.18) !important;
+}
+
+/* Guest toggle button (top-right, next to theme) */
+#guestToggle {
+  position: fixed;
+  top: max(10px, calc(env(safe-area-inset-top) + 8px));
+  right: 52px; /* leave room for theme button on the far right */
+  z-index: 1000;
+  width: 44px; height: 44px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.20);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.06);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+#guestToggle.active {
+  background: linear-gradient(145deg, #34c759, #2aa84c);
+  color: #0b1311;
+  border-color: rgba(0,0,0,0.12);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.30), 0 0 8px rgba(52,199,89,0.55);
+}
+
+/* Hide Add (+) in guest mode */
+body.guest .add-btn { display:none !important; }
+
+/* Ensure dock icons are visually centered even when labels are hidden */
+.filter-btn .label { display: inline-block; }
+body.guest .filter-btn .label,
+body.guest #categoryToggle .label { display: none; }
+
+/* Panel spacing since dock label may shrink */
+.filter-panel { bottom: calc(env(safe-area-inset-bottom) + 72px) !important; }
+

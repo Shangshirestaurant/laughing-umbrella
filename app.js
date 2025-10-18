@@ -426,3 +426,153 @@ function initResetEnhance(){
   btn.dataset.resetEnhanced='1';
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
+
+
+// === Guest Mode & Dock Enhancements (patch R3) ===
+(function(){
+  const ls = window.localStorage;
+  const qs = (s,ctx=document)=>ctx.querySelector(s);
+  const qsa = (s,ctx=document)=>Array.from(ctx.querySelectorAll(s));
+
+  function ensureGuestToggle(){
+    if (qs('#guestToggle')) return qs('#guestToggle');
+    const btn = document.createElement('button');
+    btn.id = 'guestToggle';
+    btn.title = 'Guest mode';
+    btn.setAttribute('aria-pressed','false');
+    // simple icon
+    btn.innerHTML = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.42 0-8 2.239-8 5v1h16v-1c0-2.761-3.58-5-8-5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    // put it just left of the theme toggle
+    const theme = qs('#themeToggle') || qs('.theme-btn');
+    (theme?.parentNode || document.body).appendChild(btn);
+    if (theme) { btn.style.position = 'fixed'; btn.style.right = ( (parseInt(getComputedStyle(theme).right)||12) + 44 + 8 ) + 'px'; }
+    return btn;
+  }
+
+  const guestBtn = ensureGuestToggle();
+
+  function getGuest() { try{ return ls.getItem('guestMode') === '1'; }catch(_){ return false; } }
+  function setGuest(v){
+    try{ ls.setItem('guestMode', v ? '1' : '0'); }catch(_){}
+    document.body.classList.toggle('guest', !!v);
+    guestBtn.classList.toggle('active', !!v);
+    guestBtn.setAttribute('aria-pressed', v ? 'true':'false');
+  }
+
+  setGuest(getGuest());
+
+  guestBtn?.addEventListener('click', ()=>{
+    const to = !getGuest();
+    setGuest(to);
+    // In guest mode hide labels inside dock pills for a clean circle look
+    qsa('.filter-btn .label').forEach(n=> n.style.display = to ? 'none' : '');
+  }, {passive:true});
+
+  // Intercept card clicks in guest mode: toggle selection, no staff modal
+  document.addEventListener('click', (e)=>{
+    const card = e.target.closest?.('.card');
+    if (!card) return;
+    if (!getGuest()) return;
+    e.preventDefault();
+    e.stopPropagation();
+    card.classList.toggle('guest-selected');
+    const name = card.querySelector('h3')?.textContent?.trim();
+    const category = card.querySelector('.pill')?.textContent?.trim() || card.querySelector('.cat-label')?.textContent?.trim() || '';
+    const allergens = qsa('.badge', card).map(b=>b.textContent.trim());
+    let picks = [];
+    try { picks = JSON.parse(ls.getItem('guestSelection')||'[]'); } catch(_){}
+    const i = picks.findIndex(p=>p.name===name);
+    if (i>=0) picks.splice(i,1);
+    else picks.push({name, category, allergens});
+    try { ls.setItem('guestSelection', JSON.stringify(picks)); }catch(_){}
+    updateGuestBadge();
+  }, true);
+
+  function updateGuestBadge(){
+    let picks = [];
+    try { picks = JSON.parse(ls.getItem('guestSelection')||'[]'); } catch(_){}
+    let badge = qs('#guestPicksCount');
+    if (!badge){
+      // attach badge on reset button area (rightmost)
+      const dock = qs('.dock-inner');
+      if (dock){
+        const span = document.createElement('span');
+        span.id = 'guestPicksCount';
+        span.style.cssText='min-width:22px;height:22px;border-radius:999px;background:rgba(52,199,89,.15);border:1px solid rgba(52,199,89,.4);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;margin-left:4px;';
+        dock.appendChild(span);
+      }
+      badge = qs('#guestPicksCount');
+    }
+    if (badge){
+      badge.textContent = String(picks.length);
+      badge.style.opacity = picks.length ? '1':'0.45';
+    }
+  }
+  updateGuestBadge();
+
+  // Build Guest Picks modal content
+  function openGuestPicks(){
+    const modal = qs('#guestPicksModal'); if (!modal) return;
+    const list = qs('#guestPicksList', modal); if (list) list.innerHTML='';
+    let picks = [];
+    try { picks = JSON.parse(ls.getItem('guestSelection')||'[]'); } catch(_){}
+    if (list){
+      if (!picks.length){ list.innerHTML = '<div class="desc">No selections yet.</div>'; }
+      picks.forEach(p=>{
+        const row = document.createElement('div');
+        row.className='pill';
+        row.style.margin='6px 6px 0 0';
+        row.innerHTML = '<b>'+ (p.category||'') + '</b> ' + p.name + (p.allergens?.length? ' — <i>'+p.allergens.join(", ")+'</i>':'');
+        list.appendChild(row);
+      });
+    }
+    modal.classList.remove('hidden');
+  }
+
+  qs('#guestPicksClose')?.addEventListener('click', ()=> qs('#guestPicksModal')?.classList.add('hidden'), {passive:true});
+  qs('#copyGuest')?.addEventListener('click', ()=>{
+    let picks=[]; try{ picks = JSON.parse(ls.getItem('guestSelection')||'[]'); }catch(_){}
+    const txt = picks.map(p=>`${p.name} (${p.category}) [${(p.allergens||[]).join(', ')}]`).join('\n');
+    navigator.clipboard?.writeText(txt);
+  }, {passive:true});
+  qs('#clearGuest')?.addEventListener('click', ()=>{
+    try{ ls.removeItem('guestSelection'); }catch(_){}
+    qsa('.card.guest-selected').forEach(c=>c.classList.remove('guest-selected'));
+    updateGuestBadge();
+  }, {passive:true});
+  qs('#showOnlyGuest')?.addEventListener('click', ()=>{
+    document.body.classList.add('show-only-guest');
+    // hide non-picked cards quickly
+    let picks=[]; try{ picks = JSON.parse(ls.getItem('guestSelection')||'[]'); }catch(_){}
+    const names = new Set(picks.map(p=>p.name));
+    qsa('.card').forEach(c=>{
+      const n = c.querySelector('h3')?.textContent?.trim();
+      c.style.display = names.has(n) ? '' : 'none';
+    });
+  }, {passive:true});
+
+  // Hook Reset to also clear guest picks
+  document.addEventListener('click', (e)=>{
+    const reset = e.target.closest?.('#resetBtn, [data-action="reset"]');
+    if (!reset) return;
+    try{ ls.removeItem('guestSelection'); }catch(_){}
+    qsa('.card.guest-selected').forEach(c=>c.classList.remove('guest-selected'));
+    updateGuestBadge();
+    document.body.classList.remove('show-only-guest');
+  }, {passive:true});
+
+  // Provide a way for staff to open guest picks: long-press reset
+  const resetBtn = qs('#resetBtn');
+  if (resetBtn){
+    let pressT;
+    resetBtn.addEventListener('pointerdown', ()=> pressT = setTimeout(openGuestPicks, 520));
+    resetBtn.addEventListener('pointerup', ()=> clearTimeout(pressT));
+    resetBtn.addEventListener('pointerleave', ()=> clearTimeout(pressT));
+  }
+
+  // Also add a keyboard shortcut G to open list in staff mode
+  document.addEventListener('keydown', (e)=>{
+    if ((e.key==='g' || e.key==='G') && !getGuest()) { openGuestPicks(); }
+  });
+})();
+

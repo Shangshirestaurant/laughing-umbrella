@@ -6,7 +6,7 @@
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#0C0F14" name="theme-color"/>
 <title>Shang Shi Menu</title>
-<link href="./styles.css?v=dock-r8" rel="stylesheet"/>
+<link href="./styles.css?v=guestR3" rel="stylesheet"/>
 </head>
 <body>
 <button aria-label="Toggle theme" class="theme-btn" id="themeToggle">🌙</button>
@@ -20,6 +20,20 @@
 <div class="empty hidden" id="empty">SAFE = dish does <strong>not</strong> contain selected allergen(s).</div>
 <footer class="footer">SAFE = dish does <strong>not</strong> contain selected allergen(s).</footer>
 </main>
+<!-- Guest Picks Modal -->
+<div id="guestPicksModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="guestPicksTitle">
+    <button class="modal-close" id="guestPicksClose" aria-label="Close"></button>
+    <div class="modal-head"><h3 id="guestPicksTitle">Guest Picks</h3></div>
+    <div id="guestPicksList" class="badges" style="display:block;"></div>
+    <div class="form-actions">
+      <button id="showOnlyGuest" class="btn btn-ghost">Show only picks</button>
+      <button id="copyGuest" class="btn btn-ghost">Copy list</button>
+      <button id="clearGuest" class="btn btn-primary">Clear picks</button>
+    </div>
+  </div>
+</div>
+
 <!-- Add Dish Modal -->
 <div aria-hidden="true" class="modal hidden" id="addDishModal">
 <div aria-labelledby="addDishTitle" aria-modal="true" class="modal-content" role="dialog">
@@ -54,6 +68,6 @@
 <div class="filter-panel" id="categoryPanel">
 <div aria-label="Category filters" class="chips" id="categories" role="group"></div>
 </div>
-<script defer="" src="./app.js?v=fs2-1759673818"></script>
+<script defer="" src="./app.js?v=guestR3"></script>
 </body>
 </html>
