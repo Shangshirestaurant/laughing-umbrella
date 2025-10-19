@@ -1,7 +1,7 @@
 
 // === Guest Mode overlay script (safe to include alongside existing app.js) ===
 // You can change the staff password here:
-const STAFF_PASSWORD = "shangshi"; // <-- edit if needed
+const STAFF_PASSWORD = "0000"; // <-- edit if needed
 
 (function(){
   const $ = (sel, root=document) => root.querySelector(sel);
