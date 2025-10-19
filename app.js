@@ -100,9 +100,10 @@ function renderCategoryChips(){
 }
 
 // Cards
-function card(item){
-  const a = document.createElement('article');
+function card(item){  const a = document.createElement('article');
   a.className = 'card';
+  const keyId = `${(item.category||'').toUpperCase()}::${item.name}`;
+  a.dataset.key = keyId;
   a.setAttribute('data-category', item.category||'');
   a.setAttribute('data-allergens', JSON.stringify(item.allergens||[]));
 
@@ -116,9 +117,8 @@ function card(item){
   cPill.textContent = item.category || 'Dish';
   labels.appendChild(cPill);
 
-  // SAFE only if allergens selected and dish safe
   if (selectedAllergens.size){
-    const al = (item.allergens || []).map(NORM);
+    const al = (item.allergens||[]);
     const ok = [...selectedAllergens].every(x => !al.includes(x));
     if (ok){
       const s = document.createElement('span');
@@ -129,14 +129,12 @@ function card(item){
   }
 
   const h = document.createElement('h3'); h.textContent = item.name;
-
   const p = document.createElement('p'); p.className = 'desc'; p.textContent = item.description || '';
 
   const badges = document.createElement('div'); badges.className = 'badges';
   (item.allergens || []).forEach(code => {
     const b = document.createElement('span'); b.className = 'badge';
-    b.textContent = code;             // cards show code only
-    b.title = LEGEND[code] || code;   // tooltip
+    b.textContent = code; b.title = LEGEND[code] || code;
     badges.appendChild(b);
   });
 
@@ -427,125 +425,98 @@ function initResetEnhance(){
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
 
-// r12d picks modal wiring
+
+
+// --- Guest mode & picks (addon) ---
 (function(){
-  const $ = (s, r=document)=>r.querySelector(s);
-  const on = (el, ev, fn)=>el&&el.addEventListener(ev, fn, true);
-  const norm = s => (s||'').replace(/\s+/g,' ').trim();
-  const isGuest = () => localStorage.getItem('guestMode') === '1';
-  const getPicks = () => {
-    try { return new Set(JSON.parse(localStorage.getItem('guestPicks') || '[]')); }
-    catch { return new Set(); }
-  };
-
-  const countEl = document.getElementById('picksCount');
-  function syncCount(){
-    if (countEl){ countEl.textContent = String(getPicks().size); }
-  }
-  syncCount();
-  window.addEventListener('storage', (e)=>{ if (e.key==='guestPicks') syncCount(); });
-  document.addEventListener('menu:rendered', syncCount);
-
-  if (!$('#guestPicksModal')) {
-    const stub = document.createElement('div');
-    stub.innerHTML = `<div id="guestPicksModal" class="modal hidden" aria-hidden="true">
-      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="guestPicksTitle">
-        <button class="modal-close" id="guestPicksClose" aria-label="Close">✕</button>
-        <div class="modal-head"><h3 id="guestPicksTitle">Guest Selections</h3></div>
-        <div id="guestPicksBody" class="picks-body"></div>
-        <div class="form-actions">
-          <button id="showOnlyGuest" class="btn btn-ghost" type="button">Show only picks</button>
-          <div style="display:flex; gap:8px;">
-            <button id="copyGuest" class="btn btn-ghost" type="button">Copy list</button>
-            <button id="clearGuest" class="btn btn-primary" type="button">Clear picks</button>
-          </div>
-        </div>
-      </div></div>`;
-    document.body.appendChild(stub.firstElementChild);
-  }
-
-  const viewBtn = $('#viewPicksBtn');
-  const modal   = $('#guestPicksModal');
-  const bodyEl  = $('#guestPicksBody');
-  const closeEl = $('#guestPicksClose'];
-
-  function renderPicks(readOnly){
-    if (!bodyEl) return;
-    const picks = Array.from(getPicks());
-    bodyEl.innerHTML='';
-    if (!picks.length){
-      bodyEl.innerHTML = '<div class="picks-empty">No guest selections yet.</div>';
-      return;
-    }
-    const cards = document.querySelectorAll('.card');
-    picks.forEach(name => {
-      let card = Array.from(cards).find(c => c.dataset && (c.dataset.id === name));
-      if (!card) {
-        card = Array.from(cards).find(c => {
-          const t = c.querySelector('h3,[data-title]');
-          return t && norm(t.textContent) === name;
-        });
-      }
-      const cat =
-        (card && card.querySelector('[data-cat]')?.getAttribute('data-cat')) ||
-        (card && card.querySelector('.pill') && norm(card.querySelector('.pill').textContent)) || '—';
-      const chips = card ? card.querySelectorAll('.badge,.chip,[data-allergen]') : [];
-      const codes = Array.from(chips).map(x=>norm(x.textContent)).filter(Boolean);
-      const row = document.createElement('div');
-      row.className = 'picks-row';
-      row.innerHTML = `<div><div class="title">${name}</div><div class="meta">Category: ${cat}</div></div>` +
-        `<div class="meta">${codes.length?codes.map(c=>`<span class="chip">${c}</span>`).join(' '):'<span class="meta">No allergens</span>'}</div>`;
-      bodyEl.appendChild(row);
-    });
-
-    ['showOnlyGuest','copyGuest','clearGuest'].forEach(id=>{
-      const el = document.getElementById(id);
-      if (el){ el.disabled = !!readOnly; el.classList.toggle('disabled', !!readOnly); }
-    });
-  }
-
-  on(viewBtn,'click', (e)=>{
-    e.preventDefault(); e.stopPropagation();
-    renderPicks(isGuest());
-    modal?.classList.remove('hidden');
-  });
-
-  on(closeEl,'click', ()=> modal?.classList.add('hidden'));
-  on(modal,'click', (e)=>{ if (e.target === modal) modal.classList.add('hidden'); });
-})();
-
-// guest-r2 toggle wiring
-(function(){
-  const $ = (s, r=document)=>r.querySelector(s);
-  const PIN_CODE = '0000';
-
-  function setGuest(on){
-    try { localStorage.setItem('guestMode', on ? '1' : '0'); } catch {}
-    document.body.classList.toggle('guest', !!on);
-    const btn = $('#guestToggle');
-    if (btn){
-      btn.classList.toggle('guest-on', !!on);
-      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    }
-    document.dispatchEvent(new CustomEvent('guest:modechange', { detail: { guestMode: !!on } }));
-  }
-
-  // Initialize from storage
-  const initial = (localStorage.getItem('guestMode') === '1');
-  setGuest(initial);
-
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
   const guestBtn = $('#guestToggle');
-  if (guestBtn){
-    guestBtn.addEventListener('click', (e)=>{
-      const on = document.body.classList.contains('guest');
-      if (!on){
-        // Turn ON without PIN
-        setGuest(true);
-      } else {
-        // Require PIN to turn OFF (back to staff)
-        const pin = window.prompt('Staff PIN');
-        if (pin === PIN_CODE) setGuest(false);
-      }
-    }, true);
+  const viewBtn = $('#viewPicksBtn');
+  const resetBtn = $('#resetBtn');
+  const grid = $('#grid');
+  const PIN = '0000';
+
+  function isGuest(){ try{ return localStorage.getItem('guestMode') === '1'; }catch(e){ return false; } }
+  function setGuest(on){
+    try{ on ? localStorage.setItem('guestMode','1'):localStorage.removeItem('guestMode'); }catch(e){}
+    document.body.classList.toggle('guest', !!on);
+    updatePicksBadge();
+    const addBtn = document.getElementById('addDishBtn');
+    if (addBtn) addBtn.style.display = on ? 'none': '';
   }
+
+  function getPicks(){ try{ return JSON.parse(localStorage.getItem('guestPicks')||'[]'); }catch(e){ return []; } }
+  function setPicks(arr){ try{ localStorage.setItem('guestPicks', JSON.stringify(arr)); }catch(e){} }
+
+  function togglePick(key, card){
+    let picks = new Set(getPicks());
+    if (picks.has(key)) picks.delete(key); else picks.add(key);
+    setPicks([...picks]);
+    if (card) card.classList.toggle('selected', picks.has(key));
+    updatePicksBadge();
+  }
+
+  function updatePicksBadge(){
+    const picks = getPicks();
+    const btn = viewBtn;
+    if (!btn) return;
+    btn.innerHTML = '';
+    const count = document.createElement('span');
+    count.className = 'badge-count';
+    count.textContent = String(picks.length);
+    btn.appendChild(count);
+  }
+
+  function ensureCardSelectionsReflect(){
+    const picks = new Set(getPicks());
+    $$('.card').forEach(c => { const k = c.dataset.key; if (!k) return; c.classList.toggle('selected', picks.has(k)); });
+  }
+
+  document.addEventListener('click', (e)=>{
+    const card = e.target.closest && e.target.closest('.card');
+    if (!card) return;
+    if (!isGuest()) return;
+    e.preventDefault(); e.stopPropagation();
+    const key = card.dataset.key;
+    togglePick(key, card);
+  }, true);
+
+  function showPicks(){
+    const data = getPicks();
+    if (!data.length){ alert('No dishes picked yet.'); return; }
+    alert('Guest picks:\n\n' + data.map(x=>'• '+x.replace('::',' – ')).join('\n'));
+  }
+
+  if (viewBtn){
+    viewBtn.addEventListener('click', (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      showPicks();
+    });
+  }
+
+  if (resetBtn){
+    resetBtn.addEventListener('click', ()=>{
+      setPicks([]);
+      ensureCardSelectionsReflect();
+      updatePicksBadge();
+    });
+  }
+
+  if (guestBtn){
+    guestBtn.addEventListener('click', ()=>{
+      if (!isGuest()){ setGuest(true); }
+      else {
+        const p = prompt('Enter staff PIN to exit guest mode:');
+        if (p === PIN) setGuest(false);
+      }
+    });
+  }
+
+  const obs = new MutationObserver(()=> ensureCardSelectionsReflect());
+  if (grid) obs.observe(grid, {childList:true});
+
+  setGuest(isGuest());
+  ensureCardSelectionsReflect();
+  updatePicksBadge();
 })();
