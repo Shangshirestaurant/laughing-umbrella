@@ -136,9 +136,24 @@ const STAFF_PASSWORD = "shangshi"; // <-- edit if needed
     });
   }
 
+  
+  // Capture-phase blocker to prevent staff dish popups while in Guest Mode
+  function captureBlocker(e){
+    if(!state.guest) return;
+    const card = e.target.closest && e.target.closest(".card");
+    if(card){
+      // prevent any underlying handlers (like staff detail modals)
+      e.stopImmediatePropagation?.();
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }
+
   // Event wiring
   els.guestToggle?.addEventListener("change", (e)=> setGuestMode(e.target.checked), {passive:true});
-  els.grid?.addEventListener("click", onGridClick);
+  els.grid?.addEventListener("click", captureBlocker, true);
+els.grid?.addEventListener("click", onGridClick);
+  document.addEventListener("click", captureBlocker, true);
   els.pickedBtn?.addEventListener("click", openPicked, {passive:true});
   els.pickedClose?.addEventListener("click", closePicked, {passive:true});
   els.pickedClear?.addEventListener("click", ()=>{ clearPicks(); updatePickedUI(); }, {passive:true});

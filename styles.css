@@ -972,3 +972,8 @@ body.guest #guestBadge{ display:inline-block !important; }
 .picked-row .remove{background:transparent;border:1px solid rgba(255,255,255,.25);border-radius:8px;color:var(--text);padding:6px 8px;cursor:pointer}
 /* Make space in dock when Picked button present */
 #pickedBtn .label{display:inline-flex;gap:6px;align-items:center}
+
+
+/* Number-only picked counter in dock */
+.picked-counter-btn{min-width:44px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+.picked-counter-btn span#pickedCount{font-variant-numeric:tabular-nums;}
