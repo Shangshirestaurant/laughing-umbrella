@@ -47,31 +47,18 @@ const els = {
 // Load
 async function loadMenu(){ const r = await fetch('./menu.json', {cache:'no-store'}); return r.ok ? r.json() : []; }
 
-// --- Normalization helpers ---
-const NORM = s => String(s ?? '').trim().toUpperCase();
-function normalizeData(arr){
-  return (arr||[]).map(d => ({
-    ...d,
-    allergens: Array.from(new Set((d.allergens||[]).map(NORM).filter(Boolean)))
-  }));
-}
-// Uppercase-key legend for consistent chips
-const LEGEND_UC = Object.fromEntries(Object.entries(LEGEND).map(([k,v]) => [k.toUpperCase(), v]));
-
-
 // Build chips
 function renderAllergenChips(){
   els.chips.innerHTML = '';
-  const codes = Array.from(Object.keys(LEGEND_UC)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
+  const codes = Array.from(Object.keys(LEGEND)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
   codes.forEach(code => {
     const btn = document.createElement('button');
     btn.className = 'chip';
-    btn.dataset.code = NORM(code);
+    btn.dataset.code = code;
     btn.innerHTML = `<b>${code}</b> ${LEGEND[code] || code}`; // Dock shows code + full name
     btn.addEventListener('click', () => {
-      const UC = NORM(code);
-      if (selectedAllergens.has(UC)){ selectedAllergens.delete(UC); btn.classList.remove('active'); }
-      else { selectedAllergens.add(UC); btn.classList.add('active'); }
+      if (selectedAllergens.has(code)){ selectedAllergens.delete(code); btn.classList.remove('active'); }
+      else { selectedAllergens.add(code); btn.classList.add('active'); }
       refresh();
 initResetEnhance();
 ensureDockUnsafeToggle();
@@ -118,7 +105,7 @@ function card(item){
 
   // SAFE only if allergens selected and dish safe
   if (selectedAllergens.size){
-    const al = (item.allergens || []).map(NORM);
+    const al = item.allergens || [];
     const ok = [...selectedAllergens].every(x => !al.includes(x));
     if (ok){
       const s = document.createElement('span');
@@ -225,7 +212,7 @@ function updateResetState(){
 
 // Init
 (async function(){
-  data = normalizeData(await loadMenu());
+  data = await loadMenu();
   renderAllergenChips();
   renderCategoryChips();
   refresh();
@@ -426,3 +413,20 @@ function initResetEnhance(){
   btn.dataset.resetEnhanced='1';
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
+
+
+function getActiveAllergens(){
+  try {
+    if (window.selectedAllergens && typeof window.selectedAllergens.forEach === 'function'){
+      const arr=[]; window.selectedAllergens.forEach(v=>arr.push(String(v).toUpperCase())); return arr;
+    }
+  } catch {}
+  try {
+    const ls = localStorage.getItem('selectedAllergens');
+    if (ls){ const a = JSON.parse(ls); if (Array.isArray(a)) return a.map(x=>String(x).toUpperCase()); }
+  } catch {}
+  const hits = Array.from(document.querySelectorAll('[data-allergen].active,[data-allergen-selected="true"], .allergen.active'));
+  const codes = hits.map(el => (el.getAttribute('data-allergen') || el.getAttribute('data-code') || el.textContent || '').trim().toUpperCase()).filter(Boolean);
+  return Array.from(new Set(codes));
+}
+
