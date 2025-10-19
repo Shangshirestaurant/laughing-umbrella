@@ -47,18 +47,31 @@ const els = {
 // Load
 async function loadMenu(){ const r = await fetch('./menu.json', {cache:'no-store'}); return r.ok ? r.json() : []; }
 
+// --- Normalization helpers ---
+const NORM = s => String(s ?? '').trim().toUpperCase();
+function normalizeData(arr){
+  return (arr||[]).map(d => ({
+    ...d,
+    allergens: Array.from(new Set((d.allergens||[]).map(NORM).filter(Boolean)))
+  }));
+}
+// Uppercase-key legend for consistent chips
+const LEGEND_UC = Object.fromEntries(Object.entries(LEGEND).map(([k,v]) => [k.toUpperCase(), v]));
+
+
 // Build chips
 function renderAllergenChips(){
   els.chips.innerHTML = '';
-  const codes = Array.from(Object.keys(LEGEND)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
+  const codes = Array.from(Object.keys(LEGEND_UC)).filter(c => data.some(d => (d.allergens||[]).includes(c)));
   codes.forEach(code => {
     const btn = document.createElement('button');
     btn.className = 'chip';
-    btn.dataset.code = code;
+    btn.dataset.code = NORM(code);
     btn.innerHTML = `<b>${code}</b> ${LEGEND[code] || code}`; // Dock shows code + full name
     btn.addEventListener('click', () => {
-      if (selectedAllergens.has(code)){ selectedAllergens.delete(code); btn.classList.remove('active'); }
-      else { selectedAllergens.add(code); btn.classList.add('active'); }
+      const UC = NORM(code);
+      if (selectedAllergens.has(UC)){ selectedAllergens.delete(UC); btn.classList.remove('active'); }
+      else { selectedAllergens.add(UC); btn.classList.add('active'); }
       refresh();
 initResetEnhance();
 ensureDockUnsafeToggle();
@@ -105,7 +118,7 @@ function card(item){
 
   // SAFE only if allergens selected and dish safe
   if (selectedAllergens.size){
-    const al = item.allergens || [];
+    const al = (item.allergens || []).map(NORM);
     const ok = [...selectedAllergens].every(x => !al.includes(x));
     if (ok){
       const s = document.createElement('span');
@@ -212,7 +225,7 @@ function updateResetState(){
 
 // Init
 (async function(){
-  data = await loadMenu();
+  data = normalizeData(await loadMenu());
   renderAllergenChips();
   renderCategoryChips();
   refresh();
@@ -413,151 +426,3 @@ function initResetEnhance(){
   btn.dataset.resetEnhanced='1';
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
-
-
-// guest-r6 addon: golden pick outline + picks modal shows allergens (highlight matches)
-(function(){
-  const $ = (s, r=document)=>r.querySelector(s);
-  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
-  const LS_MODE = 'guestMode';
-  const LS_PICKS = 'guestPicks';
-  const PIN = '0000';
-
-  function isGuest(){ try{ return localStorage.getItem(LS_MODE)==='1'; }catch{ return false; } }
-  function getPicks(){ try{ return JSON.parse(localStorage.getItem(LS_PICKS)||'[]'); }catch{ return []; } }
-  function setPicks(arr){ try{ localStorage.setItem(LS_PICKS, JSON.stringify(arr||[])); }catch{} }
-
-  function getActiveAllergens(){
-    try {
-      if (window.selectedAllergens && typeof window.selectedAllergens.forEach === 'function'){
-        const arr=[]; window.selectedAllergens.forEach(v=>arr.push(String(v).toUpperCase())); return arr;
-      }
-    } catch {}
-    try {
-      const ls = localStorage.getItem('selectedAllergens');
-      if (ls){ const a = JSON.parse(ls); if (Array.isArray(a)) return a.map(x=>String(x).toUpperCase()); }
-    } catch {}
-    const hits = Array.from(document.querySelectorAll('[data-allergen].active,[data-allergen-selected="true"], .allergen.active'));
-    const codes = hits.map(el => (el.getAttribute('data-allergen') || el.getAttribute('data-code') || el.textContent || '')
-      .trim().toUpperCase()).filter(Boolean);
-    return Array.from(new Set(codes));
-  }
-
-  function reflectCardSelections(){
-    const picks = new Set(getPicks());
-    $$('.card').forEach(card => {
-      const id = card.dataset.id || card.dataset.key || (card.querySelector('h3')?.textContent?.trim()||'');
-      if (!id) return;
-      if (isGuest() && picks.has(id)) card.classList.add('guest-picked');
-      else card.classList.remove('guest-picked');
-    });
-  }
-
-  function enableGuestCardTaps(){
-    if (document.__guestTapWired) return;
-    document.addEventListener('click', (e)=>{
-      const card = e.target.closest?.('.card');
-      if (!card) return;
-      if (!isGuest()) return;
-      if (e.target.closest('button,a,input,select,textarea')) return;
-      e.preventDefault(); e.stopPropagation();
-      const id = card.dataset.id || card.dataset.key || (card.querySelector('h3')?.textContent?.trim()||'');
-      if (!id) return;
-      const arr = getPicks(); const i = arr.indexOf(id);
-      if (i>=0) arr.splice(i,1); else arr.push(id);
-      setPicks(arr);
-      reflectCardSelections();
-      updatePicksCounter();
-    }, true);
-    document.__guestTapWired = True
-  }
-
-  function updatePicksCounter(){
-    const el = $('#picksCount');
-    if (el) el.textContent = String(getPicks().length);
-  }
-
-  function enablePicksModal(){
-    const btn = $('#viewPicksBtn');
-    const modal = $('#guestPicksModal');
-    const body  = $('#guestPicksBody');
-    const close = $('#guestPicksClose');
-    if (btn && !btn.__wired_guest_r6){
-      btn.addEventListener('click', (e)=>{
-        e.preventDefault(); e.stopPropagation();
-        const arr = getPicks();
-        if (!arr.length){
-          if (!modal) alert('No dishes selected.');
-          else { body.innerHTML = '<p style="opacity:.8">No dishes selected.</p>'; modal.classList.remove('hidden'); }
-          return;
-        }
-        if (modal && body){
-          const active = new Set(getActiveAllergens().map(s=>s.toUpperCase()));
-          const rows = arr.map(id => {
-            let card = document.querySelector(`.card[data-id="${id.replace(/"/g,'\\"')}"]`) ||
-                       document.querySelector(`.card[data-key="${id.replace(/"/g,'\\"')}"]`);
-            if (!card){
-              card = Array.from(document.querySelectorAll('.card')).find(c => {
-                const t = c.querySelector('h3,[data-title]'); return t && t.textContent.trim() === id;
-              });
-            }
-            let name = id, cat = '', allergens = [];
-            if (card){
-              const t = card.querySelector('h3,[data-title]'); if (t) name = t.textContent.trim();
-              const catEl = card.querySelector('.pill,[data-cat]'); if (catEl) cat = (catEl.getAttribute('data-cat') || catEl.textContent || '').trim();
-              allergens = Array.from(card.querySelectorAll('.badge,.chip,[data-allergen]'))
-                         .map(el => (el.getAttribute('data-allergen') || el.textContent || '').trim().toUpperCase())
-                         .filter(Boolean);
-            }
-            const chips = allergens.map(code => `<span class="chip${active.has(code)?' hit':''}">${code}</span>`).join(' ');
-            return `<div class="pick-row">
-                      <div class="pick-name">${name}</div>
-                      <div class="pick-meta">${cat ? `<span class="chip small">${cat}</span>` : ''} ${chips}</div>
-                    </div>`;
-          });
-          body.innerHTML = rows.join('');
-          modal.classList.remove('hidden');
-        } else {
-          const active = new Set(getActiveAllergens().map(s=>s.toUpperCase()));
-          const lines = arr.map(id => {
-            let card = document.querySelector(`.card[data-id="${id.replace(/"/g,'\\"')}"]`) ||
-                       document.querySelector(`.card[data-key="${id.replace(/"/g,'\\"')}"]`);
-            let al = [];
-            if (card){
-              al = Array.from(card.querySelectorAll('.badge,.chip,[data-allergen]'))
-                   .map(el => (el.getAttribute('data-allergen') || el.textContent || '').trim().toUpperCase())
-                   .filter(Boolean);
-            }
-            const tag = al.map(c => active.has(c)? c+'(★)': c).join(', ');
-            return '• ' + id.replace('::',' – ') + (tag ? '  ['+tag+']' : '');
-          });
-          alert('Guest picks:\\n\\n' + lines.join('\\n'));
-        }
-      });
-      btn.__wired_guest_r6 = true;
-    }
-    if (close && !close.__wired_guest_r6){
-      close.addEventListener('click', ()=> modal?.classList.add('hidden'));
-      close.__wired_guest_r6 = true;
-    }
-  }
-
-  function observeGrid(){
-    const grid = document.getElementById('grid') || document.querySelector('[data-grid]');
-    if (!grid || !('MutationObserver' in window)) return;
-    const mo = new MutationObserver(()=> reflectCardSelections());
-    mo.observe(grid, { childList:true, subtree:true });
-  }
-
-  function init(){
-    enableGuestCardTaps();
-    enablePicksModal();
-    observeGrid();
-    reflectCardSelections();
-    updatePicksCounter();
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true});
-  else init();
-})();
-
