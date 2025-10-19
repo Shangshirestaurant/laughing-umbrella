@@ -100,10 +100,9 @@ function renderCategoryChips(){
 }
 
 // Cards
-function card(item){  const a = document.createElement('article');
+function card(item){
+  const a = document.createElement('article');
   a.className = 'card';
-  const keyId = `${(item.category||'').toUpperCase()}::${item.name}`;
-  a.dataset.key = keyId;
   a.setAttribute('data-category', item.category||'');
   a.setAttribute('data-allergens', JSON.stringify(item.allergens||[]));
 
@@ -117,8 +116,9 @@ function card(item){  const a = document.createElement('article');
   cPill.textContent = item.category || 'Dish';
   labels.appendChild(cPill);
 
+  // SAFE only if allergens selected and dish safe
   if (selectedAllergens.size){
-    const al = (item.allergens||[]);
+    const al = (item.allergens || []).map(NORM);
     const ok = [...selectedAllergens].every(x => !al.includes(x));
     if (ok){
       const s = document.createElement('span');
@@ -129,12 +129,14 @@ function card(item){  const a = document.createElement('article');
   }
 
   const h = document.createElement('h3'); h.textContent = item.name;
+
   const p = document.createElement('p'); p.className = 'desc'; p.textContent = item.description || '';
 
   const badges = document.createElement('div'); badges.className = 'badges';
   (item.allergens || []).forEach(code => {
     const b = document.createElement('span'); b.className = 'badge';
-    b.textContent = code; b.title = LEGEND[code] || code;
+    b.textContent = code;             // cards show code only
+    b.title = LEGEND[code] || code;   // tooltip
     badges.appendChild(b);
   });
 
@@ -426,97 +428,122 @@ function initResetEnhance(){
 }
 
 
-
-// --- Guest mode & picks (addon) ---
+// fix-r4: guest toggle + picks counter robust wiring
 (function(){
-  const $ = sel => document.querySelector(sel);
-  const $$ = sel => Array.from(document.querySelectorAll(sel));
-  const guestBtn = $('#guestToggle');
-  const viewBtn = $('#viewPicksBtn');
-  const resetBtn = $('#resetBtn');
-  const grid = $('#grid');
+  const $ = (s, r=document)=>r.querySelector(s);
+  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
   const PIN = '0000';
+  const LS_MODE = 'guestMode';
+  const LS_PICKS = 'guestPicks';
 
-  function isGuest(){ try{ return localStorage.getItem('guestMode') === '1'; }catch(e){ return false; } }
+  function isGuest(){ try{return localStorage.getItem(LS_MODE)==='1';}catch{ return false; } }
   function setGuest(on){
-    try{ on ? localStorage.setItem('guestMode','1'):localStorage.removeItem('guestMode'); }catch(e){}
+    try{ localStorage.setItem(LS_MODE, on?'1':'0'); }catch{}
     document.body.classList.toggle('guest', !!on);
-    updatePicksBadge();
-    const addBtn = document.getElementById('addDishBtn');
-    if (addBtn) addBtn.style.display = on ? 'none': '';
+    const gt = $('#guestToggle');
+    if (gt){ gt.classList.toggle('guest-on', !!on); gt.setAttribute('aria-pressed', on?'true':'false'); }
+    // Hide add button in guest, if present
+    const addBtn = $('#addDishBtn'); if (addBtn) addBtn.style.display = on ? 'none' : '';
+    refreshPicks();
   }
 
-  function getPicks(){ try{ return JSON.parse(localStorage.getItem('guestPicks')||'[]'); }catch(e){ return []; } }
-  function setPicks(arr){ try{ localStorage.setItem('guestPicks', JSON.stringify(arr)); }catch(e){} }
-
-  function togglePick(key, card){
-    let picks = new Set(getPicks());
-    if (picks.has(key)) picks.delete(key); else picks.add(key);
-    setPicks([...picks]);
-    if (card) card.classList.toggle('selected', picks.has(key));
-    updatePicksBadge();
+  function ensureGuestButton(){
+    let gt = $('#guestToggle');
+    if (!gt){
+      // Try to mount near themeToggle; else append to body
+      const theme = $('#themeToggle');
+      gt = document.createElement('button');
+      gt.id = 'guestToggle'; gt.className = 'theme-btn guest-btn'; gt.type='button';
+      gt.title = 'Guest mode'; gt.setAttribute('aria-label','Guest mode');
+      gt.textContent = '👤';
+      if (theme && theme.parentNode) theme.parentNode.insertBefore(gt, theme);
+      else document.body.appendChild(gt);
+    }
+    if (!gt.__wired){
+      gt.addEventListener('click', ()=>{
+        if (!isGuest()) setGuest(true);
+        else { const p = prompt('Staff PIN'); if (p==='0000') setGuest(false); }
+      }, true);
+      gt.__wired = true;
+    }
   }
 
-  function updatePicksBadge(){
-    const picks = getPicks();
-    const btn = viewBtn;
-    if (!btn) return;
-    btn.innerHTML = '';
-    const count = document.createElement('span');
-    count.className = 'badge-count';
-    count.textContent = String(picks.length);
-    btn.appendChild(count);
+  function getPicks(){ try{ return JSON.parse(localStorage.getItem(LS_PICKS)||'[]'); }catch{ return []; } }
+  function setPicks(arr){ try{ localStorage.setItem(LS_PICKS, JSON.stringify(arr||[])); }catch{} }
+
+  function refreshPicks(){
+    const btn = $('#viewPicksBtn'), cnt = $('#picksCount');
+    if (cnt) cnt.textContent = String(getPicks().length);
+    // paint outlines only in guest mode
+    const set = new Set(getPicks());
+    $$('.card').forEach(c => {
+      const id = c.dataset.id || c.dataset.key || (c.querySelector('h3')?.textContent?.trim()||'');
+      if (!id) return;
+      if (isGuest() && set.has(id)) c.classList.add('guest-picked');
+      else c.classList.remove('guest-picked');
+    });
   }
 
-  function ensureCardSelectionsReflect(){
-    const picks = new Set(getPicks());
-    $$('.card').forEach(c => { const k = c.dataset.key; if (!k) return; c.classList.toggle('selected', picks.has(k)); });
-  }
-
-  document.addEventListener('click', (e)=>{
-    const card = e.target.closest && e.target.closest('.card');
-    if (!card) return;
-    if (!isGuest()) return;
-    e.preventDefault(); e.stopPropagation();
-    const key = card.dataset.key;
-    togglePick(key, card);
-  }, true);
-
-  function showPicks(){
-    const data = getPicks();
-    if (!data.length){ alert('No dishes picked yet.'); return; }
-    alert('Guest picks:\n\n' + data.map(x=>'• '+x.replace('::',' – ')).join('\n'));
-  }
-
-  if (viewBtn){
-    viewBtn.addEventListener('click', (e)=>{
+  function bindCardTaps(){
+    document.addEventListener('click', (e)=>{
+      const card = e.target.closest?.('.card');
+      if (!card) return;
+      if (!isGuest()) return; // staff keeps default behavior
+      if (e.target.closest('button,a,input,select,textarea')) return;
       e.preventDefault(); e.stopPropagation();
-      showPicks();
-    });
+      const id = card.dataset.id || card.dataset.key || (card.querySelector('h3')?.textContent?.trim()||'');
+      if (!id) return;
+      const arr = getPicks(); const i = arr.indexOf(id);
+      if (i>=0) arr.splice(i,1); else arr.push(id);
+      setPicks(arr); refreshPicks();
+    }, true);
   }
 
-  if (resetBtn){
-    resetBtn.addEventListener('click', ()=>{
-      setPicks([]);
-      ensureCardSelectionsReflect();
-      updatePicksBadge();
-    });
+  function wirePicksButton(){
+    const btn = $('#viewPicksBtn');
+    const modal = $('#guestPicksModal');
+    const body = $('#guestPicksBody');
+    const close = $('#guestPicksClose');
+    if (btn && !btn.__wired){
+      btn.addEventListener('click', (e)=>{
+        e.preventDefault(); e.stopPropagation();
+        const arr = getPicks();
+        if (!modal || !body){ alert(arr.length? arr.join('\n') : 'No dishes selected.'); return; }
+        body.innerHTML = arr.length ? arr.map(x=>`<div class="pick-row">${x}</div>`).join('') : '<p style="opacity:.8">No dishes selected.</p>';
+        modal.classList.remove('hidden');
+      });
+      btn.__wired = true;
+    }
+    if (close && !close.__wired){
+      close.addEventListener('click', ()=> modal?.classList.add('hidden'));
+      close.__wired = true;
+    }
   }
 
-  if (guestBtn){
-    guestBtn.addEventListener('click', ()=>{
-      if (!isGuest()){ setGuest(true); }
-      else {
-        const p = prompt('Enter staff PIN to exit guest mode:');
-        if (p === PIN) setGuest(false);
-      }
-    });
+  function wireReset(){
+    const r = $('#resetBtn');
+    if (r && !r.__wired_fixr4){
+      r.addEventListener('click', ()=>{ setPicks([]); refreshPicks(); }, true);
+      r.__wired_fixr4 = true;
+    }
   }
 
-  const obs = new MutationObserver(()=> ensureCardSelectionsReflect());
-  if (grid) obs.observe(grid, {childList:true});
+  function init(){
+    ensureGuestButton();
+    setGuest(isGuest());
+    bindCardTaps();
+    wirePicksButton();
+    wireReset();
+    refreshPicks();
+    // Observe grid for re-renders
+    const grid = document.getElementById('grid') || document.querySelector('[data-grid]');
+    if (grid && 'MutationObserver' in window){
+      const mo = new MutationObserver(()=> refreshPicks());
+      mo.observe(grid, { childList:true, subtree:true });
+    }
+  }
 
-  setGuest(isGuest());
-  ensureCardSelectionsReflect();
-  updatePicksBadge();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true});
+  else init();
 })();
+

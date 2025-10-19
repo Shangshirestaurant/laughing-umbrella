@@ -6,10 +6,11 @@
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#0C0F14" name="theme-color"/>
 <title>Shang Shi Menu</title>
-<link href="./styles.css?v=dock-r8" rel="stylesheet"/>
+<link href="./styles.css?v=fix-r4" rel="stylesheet"/>
 </head>
 <body>
 <button aria-label="Toggle theme" class="theme-btn" id="themeToggle">🌙</button>
+<button aria-label="Guest mode" id="guestToggle" class="theme-btn guest-btn" title="Guest mode" type="button">👤</button>
 <header class="header">
 <img alt="Shang Shi logo" class="header-logo" src="./logo.png"/>
 <p class="subtitle">Select allergen(s) to show only <strong>SAFE</strong> dishes.</p>
@@ -46,7 +47,8 @@
 </div>
 <!-- Bottom dock -->
 <div aria-live="polite" class="filter-dock">
-<div class="dock-inner"><button id="unsafeToggle" class="ios-toggle" aria-pressed="false" title="Show dishes that CONTAIN selected allergen(s)" type="button"><span class="knob"></span></button><button aria-controls="filterPanel" aria-expanded="false" class="filter-btn" id="filterToggle"><span class="dot"></span> <span class="label">Filters</span></button><button aria-controls="categoryPanel" aria-expanded="false" class="filter-btn" id="categoryToggle"><span class="dot"></span> <span class="label">Categories</span></button><button class="add-btn" id="addDishBtn"><svg aria-hidden="true" fill="none" viewbox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg></button><button class="reset-btn" id="resetBtn"><svg aria-hidden="true" fill="none" viewbox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.343-5.657" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path><path d="M20 6v4h-4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg></button></div>
+<div class="dock-inner"><button id="unsafeToggle" class="ios-toggle" aria-pressed="false" title="Show dishes that CONTAIN selected allergen(s)" type="button"><span class="knob"></span></button><button aria-controls="filterPanel" aria-expanded="false" class="filter-btn" id="filterToggle"><span class="dot"></span> <span class="label">Filters</span></button><button aria-controls="categoryPanel" aria-expanded="false" class="filter-btn" id="categoryToggle"><span class="dot"></span> <span class="label">Categories</span></button><button class="add-btn" id="addDishBtn"><svg aria-hidden="true" fill="none" viewbox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg></button><button class="filter-btn" id="viewPicksBtn" aria-expanded="false" title="Guest picks" type="button"><span class="label">Picks</span> <span id="picksCount">0</span></button>
+<button class="reset-btn" id="resetBtn"><svg aria-hidden="true" fill="none" viewbox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.343-5.657" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path><path d="M20 6v4h-4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg></button></div>
 </div>
 <div class="filter-panel" id="filterPanel">
 <div aria-label="Allergen filters" class="chips" id="chips" role="group"></div>
@@ -54,6 +56,23 @@
 <div class="filter-panel" id="categoryPanel">
 <div aria-label="Category filters" class="chips" id="categories" role="group"></div>
 </div>
-<script defer="" src="./app.js?v=fs2-1759673818"></script>
+<script defer="" src="./app.js?v=fix-r4"></script>
+
+<!-- Guest Picks Modal (auto-injected) -->
+<div id="guestPicksModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="guestPicksTitle">
+    <button class="modal-close" id="guestPicksClose" aria-label="Close">✕</button>
+    <div class="modal-head"><h3 id="guestPicksTitle">Guest Selections</h3></div>
+    <div id="guestPicksBody" class="picks-body"></div>
+    <div class="form-actions">
+      <button id="showOnlyGuest" class="btn btn-ghost" type="button">Show only picks</button>
+      <div style="display:flex; gap:8px;">
+        <button id="copyGuest" class="btn btn-ghost" type="button">Copy list</button>
+        <button id="clearGuest" class="btn btn-primary" type="button">Clear picks</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
