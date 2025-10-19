@@ -947,3 +947,28 @@ body.show-unsafe-only .card .contains-pill{ display:inline-flex; }
 /* Micro-interactions */
 .filter-btn:hover{ transform: translateY(-1px); }
 .filter-btn:active{ transform: translateY(0) scale(.98); }
+
+
+/* === Guest Mode UI (non-destructive) === */
+.guest-bar{display:flex;align-items:center;gap:10px;margin-top:6px}
+.gm-switch{display:inline-flex;align-items:center;gap:10px;font-weight:600}
+.gm-label{font-size:13px;color:var(--heading)}
+.gm-badge{padding:4px 10px;border-radius:999px;border:1px solid rgba(210,164,85,.45);background:rgba(210,164,85,.10);font-size:12px;letter-spacing:.3px}
+.gm-switch input{display:none}
+.gm-slider{width:44px;height:26px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.gm-slider::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .18s ease}
+#guestToggle:checked + .gm-slider::after{transform:translateX(18px)}
+/* card gold outline on selection */
+.card.gm-selected::after{content:"";position:absolute;inset:-2px;border-radius:22px;pointer-events:none;
+  box-shadow:0 0 0 2px rgba(210,164,85,.75),0 0 18px 6px rgba(210,164,85,.35)}
+/* Hide add-dish button in guest mode */
+body.guest #addDishBtn{ display:none !important; }
+/* Subtle guest badge */
+body.guest #guestBadge{ display:inline-block !important; }
+/* Picked list styling */
+.picked-list{display:grid;gap:8px;margin-top:8px}
+.picked-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);padding:10px 12px;border-radius:12px}
+.picked-row .name{font-weight:700}
+.picked-row .remove{background:transparent;border:1px solid rgba(255,255,255,.25);border-radius:8px;color:var(--text);padding:6px 8px;cursor:pointer}
+/* Make space in dock when Picked button present */
+#pickedBtn .label{display:inline-flex;gap:6px;align-items:center}
