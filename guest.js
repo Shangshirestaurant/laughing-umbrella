@@ -1,7 +1,7 @@
 
 // === Guest Mode overlay script (safe to include alongside existing app.js) ===
 // You can change the staff password here:
-const STAFF_PASSWORD = "0000"; // <-- edit if needed
+const STAFF_PASSWORD = "shangshi"; // <-- edit if needed
 
 (function(){
   const $ = (sel, root=document) => root.querySelector(sel);
@@ -26,7 +26,8 @@ const STAFF_PASSWORD = "0000"; // <-- edit if needed
     pickedCopy: $("#pickedCopy"),
     addBtn: $("#addDishBtn"),
     allergyPill: $("#guestAllergyPill"),
-    chips: $("#chips")
+    chips: $("#chips"),
+    resetBtn: $("#resetBtn")
   };
 
   // Read active allergen codes from chips (expects "<b>GL</b> Gluten" markup)
@@ -137,46 +138,36 @@ const STAFF_PASSWORD = "0000"; // <-- edit if needed
   }
 
   
-  // Capture-phase blocker to prevent staff dish popups while in Guest Mode
-  function captureBlocker(e){
+  
+  // Unified capture-phase handler:
+  // - When in Guest Mode and a .card is clicked,
+  //   toggle selection (gold glow + count), then block staff handlers.
+  function captureSelectAndBlock(e){
     if(!state.guest) return;
     const card = e.target.closest && e.target.closest(".card");
-    if(card){
-      // prevent any underlying handlers (like staff detail modals)
-      e.stopImmediatePropagation?.();
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  }
+    if(!card) return;
 
-  // Event wiring
-  els.guestToggle?.addEventListener("change", (e)=> setGuestMode(e.target.checked), {passive:true});
-  els.grid?.addEventListener("click", captureBlocker, true);
-els.grid?.addEventListener("click", onGridClick);
-  document.addEventListener("click", captureBlocker, true);
-  els.pickedBtn?.addEventListener("click", openPicked, {passive:true});
-  els.pickedClose?.addEventListener("click", closePicked, {passive:true});
-  els.pickedClear?.addEventListener("click", ()=>{ clearPicks(); updatePickedUI(); }, {passive:true});
-  els.pickedList?.addEventListener("click", (e)=>{
-    const btn = e.target.closest(".remove");
-    if(!btn) return;
-    const name = btn.getAttribute("data-name");
+    // derive dish name
+    const title = card.querySelector("h3, h4, .title, .name");
+    const name = title ? title.textContent.trim() : "Untitled dish";
+
     if(state.picked.has(name)){
-      const entry = state.picked.get(name);
-      entry?.nodeRef?.classList?.remove("gm-selected");
+      // unselect
       state.picked.delete(name);
-      updatePickedUI();
+      card.classList.remove("gm-selected");
+    } else {
+      // select
+      state.picked.set(name, { name, nodeRef: card });
+      card.classList.add("gm-selected");
     }
-  });
-  els.pickedCopy?.addEventListener("click", copySummary, {passive:true});
+    updatePickedUI();
 
-  // If chips change, reflect allergy pill text
-  const chipsObserver = new MutationObserver(updatePickedUI);
-  if(els.chips){
-    chipsObserver.observe(els.chips, {attributes:true, subtree:true, attributeFilter:["class"]});
+    // now block the default/detail popups
+    e.stopImmediatePropagation?.();
+    e.stopPropagation();
+    e.preventDefault();
   }
-
-  // Restore persisted guest mode on load
+// Restore persisted guest mode on load
   restore();
   // Initial UI sync
   updatePickedUI();
