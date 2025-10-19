@@ -30,62 +30,6 @@ const STAFF_PASSWORD = "shangshi";
     picked: new Map(), // key -> { name, nodeRef }
   };
 
-
-  // --- Password Modal for exiting Guest Mode ---
-  function ensurePasswordModal(){
-    if(document.getElementById("gmPwdModal")) return;
-    const modal = document.createElement("div");
-    modal.className = "modal hidden";
-    modal.id = "gmPwdModal";
-    modal.setAttribute("aria-hidden","true");
-    modal.innerHTML = `<div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="gmPwdTitle">
-      <button class="modal-close" id="gmPwdClose" aria-label="Close">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <div class="modal-head"><h3 id="gmPwdTitle">Staff Access</h3></div>
-      <div class="modal-content-inner">
-        <label class="field wide"><span class="lbl">Enter staff password</span>
-          <input type="password" id="gmPwdInput" placeholder="••••••••" autocomplete="current-password"/>
-        </label>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-secondary" id="gmPwdCancel">Cancel</button>
-        <button class="btn btn-primary" id="gmPwdSubmit">Unlock</button>
-      </div>
-    </div>`;
-    document.body.appendChild(modal);
-    // bindings
-    document.getElementById("gmPwdClose").addEventListener("click", closePwdModal);
-    document.getElementById("gmPwdCancel").addEventListener("click", closePwdModal);
-    document.getElementById("gmPwdSubmit").addEventListener("click", submitPwdModal);
-    document.addEventListener("keydown", (e)=>{ if(e.key === "Escape") closePwdModal(); });
-  }
-  function openPwdModal(){
-    ensurePasswordModal();
-    const m = document.getElementById("gmPwdModal");
-    m?.classList.remove("hidden");
-    const input = document.getElementById("gmPwdInput");
-    if(input){ input.value=""; setTimeout(()=> input.focus(), 10); }
-  }
-  function closePwdModal(){
-    const m = document.getElementById("gmPwdModal");
-    m?.classList.add("hidden");
-    // Re-check the toggle visually if we didn't exit
-    if(state.guest && els.guestToggle) els.guestToggle.checked = true;
-  }
-  function submitPwdModal(){
-    const input = document.getElementById("gmPwdInput");
-    const pass = input ? input.value : "";
-    if(pass === STAFF_PASSWORD){
-      // proceed to exit guest mode
-      state.guest = true; // force different path in setGuestMode
-      closePwdModal();
-      actuallySetGuestMode(false);
-    } else {
-      alert("Incorrect password.");
-    }
-  }
-
   // --- Utilities ---
   function getActiveAllergenCodes(){
     const chips = els.chips ? $$(".chip.active", els.chips) : [];
@@ -124,10 +68,6 @@ const STAFF_PASSWORD = "shangshi";
 
   function blockStaffPopup(e){
     if(!state.guest) return;
-    // Ignore clicks on form controls or our modals/toggles
-    const ctl = e.target.closest('input,button,select,textarea,label,.modal,.gm-switch');
-    if(ctl) return;
-
     let el = e.target.closest('[data-dish],[data-dish-id],.card,.dish-card,.grid-item,.dish,.item');
     if(!el && els.grid){
       let cur = e.target;
@@ -137,7 +77,6 @@ const STAFF_PASSWORD = "shangshi";
       }
     }
     if(!el) return;
-
     // Toggle selection
     const titleEl = el.querySelector("h1,h2,h3,h4,.title,.name");
     const key = el.getAttribute("data-dish-id") || el.getAttribute("data-dish") || (titleEl ? titleEl.textContent.trim() : el.textContent.trim()).slice(0,120);
@@ -160,12 +99,12 @@ const STAFF_PASSWORD = "shangshi";
   function setGuestMode(on){
     if(on === state.guest) return;
     if(!on){
-      // Show password modal instead of prompt (more reliable)
-      openPwdModal();
-      return;
-    }
-    actuallySetGuestMode(on);
-  }
+      const pass = prompt("Enter staff password to exit Guest Mode:");
+      if(pass !== STAFF_PASSWORD){
+        if(els.guestToggle) els.guestToggle.checked = true;
+        alert("Incorrect password.");
+        return;
+      }
     }
     state.guest = on;
     els.body.classList.toggle("guest", on);
