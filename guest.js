@@ -2,7 +2,7 @@
 // Guest Mode controller — stable overlay
 // Author: ChatGPT
 // Password to exit guest mode:
-const STAFF_PASSWORD = "shangshi";
+const STAFF_PASSWORD = "0000";
 
 (function(){
   const $ = (sel, root=document) => root.querySelector(sel);
