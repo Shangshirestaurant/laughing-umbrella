@@ -209,22 +209,22 @@ const STAFF_PASSWORD = "shangshi"; // <-- edit if needed
   //   toggle selection (gold glow + count), then block staff handlers.
   function captureSelectAndBlock(e){
     if(!state.guest) return;
-    const card = e.target.closest && e.target.closest(".card");
-    if(!card) return;
-
-    // derive dish name
-    const title = card.querySelector("h3, h4, .title, .name");
-    const name = title ? title.textContent.trim() : "Untitled dish";
-
-    if(state.picked.has(name)){
-      // unselect
-      state.picked.delete(name);
-      card.classList.remove("gm-selected");
-    } else {
-      // select
-      state.picked.set(name, { name, nodeRef: card });
-      card.classList.add("gm-selected");
+    let el = e.target.closest('[data-dish],[data-dish-id],.card,.dish-card,.grid-item,.dish,.item');
+    if(!el && els.grid){
+      let cur = e.target;
+      while(cur && cur !== els.grid){
+        if(cur.parentElement === els.grid){ el = cur; break; }
+        cur = cur.parentElement;
+      }
     }
+    if(!el) return;
+    const titleEl = el.querySelector("h1,h2,h3,h4,.title,.name");
+    const key = el.getAttribute("data-dish-id") || el.getAttribute("data-dish") || (titleEl ? titleEl.textContent.trim() : el.textContent.trim()).slice(0,120);
+    if(state.picked.has(key)){ state.picked.delete(key); el.classList.remove("gm-selected"); }
+    else { state.picked.set(key, { name: key, nodeRef: el }); el.classList.add("gm-selected"); }
+    updatePickedUI();
+    e.stopImmediatePropagation?.(); e.stopPropagation(); e.preventDefault();
+  }
     updatePickedUI();
 
     // now block the default/detail popups
