@@ -427,89 +427,119 @@ function initResetEnhance(){
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
 
-// r12d picks modal wiring
+// guest-r1 picks wiring
 (function(){
   const $ = (s, r=document)=>r.querySelector(s);
-  const on = (el, ev, fn)=>el&&el.addEventListener(ev, fn, true);
+  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
   const norm = s => (s||'').replace(/\s+/g,' ').trim();
-  const isGuest = () => localStorage.getItem('guestMode') === '1';
-  const getPicks = () => {
-    try { return new Set(JSON.parse(localStorage.getItem('guestPicks') || '[]')); }
+  const isGuest = () => document.body.classList.contains('guest') || localStorage.getItem('guestMode')==='1';
+
+  function loadPicks(){
+    try { return new Set(JSON.parse(localStorage.getItem('guestPicks')||'[]')); }
     catch { return new Set(); }
-  };
-
-  const countEl = document.getElementById('picksCount');
-  function syncCount(){
-    if (countEl){ countEl.textContent = String(getPicks().size); }
   }
-  syncCount();
-  window.addEventListener('storage', (e)=>{ if (e.key==='guestPicks') syncCount(); });
-  document.addEventListener('menu:rendered', syncCount);
+  function savePicks(set){
+    try { localStorage.setItem('guestPicks', JSON.stringify(Array.from(set))); } catch {}
+  }
+  let picks = loadPicks();
 
-  if (!$('#guestPicksModal')) {
-    const stub = document.createElement('div');
-    stub.innerHTML = `<div id="guestPicksModal" class="modal hidden" aria-hidden="true">
-      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="guestPicksTitle">
-        <button class="modal-close" id="guestPicksClose" aria-label="Close">✕</button>
-        <div class="modal-head"><h3 id="guestPicksTitle">Guest Selections</h3></div>
-        <div id="guestPicksBody" class="picks-body"></div>
-        <div class="form-actions">
-          <button id="showOnlyGuest" class="btn btn-ghost" type="button">Show only picks</button>
-          <div style="display:flex; gap:8px;">
-            <button id="copyGuest" class="btn btn-ghost" type="button">Copy list</button>
-            <button id="clearGuest" class="btn btn-primary" type="button">Clear picks</button>
-          </div>
-        </div>
-      </div></div>`;
-    document.body.appendChild(stub.firstElementChild);
+  function syncCounter(){
+    const btn = $('#viewPicksBtn'), cnt = $('#picksCount');
+    if (!btn || !cnt) return;
+    cnt.textContent = String(picks.size);
+    btn.classList.toggle('has-picks', picks.size>0);
   }
 
+  function applyPickedClasses(){
+    const cards = $$('.card');
+    cards.forEach(c => {
+      const id = c.getAttribute('data-id') || norm((c.querySelector('h3,[data-title]')||{}).textContent);
+      if (!id) return;
+      c.classList.toggle('guest-picked', picks.has(id));
+    });
+  }
+
+  // guest-only toggle behavior on card click
+  document.addEventListener('click', (e)=>{
+    const card = e.target.closest('.card');
+    if (!card) return;
+    if (!isGuest()) return;
+    if (e.target.closest('button,a,input,select,textarea')) return;
+    const id = card.getAttribute('data-id') || norm((card.querySelector('h3,[data-title]')||{}).textContent);
+    if (!id) return;
+    if (picks.has(id)) picks.delete(id); else picks.add(id);
+    savePicks(picks);
+    syncCounter();
+    card.classList.toggle('guest-picked');
+    e.stopPropagation(); e.preventDefault();
+  }, true);
+
+  // re-apply after grid changes
+  const grid = $('#grid');
+  if (grid && 'MutationObserver' in window){
+    const mo = new MutationObserver(()=>{ applyPickedClasses(); });
+    mo.observe(grid, { childList:true, subtree:true });
+  }
+  applyPickedClasses();
+  syncCounter();
+
+  // Modal open + render
   const viewBtn = $('#viewPicksBtn');
-  const modal   = $('#guestPicksModal');
-  const bodyEl  = $('#guestPicksBody');
-  const closeEl = $('#guestPicksClose'];
+  const modal = $('#guestPicksModal');
+  const body = $('#guestPicksBody');
+  const closeBtn = $('#guestPicksClose');
 
-  function renderPicks(readOnly){
-    if (!bodyEl) return;
-    const picks = Array.from(getPicks());
-    bodyEl.innerHTML='';
-    if (!picks.length){
-      bodyEl.innerHTML = '<div class="picks-empty">No guest selections yet.</div>';
+  function buildList(){
+    if (!body) return;
+    const list = Array.from(picks);
+    if (!list.length){
+      body.innerHTML = '<p style="opacity:.8">No dishes selected yet.</p>';
       return;
     }
-    const cards = document.querySelectorAll('.card');
-    picks.forEach(name => {
-      let card = Array.from(cards).find(c => c.dataset && (c.dataset.id === name));
-      if (!card) {
-        card = Array.from(cards).find(c => {
-          const t = c.querySelector('h3,[data-title]');
-          return t && norm(t.textContent) === name;
-        });
+    const rows = [];
+    list.forEach(id => {
+      let card = $(`.card[data-id="${CSS.escape(id)}"]`);
+      if (!card){
+        card = $$('.card').find(c => norm((c.querySelector('h3,[data-title]')||{}).textContent)===id);
       }
-      const cat =
-        (card && card.querySelector('[data-cat]')?.getAttribute('data-cat')) ||
-        (card && card.querySelector('.pill') && norm(card.querySelector('.pill').textContent)) || '—';
-      const chips = card ? card.querySelectorAll('.badge,.chip,[data-allergen]') : [];
-      const codes = Array.from(chips).map(x=>norm(x.textContent)).filter(Boolean);
-      const row = document.createElement('div');
-      row.className = 'picks-row';
-      row.innerHTML = `<div><div class="title">${name}</div><div class="meta">Category: ${cat}</div></div>` +
-        `<div class="meta">${codes.length?codes.map(c=>`<span class="chip">${c}</span>`).join(' '):'<span class="meta">No allergens</span>'}</div>`;
-      bodyEl.appendChild(row);
+      let name = id, cat = '', allergens = [];
+      if (card){
+        const t = card.querySelector('h3,[data-title]'); if (t) name = norm(t.textContent);
+        const catEl = card.querySelector('.pill,[data-cat]'); if (catEl) cat = catEl.getAttribute('data-cat') || norm(catEl.textContent);
+        allergens = $$('.badge,.chip,[data-allergen]', card).map(x=>norm(x.textContent)).filter(Boolean);
+      }
+      rows.push({name, cat, allergens});
     });
-
-    ['showOnlyGuest','copyGuest','clearGuest'].forEach(id=>{
-      const el = document.getElementById(id);
-      if (el){ el.disabled = !!readOnly; el.classList.toggle('disabled', !!readOnly); }
-    });
+    body.innerHTML = rows.map(r => `
+      <div class="pick-row">
+        <div class="pick-name">${r.name}</div>
+        <div class="pick-meta">
+          ${r.cat ? `<span class="chip small">${r.cat}</span>`:''}
+          ${r.allergens.map(a=>`<span class="chip tiny">${a}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
   }
 
-  on(viewBtn,'click', (e)=>{
-    e.preventDefault(); e.stopPropagation();
-    renderPicks(isGuest());
-    modal?.classList.remove('hidden');
+  viewBtn && viewBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    buildList();
+    modal && modal.classList.remove('hidden');
+  });
+  closeBtn && closeBtn.addEventListener('click', ()=> modal && modal.classList.add('hidden'));
+  modal && modal.addEventListener('click', (e)=>{ if (e.target===modal) modal.classList.add('hidden'); });
+
+  // Clear / Copy / Show-only
+  $('#clearGuest')?.addEventListener('click', ()=>{ picks.clear(); savePicks(picks); syncCounter(); applyPickedClasses(); modal?.classList.add('hidden'); });
+  $('#copyGuest')?.addEventListener('click', ()=>{ const text = (body && body.innerText) || ''; navigator.clipboard?.writeText(text); });
+  $('#showOnlyGuest')?.addEventListener('click', ()=>{
+    const set = new Set(picks);
+    $$('.card').forEach(c => {
+      const id = c.getAttribute('data-id') || norm((c.querySelector('h3,[data-title]')||{}).textContent);
+      c.style.display = set.has(id) ? '' : 'none';
+    });
   });
 
-  on(closeEl,'click', ()=> modal?.classList.add('hidden'));
-  on(modal,'click', (e)=>{ if (e.target === modal) modal.classList.add('hidden'); });
+  // Reset clears picks too
+  $('#resetBtn')?.addEventListener('click', ()=>{ picks.clear(); savePicks(picks); syncCounter(); applyPickedClasses(); }, true);
 })();
