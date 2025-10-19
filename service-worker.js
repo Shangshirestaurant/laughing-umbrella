@@ -1,52 +1,67 @@
-// Minimal PWA service worker: network-first for HTML/JSON, SWR for assets
-const CACHE_VERSION = "v1000000000";
-const RUNTIME_CACHE = `shangshi-runtime-${CACHE_VERSION}`;
 
-self.addEventListener("install", (event) => {
-  self.skipWaiting();
-});
+/* service-worker.js — simple, versioned pre-cache */
+const VERSION = 'v3';
+const PRECACHE = `precache-${VERSION}`;
+const RUNTIME = `runtime-${VERSION}`;
 
-self.addEventListener("activate", (event) => {
+// add/adjust assets as your bundle changes
+const CORE_ASSETS = [
+  './',
+  './index.html',
+  './menu.html',
+  './styles.css',
+  './app.js',
+  './guest.js',
+  './logo.png',
+  './apple-icon-180.png',
+  './manifest.webmanifest',
+  './pwa.js'
+];
+
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.map(k => (k.startsWith("shangshi-runtime-") && k !== RUNTIME_CACHE) ? caches.delete(k) : null)
-    ))
+    caches.open(PRECACHE).then(cache => cache.addAll(CORE_ASSETS)).then(self.skipWaiting())
   );
-  self.clients.claim();
 });
 
-const isHTML = (req) => req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html");
-const isJSON = (req) => new URL(req.url).pathname.endsWith(".json");
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(k => (k.startsWith('precache-') || k.startsWith('runtime-')) && k !== PRECACHE && k !== RUNTIME ? caches.delete(k) : null))
+    ).then(() => self.clients.claim())
+  );
+});
 
-self.addEventListener("fetch", (event) => {
+// Helper: network-first for JSON and HTML, cache-first for static
+self.addEventListener('fetch', event => {
   const req = event.request;
+  const url = new URL(req.url);
+  // same-origin only
+  if (url.origin !== location.origin) return;
 
-  if (isHTML(req) || isJSON(req)) {
-    event.respondWith((async () => {
-      try {
-        const fresh = await fetch(req, { cache: "no-store" });
-        const cache = await caches.open(RUNTIME_CACHE);
-        cache.put(req, fresh.clone());
-        return fresh;
-      } catch (e) {
-        const cached = await caches.match(req);
-        return cached || new Response("Offline", { status: 503 });
-      }
-    })());
+  // JSON + pages: network-first with fallback to cache
+  if (req.destination === 'document' || url.pathname.endsWith('.json')) {
+    event.respondWith(
+      fetch(req).then(resp => {
+        const copy = resp.clone();
+        caches.open(RUNTIME).then(cache => cache.put(req, copy));
+        return resp;
+      }).catch(() => caches.match(req))
+    );
     return;
   }
 
-  event.respondWith((async () => {
-    const cache = await caches.open(RUNTIME_CACHE);
-    const cached = await cache.match(req);
-    const fetching = fetch(req).then(res => {
-      if (req.method === "GET" && (res.status === 200 || res.status === 0)) cache.put(req, res.clone());
-      return res;
-    }).catch(() => cached);
-    return cached || fetching;
-  })());
+  // everything else: cache-first then network
+  event.respondWith(
+    caches.match(req).then(cached => cached || fetch(req).then(resp => {
+      const copy = resp.clone();
+      caches.open(RUNTIME).then(cache => cache.put(req, copy));
+      return resp;
+    }))
+  );
 });
 
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
+// allow page to trigger skip waiting
+self.addEventListener('message', evt => {
+  if (evt.data && evt.data.type === 'SKIP_WAITING') self.skipWaiting();
 });

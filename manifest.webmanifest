@@ -1,15 +1,24 @@
 {
-  "name": "Shang Shi Allergen Tool",
-  "short_name": "ShangShi",
+  "name": "Shang Shi \u2014 N8 Menu Allergen Selector",
+  "short_name": "N8 Menu",
+  "description": "Filter dishes by allergens. Guest Mode with quick picks. Works offline.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0C0F14",
   "theme_color": "#0C0F14",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "apple-icon-180.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
