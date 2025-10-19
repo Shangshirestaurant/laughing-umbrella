@@ -27,7 +27,9 @@ const STAFF_PASSWORD = "shangshi"; // <-- edit if needed
     addBtn: $("#addDishBtn"),
     allergyPill: $("#guestAllergyPill"),
     chips: $("#chips"),
-    resetBtn: $("#resetBtn")
+    resetBtn: $("#resetBtn"),
+    headerEl: document.querySelector("header"),
+    dockEl: document.querySelector(".dock, .dock-inner, footer")
   };
 
   // Read active allergen codes from chips (expects "<b>GL</b> Gluten" markup)
@@ -63,6 +65,69 @@ const STAFF_PASSWORD = "shangshi"; // <-- edit if needed
     if(!on) clearPicks();
     updatePickedUI();
     persist();
+  }
+
+
+  function ensureGuestUI(){
+    // Toggle bar
+    if(!$("#guestToggle")){
+      const bar = document.createElement("div");
+      bar.className = "guest-bar";
+      bar.id = "guestBar";
+      bar.innerHTML = `<label class="gm-switch">
+        <input type="checkbox" id="guestToggle" aria-pressed="false">
+        <span class="gm-slider"></span>
+        <span class="gm-label">Guest Mode</span>
+        <span class="gm-badge" id="guestBadge" hidden>GUEST</span>
+      </label>`;
+      (els.headerEl || document.body).appendChild(bar);
+      els.guestToggle = $("#guestToggle");
+      els.guestBadge = $("#guestBadge");
+      els.guestToggle?.addEventListener("change", (e)=> setGuestMode(e.target.checked), {passive:true});
+    }
+    // Picked counter in dock
+    if(!$("#pickedBtn")){
+      const btn = document.createElement("button");
+      btn.className = "filter-btn picked-counter-btn";
+      btn.id = "pickedBtn";
+      btn.setAttribute("aria-controls","pickedModal");
+      btn.setAttribute("aria-label","Open picked dishes");
+      btn.innerHTML = `<span id="pickedCount">0</span>`;
+      (els.dockEl || document.body).appendChild(btn);
+      els.pickedBtn = $("#pickedBtn");
+      els.pickedCount = $("#pickedCount");
+      els.pickedBtn?.addEventListener("click", openPicked, {passive:true});
+    }
+    // Picked modal
+    if(!$("#pickedModal")){
+      const modal = document.createElement("div");
+      modal.className = "modal hidden";
+      modal.id = "pickedModal";
+      modal.setAttribute("aria-hidden","true");
+      modal.innerHTML = `<div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="pickedTitle">
+        <button class="modal-close" id="pickedClose" aria-label="Close">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="modal-head"><h3 id="pickedTitle">Guest Picks</h3></div>
+        <div class="modal-content-inner">
+          <div class="labels"><span class="pill safe-pill" id="guestAllergyPill">Allergies: none</span></div>
+          <div id="pickedList" class="picked-list"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" id="pickedClear">Clear picks</button>
+          <button class="btn btn-primary" id="pickedCopy">Copy summary</button>
+        </div>
+      </div>`;
+      document.body.appendChild(modal);
+      els.pickedModal = $("#pickedModal");
+      els.pickedClose = $("#pickedClose");
+      els.pickedList = $("#pickedList");
+      els.pickedClear = $("#pickedClear");
+      els.pickedCopy = $("#pickedCopy");
+      els.pickedClose?.addEventListener("click", closePicked, {passive:true});
+      els.pickedClear?.addEventListener("click", ()=>{ clearPicks(); updatePickedUI(); }, {passive:true});
+      els.pickedCopy?.addEventListener("click", copySummary, {passive:true});
+    }
   }
 
   function persist(){
@@ -169,6 +234,7 @@ const STAFF_PASSWORD = "shangshi"; // <-- edit if needed
   }
 // Restore persisted guest mode on load
   restore();
+  setTimeout(ensureGuestUI, 300);
   // Initial UI sync
   updatePickedUI();
 })();
