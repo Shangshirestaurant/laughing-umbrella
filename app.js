@@ -426,3 +426,26 @@ function initResetEnhance(){
   btn.dataset.resetEnhanced='1';
   btn.addEventListener('click', () => { resetToSafeAndClearFilters(); }, {passive:true});
 }
+
+
+/* === Page blur scroll visibility === */
+document.addEventListener("DOMContentLoaded", () => {
+  const topBlur = document.querySelector(".page-blur-top");
+  const bottomBlur = document.querySelector(".page-blur-bottom");
+  if (!topBlur || !bottomBlur) return;
+
+  const updateBlurVisibility = () => {
+    const scrollTop = window.scrollY || window.pageYOffset || 0;
+    const doc = document.documentElement;
+    const viewportHeight = window.innerHeight || doc.clientHeight || 0;
+    const docHeight = doc.scrollHeight || 0;
+
+    topBlur.style.opacity = scrollTop > 4 ? "1" : "0";
+    const atBottom = scrollTop + viewportHeight >= docHeight - 4;
+    bottomBlur.style.opacity = atBottom ? "0" : "1";
+  };
+
+  window.addEventListener("scroll", updateBlurVisibility, { passive: true });
+  window.addEventListener("resize", updateBlurVisibility);
+  updateBlurVisibility();
+});

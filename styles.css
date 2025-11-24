@@ -1025,3 +1025,50 @@ body.show-unsafe-only .card .contains-pill{ display:inline-flex; }
   border-color: rgba(255,255,255,.12);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 6px 18px rgba(0,0,0,.35);
 }
+
+
+/* === Page edge blur (top & bottom) === */
+.page-blur {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 6rem;
+  pointer-events: none;
+  z-index: 40;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.page-blur-top {
+  top: 0;
+  mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 100%);
+}
+
+.page-blur-bottom {
+  bottom: calc(env(safe-area-inset-bottom) + 70px);
+  mask-image: linear-gradient(to top, black 0%, black 40%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 40%, transparent 100%);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .page-blur {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.30),
+      rgba(0, 0, 0, 0)
+    );
+  }
+
+  .page-blur-bottom {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.30),
+      rgba(0, 0, 0, 0)
+    );
+  }
+}
