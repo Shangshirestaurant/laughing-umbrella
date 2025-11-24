@@ -1048,7 +1048,8 @@ body.show-unsafe-only .card .contains-pill{ display:inline-flex; }
 }
 
 .page-blur-bottom {
-  bottom: calc(env(safe-area-inset-bottom) + 70px);
+  /* sit just ABOVE the dock (dock is ~12px + ~52px tall) */
+  bottom: calc(env(safe-area-inset-bottom) + 72px);
   mask-image: linear-gradient(to top, black 0%, black 40%, transparent 100%);
   -webkit-mask-image: linear-gradient(to top, black 0%, black 40%, transparent 100%);
 }
